@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/id_area_page_common"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_tiffany_blue"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="16dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_interface"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selects Interface : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_interface"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_buzzer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selects buzzer : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_buzzer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_language"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selects language : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_language"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_track1_enable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enable ISO1 : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_track1_enable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_track2_enable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enable ISO2 : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_track2_enable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_track3_enable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enable ISO3 : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_track3_enable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_global_send_condition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MSR Global pre/postfix sending condition : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_global_send_condition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_ibutton_function"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="i-Button : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_ibutton_function"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_insert_opos_sentinel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Inserts OPOS Sentinel for OPOS : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Button
+                    android:id="@+id/id_button_insert_opos_sentinel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/button_selector"
+                    android:text="Set" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_set_prepost_type1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Set pre/postfix type1 : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Button
+                    android:id="@+id/id_button_set_prepost_type1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/button_selector"
+                    android:text="Set" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>

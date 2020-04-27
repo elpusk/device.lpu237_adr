@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/id_area_track"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_tiffany_blue"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <!-- android:background="@drawable/non_select_border" -->
+            <LinearLayout
+                android:id="@+id/id_pretag_area"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@color/color_tiffany_blue"
+                android:onClick="onClickPrefixSection"
+                android:orientation="vertical">
+                <!-- pretag -->
+                <TextView
+                    android:id="@+id/id_textview_pretag_title"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/prefix_tag_title"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_pretag0"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_pretag1"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_pretag2"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_pretag3"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_pretag4"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_pretag5"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_pretag6"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/id_posttag_area"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@color/color_tiffany_blue"
+                android:onClick="onClickPostfixSection"
+                android:orientation="vertical">
+
+                <!-- posttag -->
+                <TextView
+                    android:id="@+id/id_textview_posttag_title"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:text="@string/postfix_tag_title"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_posttag0"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_posttag1"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_posttag2"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_posttag3"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_posttag4"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_posttag5"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/id_textview_posttag6"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:text=""
+                    android:textSize="24sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</android.support.constraint.ConstraintLayout>

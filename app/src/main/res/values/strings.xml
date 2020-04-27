@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">lpu237 mapper</string>
+    <string name="product_name">LPU237</string>
+
+    <string name="main_activity_title_default">LPU237</string>
+    <string name="startup_activity_title_default">Select a device</string>
+    <string name="update_activity_title_default">Update</string>
+
+    <string name="tab_name_info">info</string>
+    <string name="tab_name_common">common</string>
+    <string name="tab_name_global">global</string>
+    <string name="tab_name_track1">track1</string>
+    <string name="tab_name_track2">track2</string>
+    <string name="tab_name_track3">track3</string>
+    <string name="tab_name_ibutton">i-button</string>
+
+    <string name="prefix_tag_title">Prefix</string>
+    <string name="postfix_tag_title">Postfix</string>
+
+
+    <string name="key_12key_switch_half_alphabet">AB</string>
+    <string name="key_12key_switch_half_number">12</string>
+    <string name="msg_dialog_error_terminate">the serious problem. App will be terminated.</string>
+    <string name="msg_dialog_error_terminate_as">Your device need A/S. App will be terminated.</string>
+    <string name="msg_dialog_error_reboot">Reboot System. App will be terminated.</string>
+    <string name="msg_dialog_error">the serious problem. retry again.</string>
+    <string name="msg_dialog_no_device_terminate">No device. Please Restart App.</string>
+    <string name="msg_dialog_need_download_terminate">For using the device, you must download the firmware. App will be terminated.</string>
+</resources>

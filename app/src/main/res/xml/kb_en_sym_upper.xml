@@ -1,0 +1,65 @@
+<!--
+ // USA-english HID keycode layout for symbol
+-->
+<Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
+    android:keyWidth="10%p"
+    android:horizontalGap="0dip"
+    android:verticalGap="0dip"
+    android:keyHeight="6%"
+    >
+
+    <Row>
+        <Key android:codes="0x3a" android:keyLabel="F1" android:keyEdgeFlags="left"/>
+        <Key android:codes="0x3b" android:keyLabel="F2"/>
+        <Key android:codes="0x3c" android:keyLabel="F3"/>
+        <Key android:codes="0x3d" android:keyLabel="F4"/>
+        <Key android:codes="0x3f" android:keyLabel="F5"/>
+        <Key android:codes="0x40" android:keyLabel="F6"/>
+        <Key android:codes="0x41" android:keyLabel="F7"/>
+        <Key android:codes="0x42" android:keyLabel="F8"/>
+        <Key android:codes="0x43" android:keyLabel="F9"/>
+        <Key android:codes="0x44" android:keyLabel="F11" android:keyEdgeFlags="right"/>
+    </Row>
+
+    <Row>
+        <Key android:codes="0x45" android:keyLabel="F12" android:keyEdgeFlags="left"/>
+        <Key android:codes="0x29" android:keyLabel="ESC"/>
+        <Key android:codes="0x35" android:keyLabel="~"/>
+        <Key android:codes="0x2d" android:keyLabel="_"/>
+        <Key android:codes="0x2e" android:keyLabel="+"/>
+        <Key android:codes="0x2a" android:keyLabel="BS"/>
+        <Key android:codes="0x2b" android:keyLabel="TAB"/>
+        <Key android:codes="0x2f" android:keyLabel="{"/>
+        <Key android:codes="0x30" android:keyLabel="}"/>
+        <Key android:codes="0x31" android:keyLabel="\\" android:keyEdgeFlags="right"/>
+    </Row>
+
+    <Row>
+        <Key android:codes="0x4c" android:keyLabel="DEL" android:horizontalGap="5%p"  android:keyEdgeFlags="left"/>
+        <Key android:codes="0x33" android:keyLabel=":"/>
+        <Key android:codes="0x34" android:keyLabel="&quot;"/>
+        <Key android:codes="0x36" android:keyLabel="&lt;"/>
+        <Key android:codes="0x37" android:keyLabel="&gt;"/>
+        <Key android:codes="0x38" android:keyLabel="\?" android:keyEdgeFlags="right"/>
+    </Row>
+
+    <Row>
+        <Key android:codes="-1" android:keyIcon="@drawable/key_qwerty_shift_b" android:iconPreview="@drawable/key_qwerty_shift" android:isModifier="true" android:keyEdgeFlags="left"/>
+        <Key android:codes="0" android:keyLabel=" "/>
+        <Key android:codes="0" android:keyLabel=" "/>
+        <Key android:codes="0" android:keyLabel=" "/>
+        <Key android:codes="0" android:keyLabel=" "/>
+        <Key android:codes="0" android:keyLabel=" "/>
+        <Key android:codes="0" android:keyLabel=" "/>
+        <Key android:codes="0" android:keyLabel=" "/>
+        <Key android:codes="-6" android:keyIcon="@drawable/key_qwerty_alt" android:isModifier="true" android:isSticky="true" />
+        <Key android:codes="-20" android:keyIcon="@drawable/key_qwerty_ctrl" android:isModifier="true" android:isSticky="true" android:keyEdgeFlags="right"/>
+    </Row>
+
+    <Row android:rowEdgeFlags="bottom">
+        <Key android:codes="-40" android:keyLabel="ABC" android:keyWidth="15%p"  android:keyEdgeFlags="left"/>
+        <Key android:codes="-50" android:keyLabel="CLEAR" android:keyWidth="15%p"/>
+        <Key android:codes="0x2c" android:keyIcon="@drawable/key_qwerty_space" android:iconPreview="@drawable/key_qwerty_space_b" android:keyWidth="55%p"/>
+        <Key android:codes="0x28" android:keyIcon="@drawable/key_qwerty_enter" android:iconPreview="@drawable/key_qwerty_enter_b" android:keyWidth="15%p" android:keyEdgeFlags="right"/>
+    </Row>
+</Keyboard>
