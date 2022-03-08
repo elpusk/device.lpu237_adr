@@ -9,7 +9,7 @@ import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbRequest;
 import android.util.Log;
 
-import junit.runner.Version;
+//import junit.runner.Version;
 
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
@@ -1264,9 +1264,9 @@ public class Lpu237 extends HidDevice
             if( !_df_io(Lpu237Request.cmdHwIsMMD1000,(byte)0,null,packet))
                 continue;
             if( packet.isPositive() )
-                m_parameters.set_decoder_mmd1000(false);
-            else if( packet.isSuccess() )
                 m_parameters.set_decoder_mmd1000(true);
+            else if( packet.isSuccess() )
+                m_parameters.set_decoder_mmd1000(false);
             else {
                 m_parameters.set_decoder_mmd1000(false);
                 continue;

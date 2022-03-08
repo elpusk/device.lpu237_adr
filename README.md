@@ -1,11 +1,16 @@
 # lpu237_adr
-2018.7.14
-this project is for lpu237 magnetic card reader.
-this android app can config and update the firmware of reader.
-target - android v6.0.
+* 2018.7.14 - version 1.0 release
+  * this project is for lpu237 magnetic card reader.
+  * this android app can config and update the firmware of reader.
+  * target - android v6.0.
+
+* 2022.03.08 - version 2.0 release
+  * bug fix - decoder detection.
+  * change IDE - build in Android Studio Bumblebee 2021.1.1 Patch 2.
+
 
 ===================================================================
-Copyright (c) <2018> <Elpusk.Co.,Ltd>
+Copyright (c) <2022> <Elpusk.Co.,Ltd>
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
