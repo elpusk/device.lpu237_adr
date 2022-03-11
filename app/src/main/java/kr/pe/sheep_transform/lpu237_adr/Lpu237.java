@@ -530,7 +530,7 @@ public class Lpu237 extends HidDevice
     }
     public String getDecoderMmd1000(){
         if( get_decoder_mmd1000() )
-            return "MMD1000";
+            return "MMD1100";
         else
             return "DeltaAsic";
     }

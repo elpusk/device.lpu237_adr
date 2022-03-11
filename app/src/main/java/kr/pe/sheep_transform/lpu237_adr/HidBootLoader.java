@@ -38,7 +38,11 @@ public class HidBootLoader extends HidDevice{
     private Rom m_rom = new Rom();
     private final int SIZE_SECTOR = 4096;
     private int m_n_cur_sector_index = 0;
-    private int m_n_fw_index = -1;
+    private int m_n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_name;
+
+    public int get_fw_index(){
+        return m_n_fw_index;
+    }
 
     public boolean is_send_complete(){
         if( m_n_cur_sector_index >= HidBootLoaderSectorOrder.order.length)

@@ -24,6 +24,7 @@
     <string name="msg_dialog_error_terminate_as">Your device need A/S. App will be terminated.</string>
     <string name="msg_dialog_error_reboot">Reboot System. App will be terminated.</string>
     <string name="msg_dialog_error">the serious problem. retry again.</string>
+    <string name="msg_dialog_error_invalied_firmware">This rom file has not a valid firmware for target device.</string>
     <string name="msg_dialog_no_device_terminate">No device. Please Restart App.</string>
     <string name="msg_dialog_need_download_terminate">For using the device, you must download the firmware. App will be terminated.</string>
 </resources>

@@ -87,6 +87,18 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
         do {
             Log.d(getClass().getName(), "selected file " + file.toString());
 
+            int n_error = ManagerDevice.getInstance().check_firmware(
+                    file
+                    , ManagerDevice.getInstance().lpu237_getName()
+                    , ManagerDevice.getInstance().lpu237_get_version_system());
+            if( n_error < 0 ){
+                //Log.i("fileSelected", "error : check_firmware");
+                String s_error = Rom.get_error_description_firmware_index_setting(n_error);
+                s_error = m_activity.getResources().getString(R.string.msg_dialog_error_invalied_firmware) + "("+s_error+")";
+                Tools.showOkDialogForError(m_activity,"FU01","ERROR",s_error);
+                continue;
+            }
+
             if (ManagerDevice.getInstance().push_requst(
                     TypeRequest.Request_start_bootloader
                     , m_activity.getBaseContext()

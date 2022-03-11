@@ -200,6 +200,38 @@ class ManagerDevice implements Runnable
 
     private Boolean m_b_waits_attach_bootloader = false;
 
+    /**
+     *
+     * @param rom_file using rom file
+     * @param s_dev_name target device name
+     * @param dev_version target device version
+     * @return negative error code, zero or positive rom has a updatable firmware.
+     */
+    public int check_firmware(File rom_file,String s_dev_name, FwVersion dev_version){
+        int n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_file_header;
+
+        do{
+            if( rom_file == null ) {
+                continue;
+            }
+            if( s_dev_name == null ) {
+                n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_device_name;
+                continue;
+            }
+            if( dev_version == null ) {
+                n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_device_version;
+                continue;
+            }
+
+            Rom rom = new Rom();
+            if( rom.load_rom_header(rom_file) != RomResult.result_success ) {
+                continue;
+            }
+
+            n_fw_index = rom.set_updatable_firmware_index(s_dev_name,dev_version);
+        }while(false);
+        return n_fw_index;
+    }
     public Boolean is_waits_attach_bootloader(){
         return m_b_waits_attach_bootloader;
     }
@@ -853,16 +885,16 @@ class ManagerDevice implements Runnable
             if (granted){
                 clear_list_lpu237();
 
+                HidBootLoader bootloader = new HidBootLoader(m_usbManager, device);
+                _add_to_list(bootloader);
+                select_bootloader(0);
+
                 if( m_main_activity != null ) {
                     m_b_waits_attach_bootloader = false;
                     m_main_activity.finish();
                     m_main_activity = null;
                 }
                 Tools.start_update_activity(m_startup_activiy);
-
-                HidBootLoader bootloader = new HidBootLoader(m_usbManager, device);
-                _add_to_list(bootloader);
-                select_bootloader(0);
 
                 set_rom_file(
                         0
@@ -1007,7 +1039,8 @@ class ManagerDevice implements Runnable
         }
     }
 
-    public void set_rom_file(int n_index_bootloader, File rom_file,String s_dev_name, FwVersion dev_version ){
+    public boolean set_rom_file(int n_index_bootloader, File rom_file,String s_dev_name, FwVersion dev_version ){
+        boolean b_result = false;
         synchronized (m_lock_device_list) {
             do {
                 if( m_list_bootloader == null )
@@ -1015,10 +1048,32 @@ class ManagerDevice implements Runnable
                 if( m_list_bootloader.size()<= n_index_bootloader )
                     continue;
                 //
-                m_list_bootloader.get(n_index_bootloader).set_rom_file(rom_file, s_dev_name, dev_version);
+                b_result = m_list_bootloader.get(n_index_bootloader).set_rom_file(rom_file, s_dev_name, dev_version);
             }while (false);
         }
+        return b_result;
+    }
 
+    /**
+     *
+     * @return string error description in processing "set_rom_file(int n_index_bootloader, File rom_file,String s_dev_name, FwVersion dev_version )"
+     */
+    public String get_error_description_firmware_index_setting(int n_index_bootloader){
+        String s_description="";
+        synchronized (m_lock_device_list) {
+            do {
+                if( m_list_bootloader == null ) {
+                    s_description = "none bootloader";
+                    continue;
+                }
+                if( m_list_bootloader.size()<= n_index_bootloader ) {
+                    s_description = "invalid bootloader index["+Integer.toString(n_index_bootloader)+"/"+Integer.toString(m_list_bootloader.size())+"]";
+                    continue;
+                }
+                s_description = Rom.get_error_description_firmware_index_setting(m_list_bootloader.get(n_index_bootloader).get_fw_index());
+            } while (false);
+        }
+        return s_description;
     }
     public void set_rom_file(int n_index_bootloader, File rom_file,int n_index_fw ){
         synchronized (m_lock_device_list) {

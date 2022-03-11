@@ -17,7 +17,45 @@ interface RomResult{
     int result_error_over_capacity = 8;
 }
 
+interface  RomErrorCodeFirmwareIndex{//this code must be less then zero.
+    int error_firmware_index_none_matched_name = -1;
+    int error_firmware_index_none_matched_version = -2;
+    int error_firmware_index_none_device_name = -3;
+    int error_firmware_index_none_device_version = -4;
+    int error_firmware_index_format_device_version = -5;
+    int error_firmware_index_none_file_header = -6;
+}
+
 public class Rom {
+
+    static public String get_error_description_firmware_index_setting( int n_error_code ){
+        String s_description="";
+        switch (n_error_code){
+            case RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_name:
+                s_description = "firmware index none matched name";
+                break;
+            case RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_version:
+                s_description = "firmware index none matched version";
+                break;
+            case RomErrorCodeFirmwareIndex.error_firmware_index_none_device_name:
+                s_description = "firmware index none device name";
+                break;
+            case RomErrorCodeFirmwareIndex.error_firmware_index_none_device_version:
+                s_description = "firmware index none device version";
+                break;
+            case RomErrorCodeFirmwareIndex.error_firmware_index_format_device_version:
+                s_description = "firmware index format device version";
+                break;
+            case RomErrorCodeFirmwareIndex.error_firmware_index_none_file_header:
+                s_description = "firmware index none file header";
+                break;
+            default:
+                s_description = "invalid error code";
+                break;
+        }//end switch
+        return s_description;
+    }
+
     //condition mask
     private final static int mask_condition_no = 0;
     private final static int mask_condition_eq = 1;
@@ -201,7 +239,7 @@ public class Rom {
     }
 
     private File m_file_rom = null;
-    private int m_n_cur_firmware_index = -1;
+    private int m_n_cur_firmware_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_name;
     private Header m_header = null;
     private Firmware m_firmware = null;
     private String m_s_error_message = "";
@@ -299,59 +337,78 @@ public class Rom {
     }
 
     public int set_updatable_firmware_index( String s_dev_fw_model_name, byte[] s_dev_fw_version ){
-        int n_index = -1;
+        int n_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_name;
 
         do{
-            if( s_dev_fw_model_name == null )
+            if( s_dev_fw_model_name == null ) {
+                n_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_device_name;
                 continue;
-            if( s_dev_fw_model_name.isEmpty() )
+            }
+            if( s_dev_fw_model_name.isEmpty() ) {
+                n_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_device_name;
                 continue;
-            if( s_dev_fw_version == null )
+            }
+            if( s_dev_fw_version == null ) {
+                n_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_device_version;
                 continue;
-            if( s_dev_fw_version.length != 4 )
+            }
+            if( s_dev_fw_version.length != 4 ) {
+                n_index = RomErrorCodeFirmwareIndex.error_firmware_index_format_device_version;
                 continue;
-            if( m_header == null )
+            }
+            if( m_header == null ) {
+                n_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_file_header;
                 continue;
+            }
             //
+            String s_packed_dev_fw_model_name = new String(s_dev_fw_model_name.trim());
+
             FwVersion version_dev = new FwVersion( s_dev_fw_version );
             String s_name = "";
+            String s_packed_s_name = new String(s_name);
 
             for( int i = 0; i<m_header.get_number_of_firmware(); i++ ){
                 Firmware fw = m_header.get_firmware(i);
                 s_name = fw.get_name_by_string();
-                if( s_dev_fw_model_name.equals( s_name )) {
+                s_packed_s_name = s_name.trim();
+
+                if( s_packed_dev_fw_model_name.equals( s_packed_s_name )) {
+                    n_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_version;
+
                     FwVersion version_file = new FwVersion(fw.get_version());
 
                     if( fw.get_condition() == mask_condition_no ){
                         n_index = i;
-                        break;
+                        break;//exit for
                     }
                     if( (fw.get_condition() & mask_condition_eq) == mask_condition_eq ){
                         if( version_file.equal(version_dev) ){
                             n_index = i;
-                            break;
+                            break;//exit for
                         }
                     }
                     if( (fw.get_condition() & mask_condition_neq) == mask_condition_neq ){
                         if( !version_file.equal(version_dev) ){
                             n_index = i;
-                            break;
+                            break;//exit for
                         }
                     }
                     if( (fw.get_condition() & mask_condition_gt) == mask_condition_gt ){
-                        if( !version_file.greater(version_dev) ){
+                        if( version_file.greater(version_dev) ){
                             n_index = i;
-                            break;
+                            break;//exit for
                         }
                     }
                     if( (fw.get_condition() & mask_condition_lt) == mask_condition_lt ){
-                        if( !version_file.less(version_dev) ){
+                        if( version_file.less(version_dev) ){
                             n_index = i;
-                            break;
+                            break;//exit for
                         }
                     }
                 }
-
+                else{
+                    n_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_name;
+                }
             }//end for
             //
             m_n_cur_firmware_index = n_index;
@@ -360,7 +417,7 @@ public class Rom {
     }
 
     public int set_updatable_firmware_index( String s_dev_fw_model_name, FwVersion dev_fw_version ){
-        int n_index = -1;
+        int n_index = RomErrorCodeFirmwareIndex.error_firmware_index_format_device_version;
         do{
             if( dev_fw_version == null )
                 continue;
