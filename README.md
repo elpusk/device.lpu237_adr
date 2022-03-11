@@ -9,7 +9,7 @@
   * change IDE - build in Android Studio Bumblebee 2021.1.1 Patch 2.
 
 * 2022.03.11 - version 3.0 release
-  * bug gix - rom file check function.
+  * bug fix - rom file check function.
 
 
 ===================================================================
