@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/id_area_page_ibutton_remove"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_tiffany_blue"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            >
+
+            <LinearLayout
+                android:id="@+id/id_pretag_area"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@color/color_tiffany_blue"
+                android:orientation="vertical"
+                android:onClick="onClickPrefixSection"
+                >
+                <!-- only pretag -->
+                <TextView
+                    android:id="@+id/id_textview_pretag_title"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10sp"
+                    android:text="@string/ibutton_remove_title"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp" />
+                <ListView
+                    android:id="@+id/id_listview_pretag"
+                    android:layout_width="fill_parent"
+                    android:layout_height="350dp"
+                    android:layout_marginStart="16dp"
+                    android:textSize="24sp"
+                    />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </RelativeLayout>
+</android.support.constraint.ConstraintLayout>
