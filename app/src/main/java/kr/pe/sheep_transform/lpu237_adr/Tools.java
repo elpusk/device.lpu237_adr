@@ -626,6 +626,8 @@ interface FramePage{
     int PageTrack1 = 3;
     int PageTrack2 = 4;
     int PageTrack3 = 5;
-    int PageiButton = 6;
-    int PageTotal = PageiButton+1;
+    int PageiButtonTag = 6;
+    int PageiButtonRemove = 7;
+    int PageiButtonRemoveTag = 8;
+    int PageTotal = PageiButtonRemoveTag+1;
 }

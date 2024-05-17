@@ -147,6 +147,11 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
         s_info += ManagerDevice.getInstance().lpu237_getDecoderMmd1000();
         s_info += ".\n";
 
+        s_info += "[=]MMD1100 reset interval : ";
+        s_info += ManagerDevice.getInstance().lpu237_getMmd1100ResetInterval();
+        s_info += ".\n";
+
+
         s_info += "[=]Device Interface : ";
         s_info += ManagerDevice.getInstance().lpu237_getInterface();
         s_info += " mode.\n";

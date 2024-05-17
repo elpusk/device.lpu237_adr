@@ -323,6 +323,7 @@ public class PageCommon {
                 ,"Zero is transmitted 7 times When i-button is removed"
                 ,"Send F12 When i-button is removed"
                 ,"Addimat company's Code stick"
+                ,"User definition"
         };
         AdapterSpinnerCommon adapter_ibutton = new AdapterSpinnerCommon(
                 m_activity,
@@ -346,6 +347,9 @@ public class PageCommon {
                         break;
                     case 3://Addimat company's Code stick
                         n_chnaged = Lpu237iButtonType.Addmit;
+                        break;
+                    case 4://user defined
+                        n_chnaged = Lpu237iButtonType.None;
                         break;
                     case 0://Send Zeros When i-button is removed
                     default:

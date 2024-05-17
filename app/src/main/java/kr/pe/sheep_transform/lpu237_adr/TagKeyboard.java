@@ -6,14 +6,17 @@ import android.inputmethodservice.KeyboardView;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.view.inputmethod.InputMethodManager;
 import android.text.InputType;
 import android.view.MotionEvent;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,6 +38,11 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
     private Keyboard[][][] m_keyboards;
     private int m_n_cur_keylayout_id = R.xml.kb_en_abc_lower;
     private PageTag m_page = null;
+
+    private ListView m_list_view_of_ibutton_remove;//for ibutton remove
+
+    private ArrayList<String> m_arraylist_of_list_ibutton_remove;
+    private ArrayAdapter<String> m_adapter_of_list_ibutton_remove;
 
 
     public final static int CodeDelete   = -5; // Keyboard.KEYCODE_DELETE
@@ -121,8 +129,9 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
                 case 0x37:
                     break;
                 default:
-                    if( m_page == null )
+                    if( m_page == null ) {
                         break;
+                    }
 
                     byte c_modifiter = 0;
 
@@ -138,8 +147,13 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
                     if( !m_page.is_full_tag() ) {
                         if( !m_page.is_selected_prefix_tag())
                             n_prepost_index = PostfixIndex;
-
-                        m_views_pre_post[n_prepost_index][m_page.get_length_tag()].setText(s_data);
+                        if(m_views_pre_post != null) {
+                            m_views_pre_post[n_prepost_index][m_page.get_length_tag()].setText(s_data);
+                        }
+                        else{//using list
+                            m_arraylist_of_list_ibutton_remove.add(s_data);
+                            m_adapter_of_list_ibutton_remove.notifyDataSetChanged();
+                        }
                         m_page.push_back_tag(c_modifiter, (byte) (0xff&primaryCode));
                     }
 
@@ -211,8 +225,14 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
             if( !m_page.is_selected_prefix_tag())
                 n_prepost_index = PostfixIndex;
 
+            if(m_views_pre_post == null){
+                m_arraylist_of_list_ibutton_remove.clear();
+                m_adapter_of_list_ibutton_remove.notifyDataSetChanged();
+                continue;
+            }
             for( i =0 ; i< m_views_pre_post[n_prepost_index].length; i++  ) {
                 m_views_pre_post[n_prepost_index][i].setText("");
+
             }//end for
 
         }while (false);
@@ -402,6 +422,12 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
             int i = 0;
             int n_view = 0;
 
+            if(m_views_pre_post == null){
+                m_arraylist_of_list_ibutton_remove.clear();
+                m_adapter_of_list_ibutton_remove.notifyDataSetChanged();
+                continue;
+            }
+
             for( i=0; i<Lpu237.Tags.NUMBER_TAG; i++ ){
                 m_views_pre_post[PrefixIndex][i] = null;
             }//end for
@@ -461,7 +487,29 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
                 }//end for
             }
 
+            m_views_pre_post = new TextView[2][Lpu237.Tags.NUMBER_TAG];
             registerTagTextView( views_pre, views_post);
+        }while(false);
+    }
+
+    public void registerTagListView(
+            int n_id_list_view,
+            ArrayList<String> array_list_of_list_view
+
+    ){
+        do{
+            if( m_HostActivity == null ) {
+                continue;
+            }
+
+            m_arraylist_of_list_ibutton_remove = new ArrayList<>( array_list_of_list_view );//copy
+            m_adapter_of_list_ibutton_remove = new ArrayAdapter<String>(m_HostActivity,
+                    android.R.layout.simple_list_item_1, m_arraylist_of_list_ibutton_remove);
+            //
+            m_views_pre_post = null;
+            m_list_view_of_ibutton_remove = (ListView)m_HostActivity.findViewById(n_id_list_view);
+            m_list_view_of_ibutton_remove.setAdapter(m_adapter_of_list_ibutton_remove);
+            m_adapter_of_list_ibutton_remove.notifyDataSetChanged();
         }while(false);
     }
 

@@ -1,13 +1,28 @@
 apply plugin: 'com.android.application'
 
+/**
+16. 버전 7.0/ 7.1: Android Nougat
+17. 버전 8.0/ 8.1: Android Oreo
+18. 버전 9: Android Pie
+19. 버전 10: Android 10
+20. 버전 11: Android 11
+
+Android 7.0 (API level 24)
+Android 7.1 (API level 25)
+Android 8.0 (API level 26)
+Android 8.1 (API level 27)
+Android 9 (API level 28)
+Android 10 (API level 29)
+Android 11 (API level 30)
+*/
 android {
-    compileSdkVersion 30
+    compileSdkVersion 34
     defaultConfig {
         applicationId "kr.pe.sheep_transform.lpu237_adr"
-        minSdkVersion 23
-        targetSdkVersion 30
-        versionCode 3
-        versionName "3.0"
+        minSdkVersion 25 /*원래 23*/
+        targetSdkVersion 25
+        versionCode 4
+        versionName "3.1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -19,10 +34,10 @@ android {
     dataBinding {
         enabled = true
     }
-    lintOptions {
-        baseline file("lint-baseline.xml")
-    }
     namespace 'kr.pe.sheep_transform.lpu237_adr'
+    lint {
+        baseline file('lint-baseline.xml')
+    }
 }
 
 dependencies {

@@ -12,11 +12,14 @@
     <string name="tab_name_track1">track1</string>
     <string name="tab_name_track2">track2</string>
     <string name="tab_name_track3">track3</string>
-    <string name="tab_name_ibutton">i-button</string>
+    <string name="tab_name_ibutton_tag">IB tag</string>
+    <string name="tab_name_ibutton_remove">IB remove</string>
+    <string name="tab_name_ibutton_remove_tag">IB rtag</string>
 
     <string name="prefix_tag_title">Prefix</string>
     <string name="postfix_tag_title">Postfix</string>
 
+    <string name="ibutton_remove_title">Remove(MAX-20)</string>
 
     <string name="key_12key_switch_half_alphabet">AB</string>
     <string name="key_12key_switch_half_number">12</string>

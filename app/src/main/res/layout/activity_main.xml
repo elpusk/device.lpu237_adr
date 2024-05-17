@@ -153,14 +153,35 @@
                         android:textStyle="bold" />
 
                     <Button
-                        android:id="@+id/id_button_ibutton"
+                        android:id="@+id/id_button_ibutton_tag"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/color_transparent"
-                        android:text="@string/tab_name_ibutton"
+                        android:text="@string/tab_name_ibutton_tag"
                         android:textAllCaps="false"
                         android:textSize="18sp"
                         android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/id_button_ibutton_remove"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/color_transparent"
+                        android:text="@string/tab_name_ibutton_remove"
+                        android:textAllCaps="false"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/id_button_ibutton_remove_tag"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/color_transparent"
+                        android:text="@string/tab_name_ibutton_remove_tag"
+                        android:textAllCaps="false"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
                 </LinearLayout>
 
             </android.support.constraint.ConstraintLayout>

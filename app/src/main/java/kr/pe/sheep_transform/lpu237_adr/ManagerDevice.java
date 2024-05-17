@@ -1272,6 +1272,21 @@ class ManagerDevice implements Runnable
         }
         return s_data;
     }
+
+    public  String lpu237_getMmd1100ResetInterval(){
+        String s_data = "";
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                s_data = m_list_devices.get(m_n_cur_lpu237).getMmd1100ResetInterval();
+            } while (false);
+        }
+        return s_data;
+    }
     //
     public int lpu237_get_device_type(){
         int n_data = -1;
@@ -1355,6 +1370,66 @@ class ManagerDevice implements Runnable
         }
         return b_data;
     }
+
+    public boolean lpu237_get_any_good_indicate_success(){
+        boolean b_data = false;
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_lpu237 <0 )
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                b_data = m_list_devices.get(m_n_cur_lpu237).get_any_good_indicate_success();
+            }while (false);
+        }
+        return b_data;
+    }
+
+    public int lpu237_get_mmd1100_reset_interval(){
+        int n_data = -1;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                n_data = m_list_devices.get(m_n_cur_lpu237).get_mmd1100_reset_interval();
+            } while (false);
+        }
+        return n_data;
+    }
+
+    public int lpu237_get_ibutton_start(){
+        int n_data = -1;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                n_data = m_list_devices.get(m_n_cur_lpu237).get_ibutton_start();
+            } while (false);
+        }
+        return n_data;
+    }
+
+    public int lpu237_get_ibutton_end(){
+        int n_data = -1;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                n_data = m_list_devices.get(m_n_cur_lpu237).get_ibutton_end();
+            } while (false);
+        }
+        return n_data;
+    }
+
     public int lpu237_get_ibutton_type(){
         int n_data = -1;
         synchronized (m_lock_device_list) {
@@ -1426,7 +1501,7 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_ibutton_prefix(){
+    public Lpu237.Tags lpu237_get_ibutton_tag_prefix(){
         Lpu237.Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
@@ -1435,12 +1510,13 @@ class ManagerDevice implements Runnable
                 if( m_list_devices == null )
                     continue;
                 //
-                tag = m_list_devices.get(m_n_cur_lpu237).get_ibutton_prefix();
+                tag = m_list_devices.get(m_n_cur_lpu237).get_ibutton_tag_prefix();
             } while (false);
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_ibutton_postfix(){
+
+    public Lpu237.Tags lpu237_get_ibutton_tag_postfix(){
         Lpu237.Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
@@ -1449,7 +1525,51 @@ class ManagerDevice implements Runnable
                 if( m_list_devices == null )
                     continue;
                 //
-                tag = m_list_devices.get(m_n_cur_lpu237).get_ibutton_postfix();
+                tag = m_list_devices.get(m_n_cur_lpu237).get_ibutton_tag_postfix();
+            } while (false);
+        }
+        return tag;
+    }
+
+    public Lpu237.Tags lpu237_get_ibutton_remove(){
+        Lpu237.Tags tag = null;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                tag = m_list_devices.get(m_n_cur_lpu237).get_ibutton_remove();
+            } while (false);
+        }
+        return tag;
+    }
+
+    public Lpu237.Tags lpu237_get_ibutton_remove_tag_prefix(){
+        Lpu237.Tags tag = null;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                tag = m_list_devices.get(m_n_cur_lpu237).get_ibutton_remove_tag_prefix();
+            } while (false);
+        }
+        return tag;
+    }
+    public Lpu237.Tags lpu237_get_ibutton_remove_tag_postfix(){
+        Lpu237.Tags tag = null;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                tag = m_list_devices.get(m_n_cur_lpu237).get_ibutton_remove_tag_postfix();
             } while (false);
         }
         return tag;
@@ -1579,7 +1699,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_tag_prefix( Lpu237.Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1587,11 +1707,11 @@ class ManagerDevice implements Runnable
                 if( m_list_devices == null )
                     continue;
                 //
-                m_list_devices.get(m_n_cur_lpu237).set_ibutton_prefix(tag);
+                m_list_devices.get(m_n_cur_lpu237).set_ibutton_tag_prefix(tag);
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_tag_postfix( Lpu237.Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1599,10 +1719,47 @@ class ManagerDevice implements Runnable
                 if( m_list_devices == null )
                     continue;
                 //
-                m_list_devices.get(m_n_cur_lpu237).set_ibutton_postfix(tag);
+                m_list_devices.get(m_n_cur_lpu237).set_ibutton_tag_postfix(tag);
             } while (false);
         }
     }
+    public void lpu237_set_ibutton_remove( Lpu237.Tags tag ){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_ibutton_remove(tag);
+            } while (false);
+        }
+    }
+    public void lpu237_set_ibutton_remove_tag_prefix( Lpu237.Tags tag ){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_ibutton_remove_tag_prefix(tag);
+            } while (false);
+        }
+    }
+    public void lpu237_set_ibutton_remove_tag_postfix( Lpu237.Tags tag ){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_ibutton_remove_tag_postfix(tag);
+            } while (false);
+        }
+    }
+
     public void lpu237_set_uart_prefix( Lpu237.Tags tag ){
         synchronized (m_lock_device_list) {
             do {
