@@ -15,6 +15,7 @@ interface RomResult{
     int result_error_not_open_file = 6;
     int result_error_greater_then_expected = 7;
     int result_error_over_capacity = 8;
+    int result_error_unknown_format = 9;//selected file is may be not rom file.
 }
 
 interface  RomErrorCodeFirmwareIndex{//this code must be less then zero.
@@ -252,7 +253,7 @@ public class Rom {
                 continue;
             }
             //
-
+            boolean b_valied_format = true;
             byte[] s_header = new byte[Header.m_n_size] ;
 
             FileInputStream fileInputStream = null;
@@ -277,14 +278,20 @@ public class Rom {
                         n_offset += n_partial;
                         n_remainder -= n_partial;
                     }
+                    else{//the end of file
+                        b_valied_format = false;
+                        break;//exit while
+                    }
                 }while (n_remainder > 0);
 
-                if( n_offset < Header.m_n_size ){
-                    n_result = RomResult.result_error_shorter_then_expected;
-                    continue;
-                }
+                if(n_remainder<=0) {
+                    if (n_offset < Header.m_n_size) {
+                        n_result = RomResult.result_error_shorter_then_expected;
+                        continue;
+                    }
 
-                m_header = new Header(s_header,0);
+                    m_header = new Header(s_header, 0);
+                }
             }
             catch (Exception e) {
                 e.printStackTrace() ;
@@ -297,8 +304,13 @@ public class Rom {
                 } catch(IOException io) {}
             }
             //
-            m_file_rom = rom_file;
-            n_result = RomResult.result_success;
+            if(b_valied_format) {
+                m_file_rom = rom_file;
+                n_result = RomResult.result_success;
+            }
+            else{
+                n_result = RomResult.result_error_unknown_format;
+            }
         }while(false);
         set_error_message(n_result);
         return n_result;
@@ -536,6 +548,9 @@ public class Rom {
                 break;
             case RomResult.result_error_over_capacity:
                 m_s_error_message = "over capacity";
+                break;
+            case RomResult.result_error_unknown_format:
+                m_s_error_message = "unknown format(not rom)";
                 break;
             default:
                 m_s_error_message = "unknown error";

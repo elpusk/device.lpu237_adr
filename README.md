@@ -1,10 +1,15 @@
 # lpu237_adr
+* 2024.05.20 - developing
+  + add i-button range function.
+  + fix invalid rom file format error.
+  + test OK of ganymede v5.22.
+
 * 2024.05.17 - change IDE - Android Studio Jellyfish,2023.3.1
   + change SDK version minSdkVersion 25, targetSdkVersion 25, 
   + supports the defining i-button remove key.
   + supports separated i-button pre.post tag. 
-* 
 * 2023.10.24 - change IDE - build test in Android Studio Giraffe 2022.3.1 Patch 2
+
 * 2022.03.11 - version 3.0 release
   * bug fix - rom file check function.
 

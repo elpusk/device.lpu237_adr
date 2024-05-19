@@ -2116,6 +2116,51 @@ class ManagerDevice implements Runnable
 
         return b_result;
     }
+    boolean lpu237_get_version_structure(){
+        boolean b_result = false;
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_lpu237<0 )
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                b_result = m_list_devices.get(m_n_cur_lpu237).df_get_version_structure();
+            }while(false);
+        }
+
+        return b_result;
+    }
+
+    boolean lpu237_df_get_version_system(){
+        boolean b_result = false;
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_lpu237<0 )
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                b_result = m_list_devices.get(m_n_cur_lpu237).df_get_version_system();
+            }while(false);
+        }
+
+        return b_result;
+    }
+
+    boolean lpu237_df_get_name(){
+        boolean b_result = false;
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_lpu237<0 )
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                b_result = m_list_devices.get(m_n_cur_lpu237).df_get_name();
+            }while(false);
+        }
+
+        return b_result;
+    }
+
     boolean lpu237_df_get_parameter(){
         boolean b_result = false;
         synchronized (m_lock_device_list){
@@ -2478,6 +2523,18 @@ class ManagerDevice implements Runnable
             }
             if( !lpu237_df_get_type() ){
                 Log.i("run","error : df_get_type");
+                continue;
+            }
+            if( !lpu237_df_get_name() ){
+                Log.i("run","error : lpu237_df_get_name");
+                continue;
+            }
+            if( !lpu237_df_get_version_system() ){
+                Log.i("run","error : lpu237_df_get_version_system");
+                continue;
+            }
+            if( !lpu237_get_version_structure() ){
+                Log.i("run","error : lpu237_get_version_structure");
                 continue;
             }
 

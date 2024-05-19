@@ -11,7 +11,7 @@ import android.view.View;
 
 public class DualThumbSeekBar extends View {
 
-    private int thumbRadius = 30;
+    private int thumbRadius = 20;
     private int trackHeight = 10;
     private Paint trackPaint, thumbPaint, rangePaint;
     private RectF trackRect;
@@ -59,11 +59,11 @@ public class DualThumbSeekBar extends View {
         trackPaint.setStyle(Paint.Style.FILL);
 
         thumbPaint = new Paint();
-        thumbPaint.setColor(Color.BLUE);
+        thumbPaint.setColor(getResources().getColor(R.color.color_tiffany_blue_dark_more));
         thumbPaint.setStyle(Paint.Style.FILL);
 
         rangePaint = new Paint();
-        rangePaint.setColor(Color.GREEN);
+        rangePaint.setColor(getResources().getColor(R.color.color_tiffany_blue));
         rangePaint.setStyle(Paint.Style.FILL);
 
         trackRect = new RectF();
