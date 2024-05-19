@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/id_dialog_ibutton_position"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30px"
+        android:layout_marginRight="30px"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/id_textview_ibutton_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="i-button range : "
+            android:textAlignment="textStart"
+            android:textSize="24sp"
+            android:visibility="visible" />
+
+        <kr.pe.sheep_transform.lpu237_adr.DualThumbSeekBar
+            android:id="@+id/id_dualThumbSeekBar_ibutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+    </LinearLayout>
+
+</RelativeLayout>

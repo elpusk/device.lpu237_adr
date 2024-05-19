@@ -67,6 +67,11 @@ interface  Lpu237Response{
 
 }
 
+interface Lpu237Direction{
+    byte biDirection = 0;
+    byte forwardDirection = 1;
+    byte backwardDirection = 2;
+}
 interface Lpu237Interface{
     byte usbKeyboard = 0;
     byte usbVendorHid = 1;
@@ -122,7 +127,9 @@ interface Lpu237ChangedParameter{
     int UartPrefix = 19;
     int UartPostfix = 20;
     int GlobalSendCondition = 21;
-    int BlankField = 22;//ibutton type
+    int BlankField = 22;//ibutton type, reset interval, success condition
+    int MsrReadingDirection = 23;
+    int MsrTrackOrder = 24;
 }
 
 /**
@@ -953,6 +960,47 @@ public class Lpu237 extends HidDevice
         return s_data;
     }
 
+    public void set_reading_direction( byte c_dir ){
+        if( m_parameters.set_reading_direction( c_dir) )
+            _set_change(Lpu237ChangedParameter.MsrReadingDirection);
+    }
+    public byte get_reading_direction(){
+        return m_parameters.get_reading_direction();
+    }
+    public String getReadingDirection(){
+        String s_data = "";
+        switch (get_reading_direction()){
+            case Lpu237Direction.forwardDirection:
+                s_data = "Forward Direction";
+                break;
+            case Lpu237Direction.backwardDirection:
+                s_data = "Backward Direction";
+                break;
+            default:
+                s_data = "BiDirection";
+                break;
+        }
+        return s_data;
+    }
+
+    public void set_track_order( byte[] order ){
+        if( m_parameters.set_track_order( order) )
+            _set_change(Lpu237ChangedParameter.MsrTrackOrder);
+    }
+    public byte[] get_track_order(){
+        return m_parameters.get_track_order();
+    }
+    public String getTrackOrder(){
+        String s_data = "";
+        byte[] order = get_track_order();
+        if(order.length == 3){
+            s_data = String.valueOf(order[0]) +
+                    String.valueOf(order[1]) +
+                    String.valueOf(order[2]);
+        }
+        return s_data;
+    }
+
     public void set_ibutton_end(int n_pos){
         if(m_parameters.set_ibutton_end(n_pos)){
             _set_change(Lpu237ChangedParameter.BlankField);
@@ -1301,6 +1349,10 @@ public class Lpu237 extends HidDevice
                 continue;
             if( !df_get_global_send_condition())
                 continue;
+            if(!df_get_reading_direction())
+                continue;
+            if(!df_get_track_order())
+                continue;
             //
             m_set_changed.clear();
             b_result = true;
@@ -1417,8 +1469,18 @@ public class Lpu237 extends HidDevice
             }
 
             m_parameters.set_mmd1100_reset_interval(packet.get_mmd1100_reset_interval());
-            m_parameters.set_ibutton_start(packet.get_ibutton_position_start());
-            m_parameters.set_ibutton_end(packet.get_ibutton_position_end());
+
+            //this is dragon _______________
+            int n_pos_start = packet.get_ibutton_position_start();
+            int n_pos_end = packet.get_ibutton_position_end();
+            if(n_pos_start == 0 && n_pos_end ==0){
+                n_pos_end = 15;
+            }
+            else if(n_pos_start == 0 && n_pos_end ==15){
+                n_pos_end = 0;
+            }
+            m_parameters.set_ibutton_start(n_pos_start);
+            m_parameters.set_ibutton_end(n_pos_end);
 
             b_result = true;
         }while(false);
@@ -1969,6 +2031,47 @@ public class Lpu237 extends HidDevice
 
         return b_result;
     }
+    private boolean df_get_reading_direction()
+    {
+        boolean b_result = false;
+        int n_track = 0;
+        do{
+            //
+            int n_offset =0, n_size = 0;
+            n_offset = Lpu237SystemStructureOffset.InfoMsr0_cRDirect;
+            n_size = Lpu237SystemStructureSize.InfoMsr0_cRDirect;
+
+            InPacket packet = new InPacket();
+            if( !_df_get( n_offset, n_size, packet ) )
+                continue;
+            m_parameters.set_reading_direction( packet.get_byte_from_array(0,3));
+            b_result = true;
+        }while(false);
+        if( !b_result )
+            Log.i("Lpu237","error : df_reading_direction ");
+
+        return b_result;
+    }
+
+    private boolean df_get_track_order()
+    {
+        boolean b_result = false;
+
+        do{
+            int n_offset =0, n_size = 0;
+            n_offset = Lpu237SystemStructureOffset.ContainerInfoMsrObj_nOrderObject0;
+            n_size = Lpu237SystemStructureSize.ContainerInfoMsrObj_nOrderObject0 * 3;
+            InPacket packet = new InPacket();
+            if( !_df_get( n_offset, n_size, packet ) )
+                continue;
+            m_parameters.set_track_order(packet.get_track_order_by_byte_array());
+            b_result = true;
+        }while(false);
+        if( !b_result )
+            Log.i("Lpu237","error : df_get_track_order");
+
+        return b_result;
+    }
 
     public boolean df_set_parameter()
     {
@@ -2072,6 +2175,14 @@ public class Lpu237 extends HidDevice
                 if (!df_set_global_send_condition())
                     continue;
             }
+            if(_is_changed(Lpu237ChangedParameter.MsrReadingDirection)){
+                if(!df_set_reading_direction())
+                    continue;
+            }
+            if(_is_changed(Lpu237ChangedParameter.MsrTrackOrder)){
+                if(!df_set_track_order())
+                    continue;
+            }
             if( !m_set_changed.isEmpty() )
                 if( !df_apply() )
                     continue;
@@ -2097,21 +2208,36 @@ public class Lpu237 extends HidDevice
             n_offset = Lpu237SystemStructureOffset.cBlank;
             n_size = Lpu237SystemStructureSize.cBlank;
             byte[] s_data = new byte[n_size];
+            Arrays.fill(s_data,(byte)0);//clear
 
-            s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] &= 0xF0;//reset low nibble
+            int[] n_blank = {0,0,0,0};
+            int n_op = 0;
 
             switch (m_parameters.get_ibutton_type()){
                 case Lpu237iButtonType.Zeros7:
-                    s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS7;
+                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS7&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    //this code need for firmware mis-coding. but maintains compatibility
+                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     break;
                 case Lpu237iButtonType.F12:
-                    s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_F12;
+                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_F12&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    //this code need for firmware mis-coding. but maintains compatibility
+                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     break;
                 case Lpu237iButtonType.Addmit:
-                    s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ADDMIT;
+                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ADDMIT&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    //this code need for firmware mis-coding. but maintains compatibility
+                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     break;
                 case Lpu237iButtonType.None:
-                    s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS;
+                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     break;
                 case Lpu237iButtonType.Zeros:
                 default:
@@ -2119,29 +2245,44 @@ public class Lpu237 extends HidDevice
             }//end switch
 
             //success indication condition.
+            n_op = Lpu237Info.MASK_IN_BLANK_OF_SUCCESS_INDICATE&0xFF;//for unsigned operation.
             if( m_parameters.get_any_good_indicate_success() ){
-                s_data[Lpu237Info.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE] |= Lpu237Info.MASK_IN_BLANK_OF_SUCCESS_INDICATE;
+                n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE] |= n_op;
             }
             else{
-                s_data[Lpu237Info.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE] &= ~Lpu237Info.MASK_IN_BLANK_OF_SUCCESS_INDICATE;
+                n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE]  &= ~n_op;
             }
 
             //mmd1100 reset interval
+            n_op = Lpu237Info.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL&0xFF;//for unsigned operation.
             int n_mmd1100_reset_interval = m_parameters.get_mmd1100_reset_interval();
-            //reset
-            s_data[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] &= ~Lpu237Info.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL;
-            //set
-            s_data[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] = (byte)n_mmd1100_reset_interval;
+            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] &= ~n_op;//reset
+            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] |= n_mmd1100_reset_interval;//set
 
             //ibutton position
-            int n_pos = m_parameters.get_ibutton_start();
-            s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] &= ~Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_START;
-            s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] += (byte)(n_pos <<= 4);
+            int n_op_start = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_START&0xFF;//for unsigned operation.
+            int n_pos_start = m_parameters.get_ibutton_start();
 
-            n_pos = m_parameters.get_ibutton_end();
-            s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] &= ~Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_END;
-            s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] += (byte)n_pos;
+            int n_op_end = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_END&0xFF;//for unsigned operation.
+            int n_pos_end = m_parameters.get_ibutton_end();
 
+            //this is dragon _______________
+            if(n_pos_start == 0 && n_pos_end ==15){
+                n_pos_end = 0;
+            }
+            else if(n_pos_start == 0 && n_pos_end ==0){
+                n_pos_end = 15;
+            }
+
+            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] &= ~n_op_start;
+            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] |= (n_pos_start <<= 4);
+
+            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] &= ~n_op_end;
+            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] |= n_pos_end;
+
+            for(int i=0; i<s_data.length; i++){
+                s_data[i] = (byte)n_blank[i];
+            }//end for
             InPacket packet = new InPacket();
             if( !_df_set( n_offset, n_size, s_data, packet) )
                 continue;
@@ -2593,6 +2734,75 @@ public class Lpu237 extends HidDevice
 
         return b_result;
     }
+
+    private boolean df_set_reading_direction(){
+        boolean b_result = true;
+
+        do{
+            int n_track = 0;
+            byte c_dir = m_parameters.get_reading_direction();
+
+            int n_offset =0, n_size = 0;
+            for(n_track=0; n_track<3; n_track++ ) {
+                if (n_track == 0) {
+                    n_offset = Lpu237SystemStructureOffset.InfoMsr0_cRDirect;
+                    n_size = Lpu237SystemStructureSize.InfoMsr0_cRDirect;
+                } else if (n_track == 1) {
+                    n_offset = Lpu237SystemStructureOffset.InfoMsr1_cRDirect;
+                    n_size = Lpu237SystemStructureSize.InfoMsr1_cRDirect;
+                } else if (n_track == 2) {
+                    n_offset = Lpu237SystemStructureOffset.InfoMsr2_cRDirect;
+                    n_size = Lpu237SystemStructureSize.InfoMsr2_cRDirect;
+                }
+
+                byte[] s_data = new byte[n_size];
+                Arrays.fill(s_data, c_dir);
+                //
+                InPacket packet = new InPacket();
+                if( !_df_set( n_offset, n_size, s_data, packet) ) {
+                    b_result = false;
+                    break;// exit for
+                }
+            }//end for track
+
+        }while(false);
+        if( !b_result )
+            Log.i("Lpu237","error : df_set_reading_direction ");
+
+        return b_result;
+    }
+
+    private boolean df_set_track_order(){
+        boolean b_result = false;
+
+        do{
+            int n_offset = 0, n_size = 0;
+            n_offset = Lpu237SystemStructureOffset.ContainerInfoMsrObj_nOrderObject0;
+            n_size = Lpu237SystemStructureSize.ContainerInfoMsrObj_nOrderObject0;
+            n_size *= 3;//sizeof(unsigned long)*3
+
+            byte[] c_order = m_parameters.get_track_order();
+            int[] n_order = {(int)c_order[0],(int)c_order[1],(int)c_order[2]};
+            byte[] s_data = new byte[Integer.BYTES*n_order.length];
+            byte[][] item = new byte[n_order.length][Integer.BYTES];
+            int n_len = 0;
+            for(int i=0; i<n_order.length; i++ ) {
+                item[i] = IntByteConvert.intTobyte(n_order[i], ByteOrder.LITTLE_ENDIAN);
+                System.arraycopy(item[i],0,s_data,n_len,item.length);
+                n_len += item[i].length;
+            }//end for i
+
+            InPacket packet = new InPacket();
+            if( !_df_set( n_offset, n_size, s_data, packet) )
+                continue;
+
+            b_result = true;
+        }while (false);
+        if( !b_result )
+            Log.i("Lpu237","error : df_set_track_order");
+
+        return b_result;
+    }
     //////////////////////////////
 
     public boolean get_parameter( Parameters dst ){
@@ -2641,6 +2851,8 @@ public class Lpu237 extends HidDevice
             _set_change(Lpu237ChangedParameter.UartPostfix);
             _set_change(Lpu237ChangedParameter.GlobalSendCondition);
             _set_change(Lpu237ChangedParameter.BlankField);
+            _set_change(Lpu237ChangedParameter.MsrReadingDirection);
+            _set_change(Lpu237ChangedParameter.MsrTrackOrder);
             //
             b_result = true;
         }while(false);
@@ -2705,6 +2917,16 @@ public class Lpu237 extends HidDevice
         {
             return c_length;
         }
+
+        byte get_byte_from_array( int n_offset, int n_array ){
+            byte c_result = 0;
+            do{
+                if( c_length != n_array )
+                    continue;
+                c_result = s_data[n_offset];
+            }while(false);
+            return c_result;
+        }
         byte get_byte()
         {
             byte c_result = 0;
@@ -2724,6 +2946,26 @@ public class Lpu237 extends HidDevice
                 n_result = IntByteConvert.byteToInt( s_data,ByteOrder.LITTLE_ENDIAN);
             }while(false);
             return n_result;
+        }
+
+        byte[] get_track_order_by_byte_array()
+        {
+            byte[] order={0,0,0};
+            do{
+                if(c_length != 4*3){
+                    continue;
+                }
+
+                byte[] ul={0,0,0,0};
+                for(int i=0; i<order.length; i++){
+                    for(int j=0; j<4; j++ ){
+                        ul[j] = s_data[i*4+j];
+                    }//end for i
+                    order[i] = (byte)IntByteConvert.byteToInt(ul,ByteOrder.LITTLE_ENDIAN);
+                }//end for j
+
+            }while (false);
+            return order;
         }
         Tags get_tag()
         {
@@ -2806,8 +3048,12 @@ public class Lpu237 extends HidDevice
                     continue;
                 if( s_data == null )
                     continue;
-                byte c_blank1 = (byte)(s_data[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] & Lpu237Info.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL);
-                if(c_blank1 == 0){
+                int[] n = {
+                        s_data[Lpu237Info.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE]&0xFF,//for unsigned operation.
+                        Lpu237Info.MASK_IN_BLANK_OF_SUCCESS_INDICATE&0xFF//for unsigned operation.
+                };
+                int n_blank1 = n[0]&n[1];
+                if(n_blank1 == 0){
                     continue;
                 }
                 b_all = false;
@@ -2830,7 +3076,11 @@ public class Lpu237 extends HidDevice
                     continue;
                 if( s_data == null )
                     continue;
-                n_reset = (int)(s_data[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] & Lpu237Info.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL);
+                byte c = s_data[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL];
+                c &= ((byte)Lpu237Info.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL);
+
+                // 비트 마스킹을 사용하여 unsigned 값을 얻음
+                n_reset = c&0xFF;
 
             }while (false);
             return n_reset;
@@ -2838,39 +3088,32 @@ public class Lpu237 extends HidDevice
 
         int  get_ibutton_position_start(){
             int n_pos = 0;
-
+            int n_op = 0;
             do{
                 int n_len = (int)c_length;
                 if( n_len != Lpu237SystemStructureSize.cBlank )
                     continue;
                 if( s_data == null )
                     continue;
-                n_pos = (int)(
-                        (
-                                s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION]
-                                        & Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_START
-                        )
-                        >> 4
-                );
+                n_pos = s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION]&0xFF;//for unsigned operation.
+                n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_START&0xFF;//for unsigned operation.
+                n_pos = n_pos & n_op;
+                n_pos >>= 4;
             }while(false);
             return n_pos;
         }
         int  get_ibutton_position_end(){
             int n_pos = 0;
-
+            int n_op = 0;
             do{
                 int n_len = (int)c_length;
                 if( n_len != Lpu237SystemStructureSize.cBlank )
                     continue;
                 if( s_data == null )
                     continue;
-                n_pos = (int)(
-                        (
-                                s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION]
-                                        & Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_END
-                        )
-                                >> 4
-                );
+                n_pos = s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION]&0xFF;//for unsigned operation.
+                n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_END&0xFF;//for unsigned operation.
+                n_pos = n_pos & n_op;
             }while(false);
             return n_pos;
         }
@@ -3242,8 +3485,11 @@ public class Lpu237 extends HidDevice
         //therefor the value of cBlank[0]' high nibble cannot be greater then it of cBlank[0]' low nibble
         private int m_n_ibutton_start = 0;
         private int m_n_ibutton_end = 0;
-
         private boolean m_b_decoder_is_mmd1000 = false;
+
+        private byte m_c_reading_direction = Lpu237Direction.biDirection;
+
+        private byte[] m_track_order = {0,1,2};
 
         //
         String m_s_description = "";
@@ -3268,6 +3514,7 @@ public class Lpu237 extends HidDevice
 
                     int i = 0;
                     for(i=0; i<3; i++ ){
+                        dst.m_track_order[i] = m_track_order[i];
                         dst.m_enable_track[i] = m_enable_track[i];
                         m_tag_private_prefix[i].copy_to(dst.m_tag_private_prefix[i]);
                         m_tag_private_postfix[i].copy_to(dst.m_tag_private_postfix[i]);
@@ -3303,6 +3550,7 @@ public class Lpu237 extends HidDevice
 
                     dst.m_is_any_good_indicate_success = m_is_any_good_indicate_success;
 
+                    dst.m_c_reading_direction = m_c_reading_direction;
                 }while (false);
             }
         }
@@ -3310,6 +3558,7 @@ public class Lpu237 extends HidDevice
         public void set_all_parameter( Parameters src ) {
             set_changable_parameter(src);
 
+            // here is unchangeable item only.
             synchronized (m_locker) {
                 System.arraycopy(src.m_uid,0,m_uid,0,m_uid.length);
                 System.arraycopy(src.m_name,0,m_name,0,m_name.length);
@@ -3328,6 +3577,7 @@ public class Lpu237 extends HidDevice
             synchronized (m_locker){
                 int i = 0;
                 for(i=0;i<3;i++){
+                    m_track_order[i] = src.m_track_order[i];
                     m_enable_track[i] = src.m_enable_track[i];
                 }//end for
                 //
@@ -3362,9 +3612,37 @@ public class Lpu237 extends HidDevice
                 m_n_ibutton_end = src.m_n_ibutton_end;
 
                 m_is_any_good_indicate_success = src.m_is_any_good_indicate_success;
+                m_c_reading_direction = src.m_c_reading_direction;
             }
         }
 
+        public boolean set_reading_direction(byte dir){
+            boolean b_changed = false;
+
+            synchronized (m_locker){
+                if(m_c_reading_direction != dir){
+                    m_c_reading_direction = dir;
+                    b_changed = true;
+                }
+            }
+            return b_changed;
+        }
+
+        public boolean set_track_order(byte[] order){
+            boolean b_changed = false;
+
+            synchronized (m_locker){
+                if(order.length == 3){
+                    for(int i=0; i<3; i++){
+                        if(m_track_order[i] != order[i]){
+                            m_track_order[i] = order[i];
+                            b_changed = true;
+                        }
+                    }//end for
+                }
+            }
+            return b_changed;
+        }
         public boolean set_any_good_indicate_success(boolean b_any_good_indicate_success){
             boolean b_changed = false;
 
@@ -3402,7 +3680,7 @@ public class Lpu237 extends HidDevice
             boolean b_changed = false;
 
             synchronized (m_locker){
-                if(m_n_ibutton_start != n_ibutton_end) {
+                if(m_n_ibutton_end != n_ibutton_end) {
                     m_n_ibutton_end = n_ibutton_end;
                     b_changed = true;
                 }
@@ -3672,6 +3950,16 @@ public class Lpu237 extends HidDevice
             return b_changed;
         }
 
+        public byte[] get_track_order(){
+            synchronized (m_locker){
+                return m_track_order;
+            }
+        }
+        public byte get_reading_direction(){
+            synchronized (m_locker){
+                return m_c_reading_direction;
+            }
+        }
         public boolean get_any_good_indicate_success(){
             synchronized (m_locker){
                 return m_is_any_good_indicate_success;

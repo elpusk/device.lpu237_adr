@@ -153,6 +153,69 @@
                 android:orientation="horizontal">
 
                 <TextView
+                    android:id="@+id/id_textview_reading_direction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MSR Reading Direction : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_reading_direction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_track_order"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MSR Track Order : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_track_order"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_reset_interval"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MMD1100 Reset Interval : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_reset_interval"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
                     android:id="@+id/id_textview_global_send_condition"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -163,6 +226,27 @@
 
                 <Spinner
                     android:id="@+id/id_spinner_global_send_condition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:spinnerMode="dialog" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/id_textview_success_indication_condition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MSR success indication condition : "
+                    android:textAlignment="textStart"
+                    android:textSize="24sp"
+                    android:visibility="visible" />
+
+                <Spinner
+                    android:id="@+id/id_spinner_success_indication_condition"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:spinnerMode="dialog" />
@@ -187,6 +271,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:spinnerMode="dialog" />
+
+                <Button
+                    android:id="@+id/id_button_extension"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/button_selector"
+                    android:text="Range" />
+
             </LinearLayout>
 
             <LinearLayout

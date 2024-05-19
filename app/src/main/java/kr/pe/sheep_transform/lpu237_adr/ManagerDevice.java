@@ -1370,6 +1370,32 @@ class ManagerDevice implements Runnable
         }
         return b_data;
     }
+    public byte lpu237_get_reading_direction(){
+        byte c_data = Lpu237Direction.biDirection;
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_lpu237 <0 )
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                c_data = m_list_devices.get(m_n_cur_lpu237).get_reading_direction();
+            }while (false);
+        }
+        return c_data;
+    }
+    public byte[] lpu237_get_track_order(){
+        byte[] order = {0,1,2};
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_lpu237 <0 )
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                order = m_list_devices.get(m_n_cur_lpu237).get_track_order();
+            }while (false);
+        }
+        return order;
+    }
 
     public boolean lpu237_get_any_good_indicate_success(){
         boolean b_data = false;
@@ -1793,6 +1819,82 @@ class ManagerDevice implements Runnable
                     continue;
                 //
                 m_list_devices.get(m_n_cur_lpu237).set_global_send_condition(b_all_no_error);
+            } while (false);
+        }
+    }
+    public void lpu237_set_any_good_indicate_success( boolean b_any ){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_any_good_indicate_success(b_any);
+            } while (false);
+        }
+    }
+
+    public  void lpu237_set_ibutton_end(int n_pos){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_ibutton_end(n_pos);
+            } while (false);
+        }
+    }
+
+    public  void lpu237_set_ibutton_start(int n_pos){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_ibutton_start(n_pos);
+            } while (false);
+        }
+    }
+    public void lpu237_set_mmd1100_reset_interval( byte n_reset ){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_mmd1100_reset_interval(n_reset);
+            } while (false);
+        }
+    }
+
+    public void lpu237_set_reading_direction( byte c_dir ){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_reading_direction(c_dir);
+            } while (false);
+        }
+    }
+
+    public void lpu237_set_track_order( byte[] order){
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                m_list_devices.get(m_n_cur_lpu237).set_track_order(order);
             } while (false);
         }
     }
