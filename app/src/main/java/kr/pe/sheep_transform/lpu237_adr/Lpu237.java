@@ -597,11 +597,16 @@ public class Lpu237 extends HidDevice
     public boolean get_decoder_mmd1000(){
         return m_parameters.get_decoder_mmd1000();
     }
-    public String getDecoderMmd1000(){
-        if( get_decoder_mmd1000() )
-            return "MMD1100";
-        else
-            return "DeltaAsic";
+    public String getDecoder(){
+        if( getName().compareTo("himalia") == 0){
+            return "MH1902T";
+        }
+        else {
+            if (get_decoder_mmd1000())
+                return "MMD1100";
+            else
+                return "DeltaAsic";
+        }
     }
 
     public int get_ibutton_type(){

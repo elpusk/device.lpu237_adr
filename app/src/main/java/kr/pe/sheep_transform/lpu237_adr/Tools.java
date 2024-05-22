@@ -30,7 +30,9 @@ interface ManagerIntentAction{
 
     String BOOTLOADER_PERMISSION = "kr.pe.sheep_transform.lpu237_adr.BOOTLOADER_PERMISSION";
     String START_BOOTLOADER = "kr.pe.sheep_transform.lpu237_adr.START_BOOTLOADER";
-    String ERASE_FIRMWARE = "kr.pe.sheep_transform.lpu237_adr.ERASE_FIRMWARE";
+    String SECTOR_INFO = "kr.pe.sheep_transform.lpu237_adr.SECTOR_INFO";
+    String ERASE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.ERASE_SECTOR";
+    String ERASE_COMPLETE = "kr.pe.sheep_transform.lpu237_adr.ERASE_COMPLETE";
     String WRITE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.WRITE_SECTOR";
     String WRITE_COMPLETE = "kr.pe.sheep_transform.lpu237_adr.WRITE_COMPLETE";
     String START_APP = "kr.pe.sheep_transform.lpu237_adr.START_APP";
@@ -43,7 +45,10 @@ interface ManagerIntentAction{
     String ACTIVITY_MAIN_START_BOOT = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_MAIN_START_BOOT";
 
     String ACTIVITY_UPDATE_START_BOOT = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_START_BOOT";
-    String ACTIVITY_UPDATE_COMPLETE_ERASE = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_ERASE";
+    String ACTIVITY_UPDATE_SECTOR_INFO = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_SECTOR_INFO";
+    String ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR";
+    String ACTIVITY_UPDATE_DETAIL_ERASE_INFO = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_DETAIL_ERASE_INFO";
+    String ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE";
     String ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR";
     String ACTIVITY_UPDATE_DETAIL_WRITE_INFO = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_DETAIL_WRITE_INFO";
     String ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE";
@@ -69,11 +74,13 @@ interface ManagerIntentAction{
 
     int INT_BOOTLOADER_PERMISSION =     0x04000000;
     int INT_START_BOOTLOADER =          0x04000001;
-    int INT_ERASE_FIRMWARE =            0x04000002;
-    int INT_WRITE_SECTOR =            0x04000004;
-    int INT_WRITE_COMPLETE =            0x04000008;
-    int INT_START_APP =                 0x04000010;
-    int INT_RECOVER_PARAMETER =         0x04000020;
+    int INT_SECTOR_INFO =            0x04000002;
+    int INT_ERASE_SECTOR =            0x04000004;
+    int INT_ERASE_COMPLETE =          0x04000008;
+    int INT_WRITE_SECTOR =            0x04000010;
+    int INT_WRITE_COMPLETE =            0x04000020;
+    int INT_START_APP =                 0x04000040;
+    int INT_RECOVER_PARAMETER =         0x04000080;
     int INT_ALL_BOOTLOADER =         0x040000FF;
 
     int INT_ACTIVITY_STARTUP_DISPLAY_DEVICE_LIST = 0x08000000;
@@ -85,14 +92,17 @@ interface ManagerIntentAction{
     int INT_ALL_ACTIVITY_MAIN                     = 0x100000FF;
 
     int INT_ACTIVITY_UPDATE_START_BOOT              = 0x20000001;
-    int INT_ACTIVITY_UPDATE_COMPLETE_ERASE          = 0x20000002;
-    int INT_ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR   = 0x20000004;
-    int INT_ACTIVITY_UPDATE_DETAIL_WRITE_INFO       = 0x20000008;
-    int INT_ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE = 0x20000010;
-    int INT_ACTIVITY_UPDATE_START_APP               = 0x20000020;
-    int INT_ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS = 0x20000040;
-    int INT_ACTIVITY_UPDATE_RECOVER_PARAMETER       = 0x20000080;
-    int INT_ALL_ACTIVITY_UPDATE                     = 0x200000FF;
+    int INT_ACTIVITY_UPDATE_SECTOR_INFO             = 0x20000002;
+    int INT_ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR   = 0x20000004;
+    int INT_ACTIVITY_UPDATE_DETAIL_ERASE_INFO       = 0x20000008;
+    int INT_ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE = 0x20000010;
+    int INT_ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR   = 0x20000020;
+    int INT_ACTIVITY_UPDATE_DETAIL_WRITE_INFO       = 0x20000040;
+    int INT_ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE = 0x20000080;
+    int INT_ACTIVITY_UPDATE_START_APP               = 0x20000100;
+    int INT_ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS = 0x20000200;
+    int INT_ACTIVITY_UPDATE_RECOVER_PARAMETER       = 0x20000400;
+    int INT_ALL_ACTIVITY_UPDATE                     = 0x2000FFFF;
 
     int INT_GENERAL_TERMINATE_APP         = 0x40000000;
     int INT_ALL_GENERAL                 = 0x400000FF;
@@ -234,8 +244,13 @@ public class Tools {
             filter.addAction(ManagerIntentAction.BOOTLOADER_PERMISSION);
         if( (n_actions & ManagerIntentAction.INT_START_BOOTLOADER) != 0 )
             filter.addAction(ManagerIntentAction.START_BOOTLOADER);
-        if( (n_actions & ManagerIntentAction.INT_ERASE_FIRMWARE) != 0 )
-            filter.addAction(ManagerIntentAction.ERASE_FIRMWARE);
+
+        if( (n_actions & ManagerIntentAction.INT_SECTOR_INFO) != 0 )
+            filter.addAction(ManagerIntentAction.SECTOR_INFO);
+        if( (n_actions & ManagerIntentAction.INT_ERASE_SECTOR) != 0 )
+            filter.addAction(ManagerIntentAction.ERASE_SECTOR);
+        if( (n_actions & ManagerIntentAction.INT_ERASE_COMPLETE) != 0 )
+            filter.addAction(ManagerIntentAction.ERASE_COMPLETE);
         if( (n_actions & ManagerIntentAction.INT_WRITE_SECTOR) != 0 )
             filter.addAction(ManagerIntentAction.WRITE_SECTOR);
         if( (n_actions & ManagerIntentAction.INT_WRITE_COMPLETE) != 0 )
@@ -257,14 +272,22 @@ public class Tools {
 
         if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_START_BOOT) != 0 )
             filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_START_BOOT);
-        if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE) != 0 )
-            filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE);
+        if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_SECTOR_INFO) != 0 )
+            filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_SECTOR_INFO);
+        if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR) != 0 )
+            filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR);
+        if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_DETAIL_ERASE_INFO) != 0 )
+            filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_DETAIL_ERASE_INFO);
+        if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE) != 0 )
+            filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE);
+
         if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR) != 0 )
             filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR);
         if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_DETAIL_WRITE_INFO) != 0 )
             filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_DETAIL_WRITE_INFO);
         if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE) != 0 )
             filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE);
+
         if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_START_APP) != 0 )
             filter.addAction(ManagerIntentAction.ACTIVITY_UPDATE_START_APP);
         if( (n_actions & ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS) != 0 )
@@ -312,8 +335,16 @@ public class Tools {
                 n_action = ManagerIntentAction.INT_START_BOOTLOADER;
                 continue;
             }
-            if( s_action.equals( ManagerIntentAction.ERASE_FIRMWARE)){
-                n_action = ManagerIntentAction.INT_ERASE_FIRMWARE;
+            if( s_action.equals( ManagerIntentAction.SECTOR_INFO)){
+                n_action = ManagerIntentAction.INT_SECTOR_INFO;
+                continue;
+            }
+            if( s_action.equals( ManagerIntentAction.ERASE_SECTOR)){
+                n_action = ManagerIntentAction.INT_ERASE_SECTOR;
+                continue;
+            }
+            if( s_action.equals( ManagerIntentAction.ERASE_COMPLETE)){
+                n_action = ManagerIntentAction.INT_ERASE_COMPLETE;
                 continue;
             }
             if( s_action.equals( ManagerIntentAction.UPDATE_UID)){
@@ -364,14 +395,23 @@ public class Tools {
                 continue;
             }
             //
-            if( s_action.equals( ManagerIntentAction.ACTIVITY_MAIN_START_BOOT)){
-                n_action = ManagerIntentAction.INT_ACTIVITY_MAIN_START_BOOT;
+            if( s_action.equals( ManagerIntentAction.ACTIVITY_UPDATE_START_BOOT)){
+                n_action = ManagerIntentAction.INT_ACTIVITY_UPDATE_START_BOOT;
                 continue;
             }
-            if( s_action.equals( ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE)){
-                n_action = ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE;
+            if( s_action.equals( ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR)){
+                n_action = ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR;
                 continue;
             }
+            if( s_action.equals( ManagerIntentAction.ACTIVITY_UPDATE_DETAIL_ERASE_INFO)){
+                n_action = ManagerIntentAction.INT_ACTIVITY_UPDATE_DETAIL_ERASE_INFO;
+                continue;
+            }
+            if( s_action.equals( ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE)){
+                n_action = ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE;
+                continue;
+            }
+
             if( s_action.equals( ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR)){
                 n_action = ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR;
                 continue;
@@ -384,6 +424,7 @@ public class Tools {
                 n_action = ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE;
                 continue;
             }
+
             if( s_action.equals( ManagerIntentAction.ACTIVITY_UPDATE_START_APP)){
                 n_action = ManagerIntentAction.INT_ACTIVITY_UPDATE_START_APP;
                 continue;

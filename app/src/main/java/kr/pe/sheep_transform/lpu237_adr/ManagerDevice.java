@@ -916,7 +916,54 @@ class ManagerDevice implements Runnable
         return b_result;
     }
 
-    private boolean _callback_boot_erase_firmware(Context context, Intent intent){
+    private boolean _callback_boot_sector_info(Context context, Intent intent){
+        boolean b_result = false;
+        int n_sector = -1;
+        do{
+            // erase result. here.
+            if( intent == null )
+                continue;
+            ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
+                    intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
+            );
+            n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX,-1);
+
+            if (response.getResult() != TypeRequestResult.RequestResult_success) {
+                continue;
+            }
+            if( !push_requst(TypeRequest.Request_firmware_erase,context ) ){
+                Tools.showOkDialogForErrorTerminate(m_update_activity,"FU08","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_terminate_as));
+            }
+            b_result = true;
+        }while(false);
+        _result_broadcast_to_activity(true,"Erase the Firmware"+String.valueOf(n_sector)+".",context, ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR, b_result, n_sector);
+        return b_result;
+    }
+
+    private boolean _callback_boot_erase_sector(Context context, Intent intent){
+        boolean b_result = false;
+        int n_sector = -1;
+        do{
+            // erase result. here.
+            if( intent == null )
+                continue;
+            ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
+                    intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
+            );
+            n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX,-1);
+
+            if (response.getResult() != TypeRequestResult.RequestResult_success) {
+                continue;
+            }
+            if( !push_requst(TypeRequest.Request_firmware_erase,context ) ){
+                Tools.showOkDialogForErrorTerminate(m_update_activity,"FU08","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_terminate_as));
+            }
+            b_result = true;
+        }while(false);
+        _result_broadcast_to_activity(true,"Erase the Firmware"+String.valueOf(n_sector)+".",context, ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR, b_result, n_sector);
+        return b_result;
+    }
+    private boolean _callback_boot_erase_complete(Context context, Intent intent){
         boolean b_result = false;
         do{
             // erase result. here.
@@ -927,7 +974,7 @@ class ManagerDevice implements Runnable
                 b_result = true;
             }
         }while(false);
-        _result_broadcast_to_activity(true,"Erase the Firmware.",context, ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE, b_result, 0);
+        _result_broadcast_to_activity(true,"Erase the Firmware.",context, ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE, b_result, 0);
         return b_result;
     }
 
@@ -1202,7 +1249,7 @@ class ManagerDevice implements Runnable
         }
         return s_data;
     }
-    public String lpu237_getDecoderMmd1000(){
+    public String lpu237_getDecoder(){
         String s_data = "";
         synchronized (m_lock_device_list) {
             do {
@@ -1211,7 +1258,7 @@ class ManagerDevice implements Runnable
                 if( m_list_devices == null )
                     continue;
                 //
-                s_data = m_list_devices.get(m_n_cur_lpu237).getDecoderMmd1000();
+                s_data = m_list_devices.get(m_n_cur_lpu237).getDecoder();
             } while (false);
         }
         return s_data;
@@ -2246,7 +2293,12 @@ class ManagerDevice implements Runnable
 
         return b_result;
     }
-    boolean bootloader_df_erase_all(){
+
+    /**
+     * get sector info. if gotten the sector info, order array will be adjusted.
+     * @return true - communication success
+     */
+    boolean bootloader_df_get_sector_info(){
         boolean b_result = false;
         synchronized (m_lock_device_list){
             do{
@@ -2254,7 +2306,20 @@ class ManagerDevice implements Runnable
                     continue;
                 if( m_list_bootloader == null )
                     continue;
-                b_result = m_list_bootloader.get(m_n_cur_boorloader).df_erase_all();
+                b_result = m_list_bootloader.get(m_n_cur_boorloader).df_get_sector_info();
+            }while(false);
+        }
+        return b_result;
+    }
+    boolean bootloader_df_erase_one_sector(Context context){
+        boolean b_result = false;
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_boorloader<0 )
+                    continue;
+                if( m_list_bootloader == null )
+                    continue;
+                b_result = m_list_bootloader.get(m_n_cur_boorloader).df_erase_one_sector(context,m_working);
             }while(false);
         }
 
@@ -2274,7 +2339,8 @@ class ManagerDevice implements Runnable
 
         return b_result;
     }
-    public int bootloader_get_current_sector_index(){
+
+    public int bootloader_get_current_write_sector(){
         int n_data = -1;
         synchronized (m_lock_device_list) {
             do {
@@ -2282,12 +2348,26 @@ class ManagerDevice implements Runnable
                     continue;
                 if( m_list_bootloader == null )
                     continue;
-                n_data = m_list_bootloader.get(m_n_cur_boorloader).get_current_sector_index();
+                n_data = m_list_bootloader.get(m_n_cur_boorloader).get_current_write_sector();
             } while (false);
         }
         return n_data;
     }
-    boolean bootloader_is_send_complete(){
+    public int bootloader_get_current_erase_sector(){
+        int n_data = -1;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_boorloader < 0)
+                    continue;
+                if( m_list_bootloader == null )
+                    continue;
+                n_data = m_list_bootloader.get(m_n_cur_boorloader).get_current_erase_sector();
+            } while (false);
+        }
+        return n_data;
+    }
+
+    boolean bootloader_is_write_complete(){
         boolean b_result = false;
         synchronized (m_lock_device_list){
             do{
@@ -2295,7 +2375,21 @@ class ManagerDevice implements Runnable
                     continue;
                 if( m_list_bootloader == null )
                     continue;
-                b_result = m_list_bootloader.get(m_n_cur_boorloader).is_send_complete();
+                b_result = m_list_bootloader.get(m_n_cur_boorloader).is_write_complete();
+            }while(false);
+        }
+
+        return b_result;
+    }
+    boolean bootloader_is_erase_complete(){
+        boolean b_result = false;
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_boorloader<0 )
+                    continue;
+                if( m_list_bootloader == null )
+                    continue;
+                b_result = m_list_bootloader.get(m_n_cur_boorloader).is_erase_complete();
             }while(false);
         }
 
@@ -2338,8 +2432,14 @@ class ManagerDevice implements Runnable
                     case ManagerIntentAction.INT_BOOTLOADER_PERMISSION:
                         b_resut = _callback_boot_bootloader_permission(context, intent);
                         break;
-                    case ManagerIntentAction.INT_ERASE_FIRMWARE:
-                        b_resut = _callback_boot_erase_firmware(context, intent);
+                    case ManagerIntentAction.INT_SECTOR_INFO:
+                        b_resut = _callback_boot_sector_info(context, intent);
+                        break;
+                    case ManagerIntentAction.INT_ERASE_SECTOR:
+                        b_resut = _callback_boot_erase_sector(context, intent);
+                        break;
+                    case ManagerIntentAction.INT_ERASE_COMPLETE:
+                        b_resut = _callback_boot_erase_complete(context, intent);
                         break;
                     case ManagerIntentAction.INT_WRITE_SECTOR:
                         b_resut = _callback_boot_write_sector(context, intent);
@@ -2680,12 +2780,15 @@ class ManagerDevice implements Runnable
         return b_result;
     }
 
-    private boolean _run_firmware_erase(ManagerDevice.Request request)
-    {
+    /**
+     * get sector information from device.( for himalia )
+     * @param request
+     */
+    private boolean _run_get_sector_info(ManagerDevice.Request request){
         boolean b_result = false;
         TypeRequestResult result = TypeRequestResult.RequestResult_error;
-        do {
-            if( !bootloader_df_erase_all() ){
+        do{
+            if( !bootloader_df_get_sector_info() ){
                 continue;
             }
             //
@@ -2693,8 +2796,31 @@ class ManagerDevice implements Runnable
             b_result = true;
         }while(false);
 
-        _result_broadcast_from_worker( ManagerIntentAction.ERASE_FIRMWARE,request, result,-1 );
+        _result_broadcast_from_worker(ManagerIntentAction.SECTOR_INFO, request, result, -1);
+        return b_result;
+    }
+    private boolean _run_firmware_erase(ManagerDevice.Request request)
+    {
+        boolean b_result = false;
+        String s_action = ManagerIntentAction.ERASE_SECTOR;
+        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        do {
+            if( !bootloader_df_erase_one_sector(request.getContext()) ){
+                continue;
+            }
+            //
+            if( bootloader_is_erase_complete() )
+                s_action = ManagerIntentAction.ERASE_COMPLETE;
 
+            result = TypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        int n_sector = bootloader_get_current_erase_sector();
+
+        if( m_working.get() ) {
+            _result_broadcast_from_worker(s_action, request, result, n_sector);
+        }
         return b_result;
     }
 
@@ -2703,24 +2829,20 @@ class ManagerDevice implements Runnable
         boolean b_result = false;
         String s_action = ManagerIntentAction.WRITE_SECTOR;
         TypeRequestResult result = TypeRequestResult.RequestResult_error;
-        int n_sector_index = -1;
         do{
-            n_sector_index = bootloader_get_current_sector_index();
-
             if( !bootloader_df_write_one_sector(request.getContext()) ){
                 continue;
             }
 
-            if( bootloader_is_send_complete() )
+            if( bootloader_is_write_complete() )
                 s_action = ManagerIntentAction.WRITE_COMPLETE;
             //
             result = TypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
-        int n_sector = -1;
-        if( n_sector_index >=0 && n_sector_index< HidBootLoaderSectorOrder.order.length)
-            n_sector = HidBootLoaderSectorOrder.order[n_sector_index];
+        int n_sector = bootloader_get_current_write_sector();
+
         if( m_working.get() )
             _result_broadcast_from_worker( s_action,request, result, n_sector );
 
@@ -2807,6 +2929,9 @@ class ManagerDevice implements Runnable
                     case Request_start_bootloader:
                         b_result = _run_start_bootloader(request);
                         break;
+                    case Request_firmware_sector_info:
+                        b_result = _run_get_sector_info(request);
+                        break;
                     case Request_firmware_erase:
                         b_result = _run_firmware_erase(request);
                         break;
@@ -2842,6 +2967,7 @@ enum TypeRequest{
     Request_get_parameters,
     Request_set_parameters,
     Request_start_bootloader,
+    Request_firmware_sector_info,
     Request_firmware_erase,
     Request_firmware_write,
     Request_run_app,

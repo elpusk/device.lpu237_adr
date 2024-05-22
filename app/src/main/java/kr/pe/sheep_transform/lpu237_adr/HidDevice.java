@@ -126,12 +126,17 @@ public abstract class HidDevice{
                 m_buffer_out.rewind();
                 m_buffer_out.clear();
                 m_buffer_out.put(s_write);
-                m_usbRequestOut.queue(m_buffer_out, m_buffer_out.position());
-                if (m_usbDeviceConnection.requestWait() == m_usbRequestOut) {
+                if(!m_usbRequestOut.queue(m_buffer_out, m_buffer_out.position())){
+                    Log.e("write", "Failed to queue the USB request.");
+                    continue;
+                }
+
+                UsbRequest r = m_usbDeviceConnection.requestWait();
+                if (r == m_usbRequestOut) {
                     //Log.i("write", "ok.\n");
                     n_tx = s_write.length;
                 } else {
-                    Log.i("write", "error.\n");
+                    Log.e("write", "error.\n");
                 }
             }
 
@@ -151,8 +156,14 @@ public abstract class HidDevice{
             synchronized (m_locker){
                 m_buffer_in.rewind();
                 m_buffer_in.clear();
-                m_usbRequestIn.queue(m_buffer_in, m_buffer_in.capacity());
-                if( m_usbDeviceConnection.requestWait() == m_usbRequestIn ){
+
+                if(!m_usbRequestIn.queue(m_buffer_in, m_buffer_in.capacity())){
+                    Log.e("read", "Failed to queue the USB request.");
+                    continue;
+                }
+
+                UsbRequest r = m_usbDeviceConnection.requestWait();
+                if( r == m_usbRequestIn ){
                     //Log.i("read","ok.\n");
                     n_rx = m_buffer_in.position();
                     m_buffer_in.position(0);

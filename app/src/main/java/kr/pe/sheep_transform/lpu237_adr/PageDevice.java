@@ -83,6 +83,10 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
         Tools.selectFirmware(m_activity,this);
     }
 
+    /**
+     * this function will be called when a file is selected for updating firmware.
+     * @param file - the selected firmware
+     */
     public void fileSelected(File file) {
         do {
             Log.d(getClass().getName(), "selected file " + file.toString());
@@ -144,7 +148,7 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
         s_info += ".\n";
 
         s_info += "[=]Decoder : ";
-        s_info += ManagerDevice.getInstance().lpu237_getDecoderMmd1000();
+        s_info += ManagerDevice.getInstance().lpu237_getDecoder();
         s_info += ".\n";
 
         s_info += "[=]MMD1100 reset interval : ";

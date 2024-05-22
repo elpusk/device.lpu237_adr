@@ -168,8 +168,8 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                 m_textview_info.setText("Select a Rom file for updating.");
                 Tools.selectFirmware_with_cancel(this, this, m_listener_file_select_cancel);
             } else {
-                m_textview_info.setText("Please Waits! Erasing the firmware of system.");
-                if (!ManagerDevice.getInstance().push_requst(TypeRequest.Request_firmware_erase, this)) {
+                m_textview_info.setText("Please Waits!  Getting the sector info of system.");
+                if (!ManagerDevice.getInstance().push_requst(TypeRequest.Request_firmware_sector_info, this)) {
                     Tools.showOkDialogForErrorTerminate(this, "FU06", "ERROR", this.getResources().getString(R.string.msg_dialog_error_reboot));
                 }
             }
@@ -289,11 +289,11 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                             dialog.dismiss();
 
                             ManagerDevice.getInstance().set_rom_file(0,m_fw_file,n_index);
-                            m_textview_info.setText("Please Waits! Erasing the firmware of system.");
-                            if (ManagerDevice.getInstance().push_requst(TypeRequest.Request_firmware_erase,UpdateActivity.this)) {
-                                Log.i("fileSelected", "success : Request_firmware_erase");
+                            m_textview_info.setText("Please Waits!  Getting the sector info of system.");
+                            if (ManagerDevice.getInstance().push_requst(TypeRequest.Request_firmware_sector_info,UpdateActivity.this)) {
+                                Log.i("fileSelected", "success : Request_firmware_sector_info");
                             } else {
-                                Log.i("fileSelected", "error : Request_firmware_erase");
+                                Log.i("fileSelected", "error : Request_firmware_sector_info");
                                 Tools.showOkDialogForErrorTerminate(UpdateActivity.this,"FS04","ERROR",UpdateActivity.this.getResources().getString(R.string.msg_dialog_error_reboot));
                             }
                         }
@@ -306,6 +306,12 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
         }while(false);
         return b_result;
     }
+
+    /**
+     * this routine is called when a file in selected.( When the app is starting,
+     * it detects a hidbootloader and try download a firmware for recovering device.)
+     * @param file - the selected file
+     */
     public void fileSelected(File file) {
         do {
             //when selected firmware. your action.
@@ -345,9 +351,19 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                         _callback_start_boot(context, intent);
                         break;
                     //bootloader case
-                    case ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE:
-                        _callback_complete_erase(context, intent);
+                    case ManagerIntentAction.INT_ACTIVITY_UPDATE_SECTOR_INFO:
+                        _callback_sector_info(context, intent);
                         break;
+                    case ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR:
+                        _callback_complete_erase_sector(context, intent);
+                        break;
+                    case ManagerIntentAction.INT_ACTIVITY_UPDATE_DETAIL_ERASE_INFO:
+                        _callback_erase_info(context, intent);
+                        break;
+                    case ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE:
+                        _callback_complete_erase_firmware(context, intent);
+                        break;
+
                     case ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR:
                         _callback_complete_write_sector(context, intent);
                         break;
@@ -357,6 +373,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                     case ManagerIntentAction.INT_ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE:
                         _callback_complete_write_firmware(context, intent);
                         break;
+
                     case ManagerIntentAction.INT_ACTIVITY_UPDATE_START_APP:
                         _callback_start_app(context, intent);
                         break;
@@ -398,22 +415,33 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
             return b_result;
         }
 
-        private boolean _callback_complete_erase(Context context, Intent intent){
+        private boolean _callback_sector_info(Context context, Intent intent){
             boolean b_result =false;
-            String s_info;
-            String s_erase;
+            String s_info="";
+            String s_erase="";
 
             do{
                 b_result = intent.getBooleanExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_BOOL_RESULT_FOR_ACTIVITY,false);
+                int n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INT_RESULT_FOR_ACTIVITY,-1);
+
                 if( !b_result ){
                     s_info = "Please Reboot your system. - FU07.";
-                    s_erase = " ERROR : Erase firmware.";
+                    s_erase = " ERROR : Get Sectors Info."
+                            +String.valueOf(n_sector)
+                            +".";
                     //Toast.makeText(getApplicationContext(), "ERROR : Erase firmware.", Toast.LENGTH_SHORT).show();
+                    continue;
                 }
-                else {
-                    s_info = "Please Waits! Writing the sector 2.(2~7 and 1 sectors)";
-                    s_erase = " SUCCESS : Erase firmware.";
+                //one sector erase ok.
+                if( n_sector == -1 ){
+                    s_erase = " SUCCESS : Erase a sector "
+                            +String.valueOf(n_sector)
+                            +".";
+                    continue;
                 }
+                s_info = "Please Waits! Starting Erase-sector "+String.valueOf(n_sector+1)+".";
+                s_erase = " SUCCESS : Get Sectors Info "+String.valueOf(n_sector)+".";
+
                 m_textview_info.setText(s_info);
                 m_textview_erase.setText(s_erase);
                 if( m_outState != null ){
@@ -421,8 +449,108 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                     m_outState.putString("m_textview_erase", s_erase);
                 }
             }while(false);
+
+            if( !s_info.isEmpty() )
+                m_textview_info.setText(s_info);
+            if( !s_erase.isEmpty() )
+                m_textview_erase.setText(s_erase);
+            if( m_outState != null ){
+                if( !s_info.isEmpty() )
+                    m_outState.putString("m_textview_info", s_info);
+                if( !s_erase.isEmpty() )
+                    m_outState.putString("m_textview_erase", s_erase);
+            }
+
             return b_result;
         }
+        ////////////////////////////
+        // erase
+        private boolean _callback_complete_erase_sector(Context context, Intent intent){
+            boolean b_result =false;
+            String s_info="";
+            String s_erase="";
+
+            do{
+                b_result = intent.getBooleanExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_BOOL_RESULT_FOR_ACTIVITY,false);
+                int n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INT_RESULT_FOR_ACTIVITY,-1);
+
+                if( !b_result ){
+                    s_info = "Please Reboot your system. - FU07.";
+                    s_erase = " ERROR : Erase firmware."
+                            +String.valueOf(n_sector)
+                            +".";
+                    //Toast.makeText(getApplicationContext(), "ERROR : Erase firmware.", Toast.LENGTH_SHORT).show();
+                    continue;
+                }
+                //one sector erase ok.
+                if( n_sector == -1 ){
+                    s_erase = " SUCCESS : Erase a sector "
+                            +String.valueOf(n_sector)
+                            +".";
+                    continue;
+                }
+                s_info = "Please Waits! Erasing the sector "+String.valueOf(n_sector+1)+".";
+                s_erase = " SUCCESS : Erase the sector "+String.valueOf(n_sector)+".";
+
+                m_textview_info.setText(s_info);
+                m_textview_erase.setText(s_erase);
+                if( m_outState != null ){
+                    m_outState.putString("m_textview_info", s_info);
+                    m_outState.putString("m_textview_erase", s_erase);
+                }
+            }while(false);
+
+            if( !s_info.isEmpty() )
+                m_textview_info.setText(s_info);
+            if( !s_erase.isEmpty() )
+                m_textview_erase.setText(s_erase);
+            if( m_outState != null ){
+                if( !s_info.isEmpty() )
+                    m_outState.putString("m_textview_info", s_info);
+                if( !s_erase.isEmpty() )
+                    m_outState.putString("m_textview_erase", s_erase);
+            }
+
+            return b_result;
+        }
+        private boolean _callback_erase_info(Context context, Intent intent){
+            boolean b_result =true;
+            return b_result;
+        }
+        private boolean _callback_complete_erase_firmware(Context context, Intent intent){
+            boolean b_result =false;
+            String s_info="";
+            String s_erase="";
+
+            do{
+                b_result = intent.getBooleanExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_BOOL_RESULT_FOR_ACTIVITY,false);
+                //b_result is always true.
+                if( !b_result ){
+                    s_erase = " ERROR : Complete Erase firmware.";
+                    //Toast.makeText(getApplicationContext(), "ERROR : complete firmware.", Toast.LENGTH_LONG).show();
+                    continue;
+                }
+                s_info = "Please Waits! Starts Writing Sector.";
+                s_erase = " SUCCESS : Erase a Firmware.";
+            }while(false);
+
+            if( !s_info.isEmpty() )
+                m_textview_info.setText(s_info);
+            if( !s_erase.isEmpty() )
+                m_textview_erase.setText(s_erase);
+            if( m_outState != null ){
+                if( !s_info.isEmpty() )
+                    m_outState.putString("m_textview_info", s_info);
+                if( !s_erase.isEmpty() )
+                    m_outState.putString("m_textview_erase", s_erase);
+            }
+
+            return b_result;
+        }
+
+
+        ////////////////////////////
+        // write
         private boolean _callback_complete_write_sector(Context context, Intent intent){
             boolean b_result =false;
             String s_info="";
@@ -447,11 +575,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                             +".";
                     continue;
                 }
-                if( n_sector == 7 )
-                    s_info = "Please Waits! Writing the sector 1.(the last sector)";
-                else
-                    s_info = "Please Waits! Writing the sector "+String.valueOf(n_sector+1)+".(2~7 and 1 sectors)";
-
+                s_info = "Please Waits! Writing the sector";
                 s_write = " SUCCESS : Write the sector "+String.valueOf(n_sector)+".";
             }while(false);
 

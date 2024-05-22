@@ -1,4 +1,12 @@
 # lpu237_adr
+* 2024.05.24 - version 3.1 release
+  + firmware update with rom file.
+  + test OK of ganymede v5.22.
+  + test OK of himalia v2.2.( YOU MUST USE himalia v2.2 greater then equal.)
+    - checked firmware update with lpu23x_00032.rom.
+    - checked recovering system parameters after updating.
+    - checked try firmware recover when app is started.
+
 * 2024.05.20 - developing
   + add i-button range function.
   + fix invalid rom file format error.

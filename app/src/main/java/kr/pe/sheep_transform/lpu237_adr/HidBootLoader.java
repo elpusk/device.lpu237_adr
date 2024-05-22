@@ -17,6 +17,10 @@ interface HidBootLoaderRequest{
     byte cmdRead = 20;
     byte cmdErase = 30;
     byte cmdRunApp = 40;
+
+    //get sector info(from MH1902T), return data field : 4 bytes little endian start sector number,
+    // 4 bytes little endian the number of sector(except boot area)
+    byte cmdGetSectorInfo = 50;
 }
 
 interface  HidBootLoaderResponse{
@@ -28,31 +32,108 @@ interface HidBootLoaderInfo{
     int USB_VID = 0x134b;
     int USB_PID = 0x0243;
 }
-interface HidBootLoaderSectorOrder{
-    int[] order = new int[]{
-            2,3,4,5,6,7,1
-    };
-}
 public class HidBootLoader extends HidDevice{
 
     private Rom m_rom = new Rom();
     private final int SIZE_SECTOR = 4096;
-    private int m_n_cur_sector_index = 0;
     private int m_n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_name;
+
+    private boolean m_b_exist_sector_info = false;
+
+    private SectorOrder m_order_erase = new SectorOrder();
+    private SectorOrder m_order_write = new SectorOrder();
+    public void set_all_order(int n_start_sector, int n_the_number_of_sector){
+        m_order_erase.set_order(n_start_sector,n_the_number_of_sector);
+        m_order_write.set_order(n_start_sector,n_the_number_of_sector);
+    }
+    public void set_order_for_lpc1343(){
+        m_order_erase.initialize_for_lpc1343_erase();
+        m_order_write.initialize_for_lpc1343_write();
+    }
+
+    public boolean set_adjust_order_for_reducing_sector(int n_firmware_size)
+    {
+        boolean b_result = false;
+        int n_reduced_sec = n_firmware_size/SIZE_SECTOR;
+
+        if(n_firmware_size%SIZE_SECTOR != 0){
+            ++n_reduced_sec;
+        }
+
+        ////////////////////////////
+        // adjust erase sectors
+        do {
+            int[] er = m_order_erase.get_order();
+            if(er == null){
+                continue;
+            }
+            if(er.length<=0){
+                continue;
+            }
+
+            if(m_order_erase.get_the_number_of_sectors()<n_reduced_sec){
+                continue;
+            }
+            b_result = true;
+            if(m_order_erase.get_the_number_of_sectors() == n_reduced_sec){
+                continue;//no need reduce.
+            }
+
+            int[] r = new int[n_reduced_sec+1];
+            System.arraycopy(er,0,r,0,n_reduced_sec);
+            r[n_reduced_sec] = er[er.length-1];//the last sector is system parameter erase. therefore must be erased.
+            m_order_erase.set_order(r);
+        }while (false);
+
+        if(!b_result){
+            return b_result;//error
+        }
+
+        b_result = false;
+
+        ////////////////////////////
+        // adjust write sectors
+        do {
+            if(m_order_write.get_the_number_of_sectors()<n_reduced_sec){
+                continue;
+            }
+            b_result = true;
+            if(m_order_write.get_the_number_of_sectors() > n_reduced_sec){
+                //reduce.
+                m_order_write.resize(n_reduced_sec);
+            }
+
+            int[] wr = m_order_write.get_order();
+            int[] r = new int[wr.length];
+            System.arraycopy(wr,1,r,0,wr.length-1);
+            r[r.length-1] = wr[0];//the first sector must be written at the last.
+            m_order_write.set_order(r);
+        }while (false);
+
+        return b_result;
+    }
+
+    public boolean is_exist_sector_info(){
+        return m_b_exist_sector_info;
+    }
 
     public int get_fw_index(){
         return m_n_fw_index;
     }
 
-    public boolean is_send_complete(){
-        if( m_n_cur_sector_index >= HidBootLoaderSectorOrder.order.length)
-            return true;
-        else
-            return false;
+    public boolean is_write_complete(){
+        return m_order_write.is_compete();
     }
-    public int get_current_sector_index(){
-        return m_n_cur_sector_index;
+    public int get_current_write_sector(){
+        return m_order_write.get_current_sector_number();
     }
+    public boolean is_erase_complete(){
+        return m_order_erase.is_compete();
+    }
+    public int get_current_erase_sector(){
+        return m_order_erase.get_current_sector_number();
+    }
+
     @Override
     public int get_vid() {
         return 0x134b;
@@ -586,10 +667,14 @@ public class HidBootLoader extends HidDevice{
         do{
             if( m_n_fw_index < 0 )
                 continue;
-            if( m_n_cur_sector_index >= HidBootLoaderSectorOrder.order.length )
+            if(m_order_write.is_compete()){
                 continue;
+            }
 
-            int n_sector = HidBootLoaderSectorOrder.order[m_n_cur_sector_index];
+            int n_sector = m_order_write.get_current_sector_number();
+            if(n_sector<0){
+                continue;
+            }
             byte[] s_data = new byte[get_out_report_size()-OutPacket.SizeHeader];
             byte[] s_data_last = new byte[SIZE_SECTOR%s_data.length];
             byte[] ps_data = null;
@@ -601,7 +686,7 @@ public class HidBootLoader extends HidDevice{
             int n_rx = 0;
             boolean b_run = true;
             int n_remainder = SIZE_SECTOR;
-            int n_offset_fw_data = (n_sector-1)*SIZE_SECTOR;
+            int n_offset_fw_data = (m_order_write.get_relative_currnet_sector_number_from_min_sector())*SIZE_SECTOR;
 
             if( !this.open() ){
                 continue;
@@ -626,7 +711,7 @@ public class HidBootLoader extends HidDevice{
                 if( n_read == 0 ){
                     b_result = true;
                     b_run = false;
-                    m_n_cur_sector_index++;
+                    m_order_write.increased_index();
                     continue;//exit while
                 }
 
@@ -670,7 +755,7 @@ public class HidBootLoader extends HidDevice{
                 if( n_remainder <= 0 || n_read < s_data.length ){
                     b_result = true;
                     b_run = false;
-                    m_n_cur_sector_index++;
+                    m_order_write.increased_index();
                 }
                 if( !b_parent_run.get()) {
                     b_result = false;
@@ -760,12 +845,92 @@ public class HidBootLoader extends HidDevice{
         return b_result;
     }
 
-    public boolean df_erase_all(){
+    public boolean df_get_sector_info(){
+        boolean b_result = false;
+        boolean b_close = false;
+
+        m_b_exist_sector_info = false;
+        set_order_for_lpc1343();
+
+        do{
+            OutPacket out_p = new OutPacket(get_out_report_size(), HidBootLoaderRequest.cmdGetSectorInfo, (int)0,(short)0,null);
+            int n_tx = 0;
+            int n_rx = 0;
+
+            if( !this.open() )
+                continue;
+
+            b_close = true;
+
+            n_tx = this.write(out_p.get_raw_packet());
+            if( n_tx != get_out_report_size() ){
+                continue;
+            }
+            //get response.
+            InPacket in_p = new InPacket(this.get_in_report_size());
+            n_rx = _read_with_passing_zeros_response( in_p );
+            if( n_rx != get_in_report_size() ){
+                continue;//error
+            }
+
+            b_result = true;
+
+            if( in_p.is_success() ) {
+                m_b_exist_sector_info = true;
+
+                byte[] s_ss = in_p.get_data_field(0,4);
+                byte[] s_sa = in_p.get_data_field(4,4);
+                int n_start = IntByteConvert.byteToInt(s_ss,ByteOrder.LITTLE_ENDIAN);
+                int n_size = IntByteConvert.byteToInt(s_sa,ByteOrder.LITTLE_ENDIAN);
+                set_all_order(n_start,n_size);
+                set_adjust_order_for_reducing_sector(m_rom.get_firmware_size());
+            }
+            else{
+                //may be not support device(LPC1343)
+                set_order_for_lpc1343();
+            }
+        }while(false);
+
+        if( b_close ){
+            this.close();
+        }
+        return b_result;
+    }
+    public boolean df_erase_one_sector(Context context, AtomicBoolean b_parent_run){
+        boolean b_result = false;
+
+        do{
+            if(m_order_erase.is_compete()){
+                continue;
+            }
+            int n_sector = m_order_erase.get_current_sector_number();
+            if(n_sector<0){
+                continue;
+            }
+
+            b_result = _df_erase_sector(n_sector);//For LPC1343 chip
+
+            if( context != null){
+                //send intent to updateActivitiy.
+                Intent intent = new Intent(ManagerIntentAction.ACTIVITY_UPDATE_DETAIL_ERASE_INFO);
+                intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR, n_sector);
+                context.sendBroadcast(intent);
+            }
+
+        }while (false);
+
+        if(b_result){
+            m_order_erase.increased_index();
+        }
+        return b_result;
+    }
+
+    private boolean _df_erase_sector(int n_erase_sector_number){
         boolean b_result = false;
         boolean b_close = false;
 
         do{
-            OutPacket out_p = new OutPacket(get_out_report_size(), HidBootLoaderRequest.cmdErase, (int)1,(short)0,null);
+            OutPacket out_p = new OutPacket(get_out_report_size(), HidBootLoaderRequest.cmdErase, (int)n_erase_sector_number,(short)0,null);
             int n_tx = 0;
             int n_rx = 0;
 
@@ -817,7 +982,6 @@ public class HidBootLoader extends HidDevice{
             if( m_rom.set_firmware(m_n_fw_index) != RomResult.result_success )
                 continue;
             //
-            m_n_cur_sector_index = 0;
             b_result = true;
         }while(false);
         return b_result;
@@ -840,7 +1004,6 @@ public class HidBootLoader extends HidDevice{
             if( m_rom.set_firmware(m_n_fw_index) != RomResult.result_success )
                 continue;
             //
-            m_n_cur_sector_index = 0;
             b_result = true;
         }while(false);
         return b_result;

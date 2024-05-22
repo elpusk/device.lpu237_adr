@@ -439,6 +439,18 @@ public class Rom {
 
     }
 
+    public int get_firmware_size(){
+        int n_size = -1;
+
+        do{
+            if(m_firmware == null){
+                continue;
+            }
+
+            n_size = m_firmware.get_size();
+        }while (false);
+        return n_size;
+    }
     public int set_firmware( int n_index ){
         int n_result = RomResult.result_error;
 
