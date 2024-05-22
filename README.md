@@ -1,4 +1,8 @@
 # lpu237_adr
+* 2024.05.24 - version 3.1.1 release
+  + change for building apk in release.
+  + build release test signed version apk
+
 * 2024.05.24 - version 3.1 release
   + firmware update with rom file.
   + test OK of ganymede v5.22.

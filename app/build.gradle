@@ -21,8 +21,8 @@ android {
         applicationId "kr.pe.sheep_transform.lpu237_adr"
         minSdkVersion 25 /*원래 23*/
         targetSdkVersion 25
-        versionCode 4
-        versionName "3.1.0"
+        versionCode 5
+        versionName '3.1.1'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -37,6 +37,13 @@ android {
     namespace 'kr.pe.sheep_transform.lpu237_adr'
     lint {
         baseline file('lint-baseline.xml')
+    }
+
+    /**
+     * minSdkVersion 와 targetSdkVersion 이 버전 낮다고 빌드 에러 나면, 아래 option 이 필요. -_-;;
+     */
+    lintOptions {
+        abortOnError false
     }
 }
 

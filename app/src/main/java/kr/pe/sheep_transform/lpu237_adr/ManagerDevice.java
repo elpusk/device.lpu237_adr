@@ -715,7 +715,12 @@ class ManagerDevice implements Runnable
                 Toast.makeText(m_application, "ERROR : You must accept that your device is accessed.", Toast.LENGTH_LONG).show();
                 //retry permission.
                 PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(m_application, 0, new Intent(ManagerIntentAction.LPU237_PERMISSION), 0);
+                        PendingIntent.getBroadcast(
+                                m_application,
+                                0,
+                                new Intent(ManagerIntentAction.LPU237_PERMISSION),
+                                PendingIntent.FLAG_MUTABLE
+                        );
                 m_usbManager.requestPermission(device, pendingIntent);
             }
 
@@ -748,7 +753,12 @@ class ManagerDevice implements Runnable
                 Toast.makeText(m_application, "ERROR : You must accept that your device is accessed.", Toast.LENGTH_LONG).show();
                 //retry permission.
                 PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(m_application, 0, new Intent(ManagerIntentAction.LPU237_PERMISSION), 0);
+                        PendingIntent.getBroadcast(
+                                m_application,
+                                0,
+                                new Intent(ManagerIntentAction.LPU237_PERMISSION),
+                                PendingIntent.FLAG_MUTABLE
+                        );
                 m_usbManager.requestPermission(device, pendingIntent);
             }
 
@@ -869,7 +879,12 @@ class ManagerDevice implements Runnable
                 Toast.makeText(m_application, "ERROR : You must accept that your device is accessed.", Toast.LENGTH_SHORT).show();
                 //retry permission.
                 PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(m_application, 0, new Intent(ManagerIntentAction.BOOTLOADER_PERMISSION), 0);
+                        PendingIntent.getBroadcast(
+                                m_application,
+                                0,
+                                new Intent(ManagerIntentAction.BOOTLOADER_PERMISSION),
+                                PendingIntent.FLAG_MUTABLE
+                        );
                 m_usbManager.requestPermission(device, pendingIntent);
             }
 
@@ -907,7 +922,12 @@ class ManagerDevice implements Runnable
                 Toast.makeText(m_application, "ERROR : You must accept that your device is accessed.", Toast.LENGTH_SHORT).show();
                 //retry permission.
                 PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(m_application, 0, new Intent(ManagerIntentAction.BOOTLOADER_PERMISSION), 0);
+                        PendingIntent.getBroadcast(
+                                m_application,
+                                0,
+                                new Intent(ManagerIntentAction.BOOTLOADER_PERMISSION),
+                                PendingIntent.FLAG_MUTABLE
+                        );
                 m_usbManager.requestPermission(device, pendingIntent);
             }
 
@@ -2566,7 +2586,8 @@ class ManagerDevice implements Runnable
                                     request.getContext()//m_application
                                     , 0
                                     , new Intent(ManagerIntentAction.LPU237_PERMISSION)
-                                    , 0);
+                                    , PendingIntent.FLAG_MUTABLE
+                            );
                     m_usbManager.requestPermission(device, pendingIntent);
                     result = TypeRequestResult.RequestResult_success;
                     b_result = true;
@@ -2578,7 +2599,8 @@ class ManagerDevice implements Runnable
                                     request.getContext()//m_application
                                     , 0
                                     , new Intent(ManagerIntentAction.BOOTLOADER_PERMISSION)
-                                    , 0);
+                                    , PendingIntent.FLAG_MUTABLE
+                            );
                     m_usbManager.requestPermission(device, pendingIntent);
                     result = TypeRequestResult.RequestResult_success;
                     b_result = true;
