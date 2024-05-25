@@ -1,10 +1,12 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;//android.support.v4.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;//android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,8 +35,6 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
     private TextView m_textview_info;
     private Button m_button_update;
     private String m_s_info = "";
-
-    public  static final int REQUEST_LOADFROM_EXTERNAL_STORAGE = 2;
 
     public PageDevice(AppCompatActivity activity ) {
         do {
@@ -65,22 +65,26 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
             String[] PERMISSIONS_STORAGE = {
                     Manifest.permission.READ_EXTERNAL_STORAGE
             };
-
-            if (ContextCompat.checkSelfPermission( m_activity,Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(m_activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(
                         m_activity,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        REQUEST_LOADFROM_EXTERNAL_STORAGE
+                        RequestCode.LOADFROM_EXTERNAL_STORAGE
                 );
-            }
-            else{
+            } else {
                 select_firmware();
             }
         }while(false);
     }
 
     public void select_firmware(){
-        Tools.selectFirmware(m_activity,this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // 현재 API 레벨이 29 (안드로이드 10) 이상인 경우 실행할 코드
+            Tools.selectFirmwareGreaterThenEqualApi29(m_activity);
+        }
+        else{
+            Tools.selectFirmwareLessApi29(m_activity, this);
+        }
     }
 
     /**
@@ -129,6 +133,9 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
     }
 
     public void display_device_information( int n_index  ){
+        String s_v = ManagerDevice.getInstance().lpu237_getVersionSystem();
+        String s_n = ManagerDevice.getInstance().lpu237_getName();
+
         String s_info = "@System version : ";
         s_info += ManagerDevice.getInstance().lpu237_getVersionSystem();
         s_info += ".\n";
@@ -151,10 +158,11 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
         s_info += ManagerDevice.getInstance().lpu237_getDecoder();
         s_info += ".\n";
 
-        s_info += "[=]MMD1100 reset interval : ";
-        s_info += ManagerDevice.getInstance().lpu237_getMmd1100ResetInterval();
-        s_info += ".\n";
-
+        if(Lpu237Tools.is_support_mmd1100_reset(s_n,s_v)) {
+            s_info += "[=]MMD1100 reset interval : ";
+            s_info += ManagerDevice.getInstance().lpu237_getMmd1100ResetInterval();
+            s_info += ".\n";
+        }
 
         s_info += "[=]Device Interface : ";
         s_info += ManagerDevice.getInstance().lpu237_getInterface();

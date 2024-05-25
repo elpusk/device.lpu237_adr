@@ -1,5 +1,6 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
+import android.Manifest;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -7,7 +8,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Environment;
+import androidx.core.app.ActivityCompat;//android.support.v4.app.ActivityCompat;
+import androidx.core.content.ContextCompat;//android.support.v4.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import android.hardware.usb.*;
@@ -200,6 +207,7 @@ class ManagerDevice implements Runnable
 
     private Boolean m_b_waits_attach_bootloader = false;
 
+    private PageDevice m_debug_device = null;
     /**
      *
      * @param rom_file using rom file
@@ -652,7 +660,6 @@ class ManagerDevice implements Runnable
         }while(false);
         return b_result;
     }
-
     private boolean _callback_normal_detached(Context context, Intent intent){
         boolean b_result = false;
         do{
@@ -668,6 +675,29 @@ class ManagerDevice implements Runnable
             b_result = true;
         }while(false);
         return b_result;
+    }
+    private void _test_file_select(AppCompatActivity act){
+        // firmware update button
+
+        do {
+            String state = Environment.getExternalStorageState();
+            if (!Environment.MEDIA_MOUNTED.equals(state)) {
+                return;
+            }
+
+            String[] PERMISSIONS_STORAGE = {
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            };
+            if (ContextCompat.checkSelfPermission(act, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        act,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        RequestCode.LOADFROM_EXTERNAL_STORAGE
+                );
+            } else {
+                m_debug_device.select_firmware();
+            }
+        }while(false);
     }
 
     private boolean _callback_update_list_no_device(Context context, Intent intent){
@@ -688,7 +718,13 @@ class ManagerDevice implements Runnable
                 }
                 else if( m_startup_activiy != null ) {
                     available_context = m_startup_activiy;
-                    Tools.showOkDialogForErrorTerminate(available_context,"FN01","ERROR",available_context.getResources().getString(R.string.msg_dialog_no_device_terminate));
+                    if(DebugDefine.WhenNoDeviceFileSelect) {
+                        m_debug_device = new PageDevice(m_startup_activiy);
+                        _test_file_select(m_startup_activiy);//for debugg
+                    }
+                    else {
+                        Tools.showOkDialogForErrorTerminate(available_context, "FN01", "ERROR", available_context.getResources().getString(R.string.msg_dialog_no_device_terminate));
+                    }
                 }
                 else
                     available_context = context;
@@ -1293,6 +1329,34 @@ class ManagerDevice implements Runnable
                     continue;
                 //
                 s_data = m_list_devices.get(m_n_cur_lpu237).getInterface();
+            } while (false);
+        }
+        return s_data;
+    }
+    public String[] lpu237_getAvailableAlliButtonTypesDescription(){
+        String[] s_data = null;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                s_data = m_list_devices.get(m_n_cur_lpu237).getAvailableAlliButtonTypesDescription();
+            } while (false);
+        }
+        return s_data;
+    }
+    public  String[] lpu237_getAvailableAllInterfaces(){
+        String[] s_data = null;
+        synchronized (m_lock_device_list) {
+            do {
+                if (m_n_cur_lpu237 < 0)
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                //
+                s_data = m_list_devices.get(m_n_cur_lpu237).getAvailableAllInterfaces();
             } while (false);
         }
         return s_data;
@@ -2155,6 +2219,21 @@ class ManagerDevice implements Runnable
 
         return b_result;
     }
+
+    boolean lpu237_df_get_ibutton_only_type(){
+        boolean b_result = false;
+        synchronized (m_lock_device_list){
+            do{
+                if( m_n_cur_lpu237<0 )
+                    continue;
+                if( m_list_devices == null )
+                    continue;
+                b_result = m_list_devices.get(m_n_cur_lpu237).df_get_ibutton_only_type();
+            }while(false);
+        }
+
+        return b_result;
+    }
     boolean lpu237_df_get_uid(){
         boolean b_result = false;
         synchronized (m_lock_device_list){
@@ -2183,7 +2262,7 @@ class ManagerDevice implements Runnable
 
         return b_result;
     }
-    boolean lpu237_get_version_structure(){
+    boolean lpu237_df_get_version_structure(){
         boolean b_result = false;
         synchronized (m_lock_device_list){
             do{
@@ -2639,14 +2718,6 @@ class ManagerDevice implements Runnable
             }
             b_need_leave_config = true;
 
-            if( !lpu237_df_get_uid() ){
-                Log.i("run","error : df_get_uid");
-                continue;
-            }
-            if( !lpu237_df_get_type() ){
-                Log.i("run","error : df_get_type");
-                continue;
-            }
             if( !lpu237_df_get_name() ){
                 Log.i("run","error : lpu237_df_get_name");
                 continue;
@@ -2655,8 +2726,17 @@ class ManagerDevice implements Runnable
                 Log.i("run","error : lpu237_df_get_version_system");
                 continue;
             }
-            if( !lpu237_get_version_structure() ){
-                Log.i("run","error : lpu237_get_version_structure");
+            if( !lpu237_df_get_ibutton_only_type()) {
+                Log.i("run","error : lpu237_df_get_ibutton_only_type");
+                continue;
+            }
+
+            if( !lpu237_df_get_uid() ){
+                Log.i("run","error : df_get_uid");
+                continue;
+            }
+            if( !lpu237_df_get_type() ){
+                Log.i("run","error : df_get_type");
                 continue;
             }
 

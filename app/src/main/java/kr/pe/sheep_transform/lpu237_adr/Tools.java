@@ -8,6 +8,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Environment;
+import android.os.Build;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -15,6 +17,15 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import static java.util.Arrays.copyOf;
+
+interface DebugDefine{
+    boolean WhenNoDeviceFileSelect = true;
+}
+
+interface RequestCode{
+    int LOADFROM_EXTERNAL_STORAGE = 2;
+    int OPEN_ROM_FILE = 3;
+}
 
 interface ManagerIntentAction{
 
@@ -578,24 +589,33 @@ public class Tools {
         builder.show();
     }
 
+    static public void selectFirmwareGreaterThenEqualApi29(Activity activity){
+        //open file picker
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/octet-stream", "application/rom"});
 
-    static public void selectFirmware(Activity activity,FileDialog.FileSelectedListener listener){
+        //startActivityForResult(intent, REQUEST_CODE_OPEN_DOCUMENT);
+    }
+    static public void selectFirmwareLessApi29(Activity activity,FileDialog.FileSelectedListener listener){
         do{
+            // 현재 API 레벨이 29 미만인 경우 실행할 코드
             String s_legacyPath = System.getenv("EXTERNAL_STORAGE");
-
             String s_secondaryPath = System.getenv("SECONDARY_STORAGE");
 
-            //File mPath = new File(Environment.getExternalStorageDirectory() + "//");
-            File mPath = new File(s_legacyPath + "//");
-            //FileDialog fileDialog = new FileDialog(m_activity, mPath, ".rom");
-            FileDialog fileDialog = new FileDialog(activity, mPath, null);
+            File mPath = new File(Environment.getExternalStorageDirectory() + "//");
+            //File mPath = new File(s_legacyPath + "//");
+
+            //FileDialog fileDialog = new FileDialog(activity, mPath, null);
+            FileDialog fileDialog = new FileDialog(activity, mPath, ".rom");
             fileDialog.addFileListener(listener);
 
             fileDialog.showDialog();
 
         }while(false);
     }
-    static public void selectFirmware_with_cancel(
+    static public void selectFirmwareLessApi29_with_cancel(
             Activity activity
             ,FileDialog.FileSelectedListener listener
             ,DialogInterface.OnCancelListener listener_cancel
@@ -603,13 +623,12 @@ public class Tools {
     {
         do{
             String s_legacyPath = System.getenv("EXTERNAL_STORAGE");
-
             String s_secondaryPath = System.getenv("SECONDARY_STORAGE");
 
-            //File mPath = new File(Environment.getExternalStorageDirectory() + "//");
-            File mPath = new File(s_legacyPath + "//");
-            //FileDialog fileDialog = new FileDialog(m_activity, mPath, ".rom");
-            FileDialog fileDialog = new FileDialog(activity, mPath, null);
+            File mPath = new File(Environment.getExternalStorageDirectory() + "//");
+            //File mPath = new File(s_legacyPath + "//");
+            FileDialog fileDialog = new FileDialog(activity, mPath, ".rom");
+            //FileDialog fileDialog = new FileDialog(activity, mPath, null);
             fileDialog.addFileListener(listener);
 
             fileDialog.showDialog(listener_cancel);

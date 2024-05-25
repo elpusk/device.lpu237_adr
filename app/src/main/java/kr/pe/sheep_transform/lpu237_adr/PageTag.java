@@ -1,6 +1,6 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
 import android.widget.TextView;
 
 public class PageTag {

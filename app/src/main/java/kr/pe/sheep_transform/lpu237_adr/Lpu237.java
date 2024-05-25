@@ -84,9 +84,9 @@ interface Lpu237Interface{
 }
 
 interface Lpu237InterfaceString{
-    String sUsbKeyboard = "USB Keyboard mode";
-    String sUsbHid = "USB HID Vendor mode";
-    String sRS232 = "RS232 mode";
+    String sUsbKeyboard = "USB Keyboard";
+    String sUsbHid = "USB HID Vendor";
+    String sRS232 = "RS232";
     String sUsbVCom = "USB Virtual COM";
 }
 
@@ -518,6 +518,14 @@ interface Lpu237iButtonType{
 
     int None = 4;//pre.post position is defined by user.
 }
+interface Lpu237iButtonTypeDescriptionString{
+    String Zeros = "Send Zero 16 times When i-button is removed";
+    String Zeros7 = "Send Zero 7 times When i-button is removed";
+    String F12 = "Send F12 When i-button is removed";
+    String Addmit = "Send by Code stick protocol";
+
+    String None = "User definition";
+}
 
 interface Lpu237Info{
     int USB_VID = 0x134b;
@@ -551,6 +559,181 @@ public class Lpu237 extends HidDevice
     //
     private HashSet<Integer> m_set_changed = new HashSet<>();// data set is Lpu237ChangedParameter's member
 
+    static public int[] convert_ibutton_mode_description_string_to_type_number(String[] s_type){
+        int[] n_type = null;
+        if(s_type==null){
+            return n_type;
+        }
+
+        //check type
+        for(int i=0; i<s_type.length; i++){
+            switch (s_type[i]){
+                case Lpu237iButtonTypeDescriptionString.Zeros:
+                case Lpu237iButtonTypeDescriptionString.Zeros7:
+                case Lpu237iButtonTypeDescriptionString.F12:
+                case Lpu237iButtonTypeDescriptionString.Addmit:
+                case Lpu237iButtonTypeDescriptionString.None:
+                    break;
+                default:
+                    return n_type;
+            }//end switch
+        }//end for
+
+        n_type = new int[s_type.length];
+        for(int i=0; i<s_type.length; i++){
+            switch (s_type[i]){
+                case Lpu237iButtonTypeDescriptionString.Zeros:
+                    n_type[i] = Lpu237iButtonType.Zeros;
+                    break;
+                case Lpu237iButtonTypeDescriptionString.Zeros7:
+                    n_type[i] = Lpu237iButtonType.Zeros7;
+                    break;
+                case Lpu237iButtonTypeDescriptionString.F12:
+                    n_type[i] = Lpu237iButtonType.F12;
+                    break;
+                case Lpu237iButtonTypeDescriptionString.Addmit:
+                    n_type[i] = Lpu237iButtonType.Addmit;
+                    break;
+                case Lpu237iButtonTypeDescriptionString.None:
+                    n_type[i] = Lpu237iButtonType.None;
+                    break;
+                default:
+                    break;
+            }//end switch
+        }//end for
+        return n_type;
+    }
+    static public String[] convert_ibutton_mode_type_number_to_description_string(int[] n_type){
+        String[] s_type = null;
+        if(n_type==null){
+            return s_type;
+        }
+
+        //check type
+        for(int i=0; i<n_type.length; i++){
+            switch (n_type[i]){
+            case Lpu237iButtonType.Zeros:
+            case Lpu237iButtonType.Zeros7:
+            case Lpu237iButtonType.F12:
+            case Lpu237iButtonType.Addmit:
+            case Lpu237iButtonType.None:
+                break;
+            default:
+                return s_type;
+            }//end switch
+        }//end for
+
+        s_type = new String[n_type.length];
+        for(int i=0; i<n_type.length; i++){
+            switch (n_type[i]){
+                case Lpu237iButtonType.Zeros:
+                    s_type[i] = Lpu237iButtonTypeDescriptionString.Zeros;
+                    break;
+                case Lpu237iButtonType.Zeros7:
+                    s_type[i] = Lpu237iButtonTypeDescriptionString.Zeros7;
+                    break;
+                case Lpu237iButtonType.F12:
+                    s_type[i] = Lpu237iButtonTypeDescriptionString.F12;
+                    break;
+                case Lpu237iButtonType.Addmit:
+                    s_type[i] = Lpu237iButtonTypeDescriptionString.Addmit;
+                    break;
+                case Lpu237iButtonType.None:
+                    s_type[i] = Lpu237iButtonTypeDescriptionString.None;
+                    break;
+                default:
+                    break;
+            }//end switch
+        }//end for
+        return s_type;
+    }
+    static public String[] convert_interface_type_number_to_string(int[] n_inf){
+        String[] s_inf = null;
+
+        if(n_inf==null){
+            return s_inf;
+        }
+
+        //checks vaild
+        for(int i=0; i<n_inf.length; i++){
+            switch (n_inf[i]){
+                case Lpu237Interface.usbKeyboard:
+                case Lpu237Interface.usbVendorHid:
+                case Lpu237Interface.uart:
+                case Lpu237Interface.usbVCom:
+                    break;
+                default:
+                    return s_inf;
+            }//end switch
+        }//end for
+
+        s_inf = new String[n_inf.length];
+        //converts
+        for(int i=0; i<n_inf.length; i++){
+            switch (n_inf[i]){
+                case Lpu237Interface.usbKeyboard:
+                    s_inf[i] = Lpu237InterfaceString.sUsbKeyboard;
+                    break;
+                case Lpu237Interface.usbVendorHid:
+                    s_inf[i] = Lpu237InterfaceString.sUsbHid;
+                    break;
+                case Lpu237Interface.uart:
+                    s_inf[i] = Lpu237InterfaceString.sRS232;
+                    break;
+                case Lpu237Interface.usbVCom:
+                    s_inf[i] = Lpu237InterfaceString.sUsbVCom;
+                    break;
+                default:
+                    break;
+            }//end switch
+        }//end for
+
+        return s_inf;
+    }
+    static public int[] convert_interface_type_string_to_number(String[] s_inf){
+        int[] n_inf = null;
+
+        boolean b_valid = true;
+        if(s_inf==null){
+            return n_inf;
+        }
+
+        //checks vaild
+        for(int i=0; i<s_inf.length; i++){
+            switch (s_inf[i]){
+                case Lpu237InterfaceString.sUsbKeyboard:
+                case Lpu237InterfaceString.sUsbHid:
+                case Lpu237InterfaceString.sRS232:
+                case Lpu237InterfaceString.sUsbVCom:
+                    break;
+                default:
+                    return n_inf;
+            }//end switch
+        }//end for
+
+        n_inf = new int[s_inf.length];
+        //converts
+        for(int i=0; i<s_inf.length; i++){
+            switch (s_inf[i]){
+                case Lpu237InterfaceString.sUsbKeyboard:
+                    n_inf[i] = Lpu237Interface.usbKeyboard;
+                    break;
+                case Lpu237InterfaceString.sUsbHid:
+                    n_inf[i] = Lpu237Interface.usbVendorHid;
+                    break;
+                case Lpu237InterfaceString.sRS232:
+                    n_inf[i] = Lpu237Interface.uart;
+                    break;
+                case Lpu237InterfaceString.sUsbVCom:
+                    n_inf[i] = Lpu237Interface.usbVCom;
+                    break;
+                default:
+                    break;
+            }//end switch
+        }//end for
+
+        return n_inf;
+    }
     public boolean is_changed(){
         return !m_set_changed.isEmpty();
     }
@@ -572,6 +755,10 @@ public class Lpu237 extends HidDevice
         return Lpu237Info.USB_PID;
     }
 
+    /**
+     * get USB interface number
+     * @return the interface number of LPU237 device.
+     */
     @Override
     public int get_interface_number() {
         return Lpu237Info.USB_INF;
@@ -641,6 +828,68 @@ public class Lpu237 extends HidDevice
         return s_type;
     }
 
+    public String[] getAvailableAlliButtonTypesDescription(){
+        return Lpu237.convert_ibutton_mode_type_number_to_description_string(
+                get_available_all_ibutton_types()
+        );
+    }
+    public int[] get_available_all_ibutton_types(){
+        int[] n_type = null;
+        String s_n = getName();
+        String s_v = getVersionSystem();
+        do {
+            if(Lpu237Tools.is_support_ibutton_send_setting_16zeros_f12_7zeros_on_remove_in_kb_mode(s_n,s_v)){
+                n_type = new int[]{
+                        Lpu237iButtonType.Zeros,
+                        Lpu237iButtonType.Zeros7,
+                        Lpu237iButtonType.F12,
+                        Lpu237iButtonType.Addmit,
+                        Lpu237iButtonType.None
+                };
+                continue;
+            }
+            if(Lpu237Tools.is_support_ibutton_code_stick(s_n,s_v)){
+                n_type = new int[]{
+                        Lpu237iButtonType.Zeros,
+                        Lpu237iButtonType.Zeros7,
+                        Lpu237iButtonType.F12,
+                        Lpu237iButtonType.Addmit
+                };
+                continue;
+            }
+            if(Lpu237Tools.is_support_ibutton_send_none_16zeros_f12_7zeros_on_remove_in_kb_mode(s_n,s_v)){
+                n_type = new int[]{
+                        Lpu237iButtonType.Zeros,
+                        Lpu237iButtonType.Zeros7,
+                        Lpu237iButtonType.F12,
+                        Lpu237iButtonType.None
+                };
+                continue;
+            }
+            if(Lpu237Tools.is_support_ibutton_send_none_16zeros_f12_on_remove_in_kb_mode(s_n,s_v)){
+                n_type = new int[]{
+                        Lpu237iButtonType.Zeros,
+                        Lpu237iButtonType.F12,
+                        Lpu237iButtonType.None
+                };
+                continue;
+            }
+            if(Lpu237Tools.is_support_ibutton_send_only_f12_on_remove_in_kb_mode(s_n,s_v)){
+                n_type = new int[]{
+                        Lpu237iButtonType.F12
+                };
+                continue;
+            }
+
+            if (Lpu237Tools.is_support_ibutton_send_only_16zeros_on_remove_in_kb_mode(s_n,s_v)) {
+                n_type = new int[]{
+                        Lpu237iButtonType.Zeros
+                };
+            }
+
+        }while (false);
+        return n_type;
+    }
     public String getDeviceType(){
         String s_type = "unknown";
 
@@ -734,17 +983,55 @@ public class Lpu237 extends HidDevice
     public int get_interface(){
         return m_parameters.get_interface();
     }
+    public int[] get_available_all_interfaces(){
+        int[] n_inf = null;
+        String s_n = getName();
+        boolean b_support_vcom = false;
+        if(Lpu237Tools.is_device_name_of_lpu238(s_n)){
+            b_support_vcom = true;
+        }
+
+        switch(ManagerDevice.getInstance().lpu237_get_device_type()){
+            case Lpu237DeviceType.Compact:
+                if(b_support_vcom){
+                    n_inf = new int[]{Lpu237Interface.usbVendorHid,Lpu237Interface.usbVCom};
+                }
+                else {
+                    n_inf = new int[]{Lpu237Interface.usbKeyboard, Lpu237Interface.usbVendorHid};
+                }
+                break;
+            case Lpu237DeviceType.IbuttonOlny:
+            default://may be Lpu237DeviceType.Standard
+                if(b_support_vcom){
+                    n_inf = new int[]{Lpu237Interface.usbVendorHid, Lpu237Interface.uart,Lpu237Interface.usbVCom};
+                }
+                else {
+                    n_inf = new int[]{Lpu237Interface.usbKeyboard, Lpu237Interface.usbVendorHid, Lpu237Interface.uart};
+                }
+                break;
+        }//end switch
+        return  n_inf;
+    }
+    public String[] getAvailableAllInterfaces(){
+        return Lpu237.convert_interface_type_number_to_string(
+            this.get_available_all_interfaces()
+        );
+    }
+
     public String getInterface(){
         String s_interface = "";
         switch( get_interface() ){
             case Lpu237Interface.usbKeyboard:
-                s_interface = "USB keyboard";
+                s_interface = Lpu237InterfaceString.sUsbKeyboard;
                 break;
             case Lpu237Interface.usbVendorHid:
-                s_interface = "USB Hid Vendor";
+                s_interface = Lpu237InterfaceString.sUsbHid;
                 break;
             case Lpu237Interface.uart:
-                s_interface = "RS232";
+                s_interface = Lpu237InterfaceString.sRS232;
+                break;
+            case Lpu237Interface.usbVCom:
+                s_interface = Lpu237InterfaceString.sUsbVCom;
                 break;
             default:
                 break;
@@ -1287,12 +1574,25 @@ public class Lpu237 extends HidDevice
         boolean b_result = false;
         boolean b_leave_config = false;
 
+        String s_n ="";
+        String s_v ="";
+
         do{
             if( !df_enter_config() )
                 continue;
             b_leave_config = true;
 
             df_get_decoder_mmd1000();
+
+            if( !df_get_name() )
+                continue;
+            if( !df_get_version_system() )
+                continue;
+            if( !df_get_version_structure() )
+                continue;
+
+            s_n = this.getName();
+            s_v = this.getVersionSystem();
 
             if( !df_get_blanks() )
                 continue;
@@ -1302,17 +1602,11 @@ public class Lpu237 extends HidDevice
                 continue;
             if( !df_get_uid() )
                 continue;
-            if( !df_get_name() )
-                continue;
             if( !df_get_enable_tracK(0))
                 continue;
             if( !df_get_enable_tracK(1))
                 continue;
             if( !df_get_enable_tracK(2))
-                continue;
-            if( !df_get_version_system() )
-                continue;
-            if( !df_get_version_structure() )
                 continue;
             if(!df_get_interface())
                 continue;
@@ -1342,22 +1636,29 @@ public class Lpu237 extends HidDevice
                 continue;
             if(!df_get_ibutton_tag_postfix())
                 continue;
-            if(!df_get_ibutton_remove())
-                continue;
-            if(!df_get_ibutton_remove_tag_prefix())
-                continue;
-            if(!df_get_ibutton_remove_tag_postfix())
-                continue;
+            if( Lpu237Tools.is_support_ibutton_remove(s_n,s_v) ) {
+                //for system structure v4.0
+                if (!df_get_ibutton_remove())
+                    continue;
+                if (!df_get_ibutton_remove_tag_prefix())
+                    continue;
+                if (!df_get_ibutton_remove_tag_postfix())
+                    continue;
+            }
             if(!df_get_uart_prefix())
                 continue;
             if(!df_get_uart_postfix())
                 continue;
-            if( !df_get_global_send_condition())
-                continue;
+            if( Lpu237Tools.is_support_msr_global_tag_send_condition(s_n,s_v) ) {
+                if (!df_get_global_send_condition())
+                    continue;
+            }
             if(!df_get_reading_direction())
                 continue;
-            if(!df_get_track_order())
-                continue;
+            if( Lpu237Tools.is_support_msr_send_order(s_n,s_v) ) {
+                if (!df_get_track_order())
+                    continue;
+            }
             //
             m_set_changed.clear();
             b_result = true;
@@ -2083,6 +2384,9 @@ public class Lpu237 extends HidDevice
         boolean b_result = false;
         boolean b_leave_config = false;
 
+        String s_n = this.getName();
+        String s_v = this.getVersionSystem();
+
         do{
             if( !df_enter_config() )
                 continue;
@@ -2156,17 +2460,21 @@ public class Lpu237 extends HidDevice
                 if (!df_set_ibutton_tag_postfix())
                     continue;
             }
-            if( _is_changed( Lpu237ChangedParameter.iButtonRemove)) {
-                if (!df_set_ibutton_remove())
-                    continue;
-            }
-            if( _is_changed( Lpu237ChangedParameter.iButtonRemoveTagPrefix)) {
-                if (!df_set_ibutton_remove_tag_prefix())
-                    continue;
-            }
-            if( _is_changed( Lpu237ChangedParameter.iButtonRemoveTagPostfix)) {
-                if (!df_set_ibutton_remove_tag_postfix())
-                    continue;
+
+            if( Lpu237Tools.is_support_ibutton_remove(s_n,s_v) ) {
+                //for system structure v4.0
+                if (_is_changed(Lpu237ChangedParameter.iButtonRemove)) {
+                    if (!df_set_ibutton_remove())
+                        continue;
+                }
+                if (_is_changed(Lpu237ChangedParameter.iButtonRemoveTagPrefix)) {
+                    if (!df_set_ibutton_remove_tag_prefix())
+                        continue;
+                }
+                if (_is_changed(Lpu237ChangedParameter.iButtonRemoveTagPostfix)) {
+                    if (!df_set_ibutton_remove_tag_postfix())
+                        continue;
+                }
             }
             if( _is_changed( Lpu237ChangedParameter.UartPrefix)) {
                 if (!df_set_uart_prefix())
@@ -2176,17 +2484,22 @@ public class Lpu237 extends HidDevice
                 if (!df_set_uart_postfix())
                     continue;
             }
-            if( _is_changed( Lpu237ChangedParameter.GlobalSendCondition)) {
-                if (!df_set_global_send_condition())
+
+            if( Lpu237Tools.is_support_msr_global_tag_send_condition(s_n,s_v) ) {
+                if (_is_changed(Lpu237ChangedParameter.GlobalSendCondition)) {
+                    if (!df_set_global_send_condition())
+                        continue;
+                }
+            }
+            if (_is_changed(Lpu237ChangedParameter.MsrReadingDirection)) {
+                if (!df_set_reading_direction())
                     continue;
             }
-            if(_is_changed(Lpu237ChangedParameter.MsrReadingDirection)){
-                if(!df_set_reading_direction())
-                    continue;
-            }
-            if(_is_changed(Lpu237ChangedParameter.MsrTrackOrder)){
-                if(!df_set_track_order())
-                    continue;
+            if( Lpu237Tools.is_support_msr_send_order(s_n,s_v) ) {
+                if (_is_changed(Lpu237ChangedParameter.MsrTrackOrder)) {
+                    if (!df_set_track_order())
+                        continue;
+                }
             }
             if( !m_set_changed.isEmpty() )
                 if( !df_apply() )
@@ -4134,10 +4447,15 @@ public class Lpu237 extends HidDevice
         public String getDescription()
         {
             synchronized (m_locker){
-                if( m_is_standard_type )
-                    m_s_description = new String("Standard Model");
-                else
-                    m_s_description = new String("Compact Model");
+                if( m_is_ibutton_only_type){
+                    m_s_description = new String("i-Button Reader Model");
+                }
+                else {
+                    if (m_is_standard_type)
+                        m_s_description = new String("Standard Model");
+                    else
+                        m_s_description = new String("Compact Model");
+                }
 
                 m_s_description += " - ";
                 m_s_description += Tools.byteArrayToHex(m_uid);

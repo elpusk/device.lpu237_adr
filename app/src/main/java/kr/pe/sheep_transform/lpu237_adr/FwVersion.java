@@ -46,24 +46,43 @@ public class FwVersion {
         }
     }
 
+    public void set_version(String version) {
+        int[] v={0,0,0,0};
+        do{
+            if (version == null || version.isEmpty()) {
+                continue;
+            }
+            //
+            String[] parts = version.split("\\.");
+            for (int i = 0; i < parts.length && i < v.length; i++) {
+                if (!parts[i].isEmpty()) {
+                    try {
+                        v[i] = Integer.parseInt(parts[i]);
+                    } catch (NumberFormatException e) {
+                        // If parsing fails, leave the value as 0
+                        v[i] = 0;
+                    }
+                }
+            }//end for
+
+        }while(false);
+        m_n_major = v[0];
+        m_n_minor =  v[1];
+        m_n_fix =  v[2];
+        m_n_build =  v[3];;
+    }
     public FwVersion(){
     }
 
     public FwVersion( int n_major, int n_minor, int n_fix, int n_build ){
-        m_n_major = n_major;    m_n_major = n_minor;    m_n_fix = n_fix;    m_n_build = n_build;
+        this.m_n_major = n_major;    this.m_n_minor = n_minor;    this.m_n_fix = n_fix;    this.m_n_build = n_build;
     }
 
     public FwVersion( byte[] s_version ){
-        if( s_version != null ){
-            if( s_version.length > 0 )
-                m_n_major = (int)s_version[0];
-            if( s_version.length > 1)
-                m_n_minor = (int)s_version[1];
-            if( s_version.length > 2)
-                m_n_fix = (int)s_version[2];
-            if( s_version.length > 3 )
-                m_n_build = (int)s_version[3];
-        }
+        set_version(s_version);
+    }
+    public FwVersion( String s_version ){
+        set_version(s_version);
     }
 
     public boolean equal( FwVersion v ){
@@ -149,5 +168,25 @@ public class FwVersion {
         }while (false);
         return b_result;
     }
+
+    public boolean greater_then_equal(FwVersion v){
+        if(greater(v)){
+            return true;
+        }
+        if(equal(v)){
+            return true;
+        }
+        return false;
+    }
+    public boolean less_then_equal(FwVersion v){
+        if(less(v)){
+            return true;
+        }
+        if(equal(v)){
+            return true;
+        }
+        return false;
+    }
+
 }
 

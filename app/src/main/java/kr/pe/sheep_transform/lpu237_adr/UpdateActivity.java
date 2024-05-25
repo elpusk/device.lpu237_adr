@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.Nullable;//android.support.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -166,7 +166,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
         if (savedInstanceState == null) {
             if (ManagerDevice.getInstance().is_startup_with_bootloader()) {
                 m_textview_info.setText("Select a Rom file for updating.");
-                Tools.selectFirmware_with_cancel(this, this, m_listener_file_select_cancel);
+                Tools.selectFirmwareLessApi29_with_cancel(this, this, m_listener_file_select_cancel);
             } else {
                 m_textview_info.setText("Please Waits!  Getting the sector info of system.");
                 if (!ManagerDevice.getInstance().push_requst(TypeRequest.Request_firmware_sector_info, this)) {

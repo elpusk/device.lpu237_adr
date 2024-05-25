@@ -7,9 +7,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.os.SystemClock;
+import androidx.annotation.NonNull;//import android.support.annotation.NonNull;
+import androidx.annotation.Nullable;//import android.support.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -139,9 +140,10 @@ public class MainActivity extends AppCompatActivity {
 
         boolean b_permitted = false;
 
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);//add code ....
         do{
             switch (requestCode) {
-                case PageDevice.REQUEST_LOADFROM_EXTERNAL_STORAGE:
+                case RequestCode.LOADFROM_EXTERNAL_STORAGE:
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                         b_permitted = true;
                     }
@@ -323,55 +325,55 @@ public class MainActivity extends AppCompatActivity {
         m_button_info.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageDevice );
+                change_page( FramePage.PageDevice,true );
             }
         });
         m_button_common.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageCommon );
+                change_page( FramePage.PageCommon,true );
             }
         });
         m_button_global.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageGlobal );
+                change_page( FramePage.PageGlobal,true );
             }
         });
         m_button_private[0].setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageTrack1 );
+                change_page( FramePage.PageTrack1,true );
             }
         });
         m_button_private[1].setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageTrack2 );
+                change_page( FramePage.PageTrack2,true );
             }
         });
         m_button_private[2].setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageTrack3 );
+                change_page( FramePage.PageTrack3,true );
             }
         });
         m_button_ibutton_tag.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageiButtonTag );
+                change_page( FramePage.PageiButtonTag,true );
             }
         });
         m_button_ibutton_remove.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageiButtonRemove );
+                change_page( FramePage.PageiButtonRemove,true );
             }
         });
         m_button_ibutton_remove_tag.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageiButtonRemoveTag );
+                change_page( FramePage.PageiButtonRemoveTag,true );
             }
         });
 
@@ -498,12 +500,12 @@ public class MainActivity extends AppCompatActivity {
 
             // device page item
             ini_main_area();
-            change_page( FramePage.PageDevice );
+            change_page( FramePage.PageDevice,false );
             m_page_device.display_device_information(n_dev_index);
         }
         else{//startup with bootloader.
             ini_main_area();
-            change_page(FramePage.PageDevice);
+            change_page(FramePage.PageDevice,false);
 
             m_page_device.select_firmware();
         }
@@ -519,7 +521,7 @@ public class MainActivity extends AppCompatActivity {
             if( m_n_current_page == FramePage.PageDevice )
                 continue;
             // change page to device
-            change_page( FramePage.PageDevice );
+            change_page( FramePage.PageDevice,true );
         }while (false);
 
     }
@@ -551,7 +553,7 @@ public class MainActivity extends AppCompatActivity {
         enable_common_buttons(b_enable);
         enable_tab_buttons(b_enable);
     }
-    private void change_page( int n_page ){
+    private void change_page( int n_page, boolean b_status_change_only ){
 
         do{
             if( n_page < FramePage.PageDevice )
@@ -618,6 +620,7 @@ public class MainActivity extends AppCompatActivity {
             boolean b_tag_page = false;
             Lpu237.Tags tag_pre = null;
             Lpu237.Tags tag_post = null;
+            long startTime = 0, endTime = 0, duration = 0;
 
             switch(n_page){
                 case FramePage.PageDevice:
@@ -625,6 +628,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case FramePage.PageCommon:
                     m_page_common.ini();
+                    m_page_common.setup_from_device_manager();
                     break;
                 case FramePage.PageGlobal:
                     b_tag_page = true;

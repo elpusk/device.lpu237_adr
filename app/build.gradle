@@ -16,13 +16,13 @@ Android 10 (API level 29)
 Android 11 (API level 30)
 */
 android {
-    compileSdkVersion 34
     defaultConfig {
+        compileSdkVersion 34
         applicationId "kr.pe.sheep_transform.lpu237_adr"
-        minSdkVersion 25 /*원래 23*/
-        targetSdkVersion 25
-        versionCode 5
-        versionName '3.1.1'
+        minSdkVersion 25 /*원래 23->25*/
+        targetSdkVersion 34
+        versionCode 6
+        versionName '3.1.2'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -32,28 +32,26 @@ android {
         }
     }
     dataBinding {
-        enabled = true
+        enabled true
+    }
+    viewBinding {
+        enabled true
     }
     namespace 'kr.pe.sheep_transform.lpu237_adr'
     lint {
         baseline file('lint-baseline.xml')
-    }
-
-    /**
-     * minSdkVersion 와 targetSdkVersion 이 버전 낮다고 빌드 에러 나면, 아래 option 이 필요. -_-;;
-     */
-    lintOptions {
         abortOnError false
     }
+
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:27.0.2'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     androidTestImplementation  'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.android.support:design:27.0.2'
-    implementation 'com.android.support:recyclerview-v7:27.0.2'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
 }

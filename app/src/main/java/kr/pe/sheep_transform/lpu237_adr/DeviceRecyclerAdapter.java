@@ -1,7 +1,7 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
 import android.content.Intent;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;//android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
