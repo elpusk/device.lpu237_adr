@@ -720,6 +720,7 @@ class ManagerDevice implements Runnable
                     available_context = m_startup_activiy;
                     if(DebugDefine.WhenNoDeviceFileSelect) {
                         m_debug_device = new PageDevice(m_startup_activiy);
+                        m_debug_device.ini();
                         _test_file_select(m_startup_activiy);//for debugg
                     }
                     else {

@@ -1,12 +1,24 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.ContactsContract;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultCaller;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;//android.support.v4.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;//android.support.v4.content.ContextCompat;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,20 +47,42 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
     private TextView m_textview_info;
     private Button m_button_update;
     private String m_s_info = "";
+    //private ActivityResultLauncher<Intent> m_filePickerLauncher;
 
     public PageDevice(AppCompatActivity activity ) {
         do {
             if( activity==null)
                 continue;
             m_activity = activity;
+
         }while (false);
     }
 
     public void ini(){
+        if(DebugDefine.WhenNoDeviceFileSelect) {
+            return;
+        }
         m_textview_info = (TextView) m_activity.findViewById(R.id.id_textview_info);
         m_button_update = (Button)m_activity.findViewById(R.id.id_button_update_firmware);
         //
         m_button_update.setOnClickListener(this);
+        //////
+        /*
+        ActivityResultContracts.StartActivityForResult arc = new  ActivityResultContracts.StartActivityForResult();
+        m_filePickerLauncher = ((ActivityResultCaller)m_activity).registerForActivityResult(
+                arc,
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == AppCompatActivity.RESULT_OK && result.getData() != null) {
+                            Uri uri = result.getData().getData();
+                            //readRomFile(uri);
+                        }
+                    }
+                }
+        );
+         */
+
     }
 
     public String get_info_string(){

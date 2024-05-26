@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.Nullable;//android.support.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
@@ -122,6 +124,15 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
         m_outState = null;
     }
 
+    public void onActivityResult(int requestCode,int resultCode,Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
+            Uri uri = data.getData();
+            m_fw_file = Tools.fileFromContentUri(this,uri);
+            showFwSelectDialog();//select fw in rom file
+        }
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -166,7 +177,13 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
         if (savedInstanceState == null) {
             if (ManagerDevice.getInstance().is_startup_with_bootloader()) {
                 m_textview_info.setText("Select a Rom file for updating.");
-                Tools.selectFirmwareLessApi29_with_cancel(this, this, m_listener_file_select_cancel);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    // 현재 API 레벨이 29 (안드로이드 10) 이상인 경우 실행할 코드
+                    Tools.selectFirmwareGreaterThenEqualApi29(this);
+                }
+                else {
+                    Tools.selectFirmwareLessApi29_with_cancel(this, this, m_listener_file_select_cancel);
+                }
             } else {
                 m_textview_info.setText("Please Waits!  Getting the sector info of system.");
                 if (!ManagerDevice.getInstance().push_requst(TypeRequest.Request_firmware_sector_info, this)) {

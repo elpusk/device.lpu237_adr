@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import androidx.annotation.NonNull;//import android.support.annotation.NonNull;
@@ -21,6 +22,7 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.widget.ListView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -148,6 +150,10 @@ public class MainActivity extends AppCompatActivity {
                         b_permitted = true;
                     }
                     break;
+                case RequestCode.OPEN_ROM_FILE:
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                        b_permitted = true;
+                    }
             }//end switch
 
             if( b_permitted ){
@@ -167,6 +173,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+    }
+    @Override
+    public void onActivityResult(int requestCode,int resultCode,Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
+            Uri uri = data.getData();
+
+            if( m_page_device != null ){
+                File file = Tools.fileFromContentUri(this,uri);
+                m_page_device.fileSelected(file);
+            }
+        }
     }
 
     @Override

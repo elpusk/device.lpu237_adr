@@ -1,5 +1,8 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -9,8 +12,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.usb.UsbManager;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultCaller;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
+
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.databinding.DataBindingUtil;//android.databinding.DataBindingUtil;
@@ -28,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.hardware.usb.UsbDevice;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -136,7 +149,8 @@ public class StartUpActivity extends AppCompatActivity
         m_adapter = new DeviceRecyclerAdapter(this);
         m_start_up_Binding.idRecyclerviewDevice.setAdapter(m_adapter);
         m_start_up_Binding.idRecyclerviewDevice.setLayoutManager(new LinearLayoutManager(m_adapter.context));
-
+        //////////////////////
+        //////////////////////
         registerReceiver();
         ManagerDevice.getInstance().set_startup_activiy(this);
         if( !ManagerDevice.getInstance().push_requst(TypeRequest.Request_update_list,this) ){
@@ -194,7 +208,55 @@ public class StartUpActivity extends AppCompatActivity
         });
 
         registerReceiver();
+
         Log.i("onCreate","StartUpActivity : onCreate");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        boolean b_permitted = false;
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);//add code ....
+        do{//for debugging code.
+            switch (requestCode) {
+                case RequestCode.LOADFROM_EXTERNAL_STORAGE:
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                        b_permitted = true;
+                    }
+                    break;
+            }//end switch
+
+            if( b_permitted ){
+                if(DebugDefine.WhenNoDeviceFileSelect) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        // 현재 API 레벨이 29 (안드로이드 10) 이상인 경우 실행할 코드
+                        Tools.selectFirmwareGreaterThenEqualApi29(this);
+                    }
+                }
+                continue;
+            }
+
+            Toast.makeText(getApplicationContext(),"File Permission Failure.",Toast.LENGTH_LONG).show();
+        }while(false);
+    }
+    @Override
+    public void onActivityResult(int requestCode,int resultCode,Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
+            Uri uri = data.getData();
+            /*
+            File file = Tools.fileFromContentUri(this,uri);
+            do {
+                Log.d(getClass().getName(), "selected file " + file.toString());
+                Rom rom = new Rom();
+                int n_result = rom.load_rom_header(file);
+                if(  n_result!= RomResult.result_success ) {
+                    continue;
+                }
+            }while (false);
+            */
+        }
     }
 
     @Override

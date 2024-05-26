@@ -1,5 +1,7 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
+import static androidx.core.app.ActivityCompat.startActivityForResult;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -8,8 +10,12 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Build;
+import android.os.storage.StorageManager;
+import android.provider.DocumentsContract;
+import android.util.Log;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -18,8 +24,15 @@ import java.util.Arrays;
 
 import static java.util.Arrays.copyOf;
 
+import androidx.activity.result.ActivityResultLauncher;
+import android.webkit.MimeTypeMap;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 interface DebugDefine{
-    boolean WhenNoDeviceFileSelect = true;
+    boolean WhenNoDeviceFileSelect = false;
 }
 
 interface RequestCode{
@@ -593,10 +606,16 @@ public class Tools {
         //open file picker
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
+        //intent.setType("application/rom");
         intent.setType("*/*");
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/octet-stream", "application/rom"});
 
-        //startActivityForResult(intent, REQUEST_CODE_OPEN_DOCUMENT);
+        // Optionally, specify a URI for the file that should appear in the
+        // system file picker when it loads.
+        String pickerInitialUri = "Download";
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
+
+        startActivityForResult(activity, intent, RequestCode.OPEN_ROM_FILE, null);
+
     }
     static public void selectFirmwareLessApi29(Activity activity,FileDialog.FileSelectedListener listener){
         do{
@@ -675,6 +694,41 @@ public class Tools {
         }
 
         return packageInfo.versionName;
+    }
+
+    public static File fileFromContentUri(Context context, Uri contentUri) {
+        String fileExtension = contentUri.toString().substring(contentUri.toString().lastIndexOf("."));
+        String fileName = "temporary_file" + (fileExtension != null ? fileExtension : "");
+
+        File tempFile = new File(context.getCacheDir(), fileName);
+        try {
+            if(tempFile.exists()){
+                tempFile.delete();
+            }
+            tempFile.createNewFile();
+
+            FileOutputStream oStream = new FileOutputStream(tempFile);
+            InputStream inputStream = context.getContentResolver().openInputStream(contentUri);
+
+            if (inputStream != null) {
+                _copy(inputStream, oStream);
+            }
+
+            oStream.flush();
+            oStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return tempFile;
+    }
+
+    private static void _copy(InputStream source, OutputStream target) throws IOException {
+        byte[] buf = new byte[8192];
+        int length;
+        while ((length = source.read(buf)) > 0) {
+            target.write(buf, 0, length);
+        }
     }
 }
 
