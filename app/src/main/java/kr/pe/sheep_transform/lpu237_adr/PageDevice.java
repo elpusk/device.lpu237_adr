@@ -66,23 +66,6 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
         m_button_update = (Button)m_activity.findViewById(R.id.id_button_update_firmware);
         //
         m_button_update.setOnClickListener(this);
-        //////
-        /*
-        ActivityResultContracts.StartActivityForResult arc = new  ActivityResultContracts.StartActivityForResult();
-        m_filePickerLauncher = ((ActivityResultCaller)m_activity).registerForActivityResult(
-                arc,
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        if (result.getResultCode() == AppCompatActivity.RESULT_OK && result.getData() != null) {
-                            Uri uri = result.getData().getData();
-                            //readRomFile(uri);
-                        }
-                    }
-                }
-        );
-         */
-
     }
 
     public String get_info_string(){

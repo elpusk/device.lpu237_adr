@@ -10,11 +10,13 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Build;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
+import android.provider.OpenableColumns;
 import android.util.Log;
 
 import java.io.File;
@@ -696,12 +698,23 @@ public class Tools {
         return packageInfo.versionName;
     }
 
-    public static File fileFromContentUri(Context context, Uri contentUri) {
-        String fileExtension = contentUri.toString().substring(contentUri.toString().lastIndexOf("."));
-        String fileName = "temporary_file" + (fileExtension != null ? fileExtension : "");
+    public static File fileFromContentUri(Activity act, Uri contentUri) {
+        Context context = (Context)act;
+        Cursor returnCursor =   act.getContentResolver().query(contentUri, null, null, null, null);
 
-        File tempFile = new File(context.getCacheDir(), fileName);
+        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+        //int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+        returnCursor.moveToFirst();
+        String s_org_file_name = returnCursor.getString(nameIndex);
+        String fileExtension = s_org_file_name.substring(s_org_file_name.toString().lastIndexOf("."));
+        String fileName = "temporary_file" + (fileExtension != null ? fileExtension : "");
+        File tempFile = null;
+
+        if(fileExtension.toLowerCase().compareTo(".rom")!=0){
+            return tempFile;
+        }
         try {
+            tempFile = new File(context.getCacheDir(), fileName);
             if(tempFile.exists()){
                 tempFile.delete();
             }

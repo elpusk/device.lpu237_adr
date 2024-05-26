@@ -182,8 +182,17 @@ public class MainActivity extends AppCompatActivity {
 
             if( m_page_device != null ){
                 File file = Tools.fileFromContentUri(this,uri);
-                m_page_device.fileSelected(file);
+                if(file != null) {
+                    m_page_device.fileSelected(file);
+                }
+                else{
+                    String s_error = "Invalid file.(" + uri.toString() + ")";
+                    Tools.showOkDialogForError(this,"FU01","ERROR",s_error);
+                }
             }
+        }
+        else if( resultCode == RESULT_CANCELED){
+
         }
     }
 

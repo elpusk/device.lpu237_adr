@@ -129,7 +129,13 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
         if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
             Uri uri = data.getData();
             m_fw_file = Tools.fileFromContentUri(this,uri);
-            showFwSelectDialog();//select fw in rom file
+            if(m_fw_file != null) {
+                showFwSelectDialog();//select fw in rom file
+            }
+            else{
+                String s_error = "Invalid file.(" + uri.toString() + ")";
+                Tools.showOkDialogForError(this,"FU01","ERROR",s_error);
+            }
         }
     }
 
