@@ -8,4 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="WideScrollbar">
+        <item name="android:scrollbarSize">16dp</item>
+    </style>
+
 </resources>

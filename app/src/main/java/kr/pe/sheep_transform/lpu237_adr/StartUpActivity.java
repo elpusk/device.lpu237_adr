@@ -144,6 +144,7 @@ public class StartUpActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_start_up);
         //
         m_start_up_Binding = DataBindingUtil.setContentView(this,R.layout.activity_start_up);
         m_adapter = new DeviceRecyclerAdapter(this);

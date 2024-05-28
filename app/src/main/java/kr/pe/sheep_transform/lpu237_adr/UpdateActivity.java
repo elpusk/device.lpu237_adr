@@ -154,16 +154,18 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
         m_button_exit.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                m_dlg_exit = Tools.showYesNoDialog(
-                        UpdateActivity.this
-                        ,"Warning!"
-                        ,"Do you wan to stop the updating firmware?\r\n" +
-                                "If this process is stopped, the device cannot be used." +
-                                "and App is terminated."
-                        ,m_listener_dlg_stop_yes
-                        ,m_listener_dlg_stop_no
-                        ,m_listener_dlg_stop_cancel
-                );
+                if(ManagerDevice.getInstance().is_startup_with_bootloader()) {
+                    m_dlg_exit = Tools.showYesNoDialog(
+                            UpdateActivity.this
+                            , "Warning!"
+                            , "Do you wan to stop the updating firmware?\r\n" +
+                                    "If this process is stopped, the device cannot be used." +
+                                    "and App is terminated."
+                            , m_listener_dlg_stop_yes
+                            , m_listener_dlg_stop_no
+                            , m_listener_dlg_stop_cancel
+                    );
+                }
             }
 
         });
@@ -243,16 +245,18 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
             m_dlg_exit = null;
         }
 
-        m_dlg_exit = Tools.showYesNoDialog(
-                this
-                ,"Warning!"
-                ,"Do you wan to stop the updating firmware?\r\n" +
-                        "If this process is stopped, the device cannot be used." +
-                        "and App is terminated."
-                ,m_listener_dlg_stop_yes
-                ,m_listener_dlg_stop_no
-                ,m_listener_dlg_stop_cancel
-        );
+        if(ManagerDevice.getInstance().is_startup_with_bootloader()) {
+            m_dlg_exit = Tools.showYesNoDialog(
+                    this
+                    , "Warning!"
+                    , "Do you wan to stop the updating firmware?\r\n" +
+                            "If this process is stopped, the device cannot be used." +
+                            "and App is terminated."
+                    , m_listener_dlg_stop_yes
+                    , m_listener_dlg_stop_no
+                    , m_listener_dlg_stop_cancel
+            );
+        }
 
     }
 

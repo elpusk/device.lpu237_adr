@@ -16,6 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SeekBar;
 
+import kr.pe.sheep_transform.lpu237_adr.databinding.ActivityMainBinding;
+
 
 public class PageCommon {
     private AppCompatActivity m_activity = null;
@@ -35,6 +37,12 @@ public class PageCommon {
     private Button m_button_set_prepostfix_opos;
     private Button m_button_set_prepostfix_type1;
 
+    private String m_s_n = "";//system name
+    private String m_s_v ="";//system version
+
+    private boolean m_b_support_msr = true;
+    private boolean m_b_support_ibutton = true;
+
     public PageCommon(AppCompatActivity activity,int n_dev_index ) {
         do {
             if( activity==null)
@@ -46,25 +54,7 @@ public class PageCommon {
         }while (false);
     }
 
-    /**
-     * this function  must be executed after getting device parameters.
-     */
-    public void ini(){
-        String s_n = ManagerDevice.getInstance().lpu237_getName();
-        String s_v = ManagerDevice.getInstance().lpu237_getVersionSystem();
-
-        boolean b_support_msr = true, b_support_ibutton = true;
-        switch(ManagerDevice.getInstance().lpu237_get_device_type()){
-            case Lpu237DeviceType.IbuttonOlny:
-                b_support_msr = false;
-                break;
-            case Lpu237DeviceType.Compact:
-                b_support_ibutton = false;
-                break;
-            default://may be Lpu237DeviceType.Standard
-                break;
-        }//end switch
-
+    private void _link_item_to_layout(ActivityMainBinding binding){
         m_spinner_interface = (Spinner) m_activity.findViewById(R.id.id_spinner_interface);
         m_spinner_buzzer = (Spinner)m_activity.findViewById(R.id.id_spinner_buzzer);
         m_spinner_language = (Spinner)m_activity.findViewById(R.id.id_spinner_language);
@@ -84,6 +74,28 @@ public class PageCommon {
         m_button_ibutton_extension = (Button)m_activity.findViewById(R.id.id_button_extension);
         m_button_set_prepostfix_opos = (Button)m_activity.findViewById(R.id.id_button_insert_opos_sentinel);
         m_button_set_prepostfix_type1 = (Button)m_activity.findViewById(R.id.id_button_set_prepost_type1);
+    }
+    /**
+     * this function  must be executed after getting device parameters.
+     */
+    public void ini(ActivityMainBinding binding){
+        _link_item_to_layout(binding);
+
+        m_s_n = ManagerDevice.getInstance().lpu237_getName();
+        m_s_v = ManagerDevice.getInstance().lpu237_getVersionSystem();
+
+        m_b_support_msr = true;
+        m_b_support_ibutton = true;
+        switch(ManagerDevice.getInstance().lpu237_get_device_type()){
+            case Lpu237DeviceType.IbuttonOlny:
+                m_b_support_msr = false;
+                break;
+            case Lpu237DeviceType.Compact:
+                m_b_support_ibutton = false;
+                break;
+            default://may be Lpu237DeviceType.Standard
+                break;
+        }//end switch
 
         int n_sel = 0;
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,24 +230,27 @@ public class PageCommon {
         for( int i = 0; i<3; i++ ) {
             m_spinner_enable[i].setAdapter(adapter_enable);
             m_spinner_enable[i].setPrompt("Track "+String.valueOf(i+1));
-            m_spinner_enable[i].setEnabled(b_support_msr);
+            m_spinner_enable[i].setEnabled(m_b_support_msr);
             if(!m_spinner_enable[i].isEnabled() ){
-                v[i].setVisibility(View.GONE);
-                m_spinner_enable[i].setVisibility(View.GONE);
+                //v[i].setVisibility(View.GONE);
+                //m_spinner_enable[i].setVisibility(View.GONE);
             }
         }//end for
         m_spinner_enable[0].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 boolean b_chnaged = true;
-                switch(position){
-                    case 1://disable
-                        b_chnaged = false;    break;
-                    case 0://english
-                    default:
-                        break;
-                }//end switch
-                ManagerDevice.getInstance().lpu237_set_enable_track(0,b_chnaged);
+                if(m_b_support_msr) {
+                    switch (position) {
+                        case 1://disable
+                            b_chnaged = false;
+                            break;
+                        case 0://english
+                        default:
+                            break;
+                    }//end switch
+                    ManagerDevice.getInstance().lpu237_set_enable_track(0, b_chnaged);
+                }
             }
 
             @Override
@@ -246,15 +261,18 @@ public class PageCommon {
         m_spinner_enable[1].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                boolean b_chnaged = true;
-                switch(position){
-                    case 1://disable
-                        b_chnaged = false;    break;
-                    case 0://english
-                    default:
-                        break;
-                }//end switch
-                ManagerDevice.getInstance().lpu237_set_enable_track(1,b_chnaged);
+                if(m_b_support_msr) {
+                    boolean b_chnaged = true;
+                    switch (position) {
+                        case 1://disable
+                            b_chnaged = false;
+                            break;
+                        case 0://english
+                        default:
+                            break;
+                    }//end switch
+                    ManagerDevice.getInstance().lpu237_set_enable_track(1, b_chnaged);
+                }
             }
 
             @Override
@@ -265,15 +283,18 @@ public class PageCommon {
         m_spinner_enable[2].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                boolean b_chnaged = true;
-                switch(position){
-                    case 1://disable
-                        b_chnaged = false;    break;
-                    case 0://english
-                    default:
-                        break;
-                }//end switch
-                ManagerDevice.getInstance().lpu237_set_enable_track(2,b_chnaged);
+                if(m_b_support_msr) {
+                    boolean b_chnaged = true;
+                    switch (position) {
+                        case 1://disable
+                            b_chnaged = false;
+                            break;
+                        case 0://english
+                        default:
+                            break;
+                    }//end switch
+                    ManagerDevice.getInstance().lpu237_set_enable_track(2, b_chnaged);
+                }
             }
 
             @Override
@@ -293,31 +314,33 @@ public class PageCommon {
         );
         m_spinner_reading_direction.setAdapter(adapter_direction);
         m_spinner_reading_direction.setPrompt("MSR Reading Direction");
-        if(!Lpu237Tools.is_support_msr_card_direction(s_n,s_v)){
+        if(!Lpu237Tools.is_support_msr_card_direction(m_s_n,m_s_v)){
             m_spinner_reading_direction.setEnabled(false);
         }
         else {
-            m_spinner_reading_direction.setEnabled(b_support_msr);
+            m_spinner_reading_direction.setEnabled(m_b_support_msr);
         }
         if(!m_spinner_reading_direction.isEnabled() ){
-            m_activity.findViewById(R.id.id_textview_reading_direction).setVisibility(View.GONE);
-            m_spinner_reading_direction.setVisibility(View.GONE);
+            //m_activity.findViewById(R.id.id_textview_reading_direction).setVisibility(View.GONE);
+            //m_spinner_reading_direction.setVisibility(View.GONE);
         }
 
         m_spinner_reading_direction.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                byte c_val = Lpu237Direction.biDirection;
-                switch(position){
-                    case 1://forward
-                    case 2://backward
-                    case 0://bidirection
-                        c_val = (byte)position;
-                        break;
-                    default:
-                        break;
-                }//end switch
-                ManagerDevice.getInstance().lpu237_set_reading_direction(c_val);
+                if(m_b_support_msr) {
+                    byte c_val = Lpu237Direction.biDirection;
+                    switch (position) {
+                        case 1://forward
+                        case 2://backward
+                        case 0://bidirection
+                            c_val = (byte) position;
+                            break;
+                        default:
+                            break;
+                    }//end switch
+                    ManagerDevice.getInstance().lpu237_set_reading_direction(c_val);
+                }
             }
 
             @Override
@@ -337,42 +360,54 @@ public class PageCommon {
         );
         m_spinner_track_order.setAdapter(adapter_order);
         m_spinner_track_order.setPrompt("MSR Track Order");
-        if(!Lpu237Tools.is_support_msr_send_order(s_n,s_v)){
+        if(!Lpu237Tools.is_support_msr_send_order(m_s_n,m_s_v)){
             m_spinner_track_order.setEnabled(false);
         }
         else {
-            m_spinner_track_order.setEnabled(b_support_msr);
+            m_spinner_track_order.setEnabled(m_b_support_msr);
         }
         if(!m_spinner_track_order.isEnabled() ){
-            m_activity.findViewById(R.id.id_textview_track_order).setVisibility(View.GONE);
-            m_spinner_track_order.setVisibility(View.GONE);
+            //m_activity.findViewById(R.id.id_textview_track_order).setVisibility(View.GONE);
+            //m_spinner_track_order.setVisibility(View.GONE);
         }
 
         m_spinner_track_order.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                byte[] r = {0,1,2};
-                switch(position){// "123","132","213","231","312","321"
-                    case 1:
-                        r[0] = 0;   r[1] = 2;   r[2] = 1;//132
-                        break;
-                    case 2:
-                        r[0] = 1;   r[1] = 0;   r[2] = 2;//213
-                        break;
-                    case 3:
-                        r[0] = 1;   r[1] = 2;   r[2] = 0;//231
-                        break;
-                    case 4:
-                        r[0] = 2;   r[1] = 0;   r[2] = 1;//312
-                        break;
-                    case 5:
-                        r[0] = 2;   r[1] = 1;   r[2] = 0;//321
-                        break;
-                    case 0:
-                    default:
-                        break;
-                }//end switch
-                ManagerDevice.getInstance().lpu237_set_track_order(r);
+                if(m_b_support_msr) {
+                    byte[] r = {0, 1, 2};
+                    switch (position) {// "123","132","213","231","312","321"
+                        case 1:
+                            r[0] = 0;
+                            r[1] = 2;
+                            r[2] = 1;//132
+                            break;
+                        case 2:
+                            r[0] = 1;
+                            r[1] = 0;
+                            r[2] = 2;//213
+                            break;
+                        case 3:
+                            r[0] = 1;
+                            r[1] = 2;
+                            r[2] = 0;//231
+                            break;
+                        case 4:
+                            r[0] = 2;
+                            r[1] = 0;
+                            r[2] = 1;//312
+                            break;
+                        case 5:
+                            r[0] = 2;
+                            r[1] = 1;
+                            r[2] = 0;//321
+                            break;
+                        case 0:
+                        default:
+                            break;
+                    }//end switch
+                    ManagerDevice.getInstance().lpu237_set_track_order(r);
+                }
             }
 
             @Override
@@ -407,26 +442,28 @@ public class PageCommon {
         );
         m_spinner_mmd1100_reset_interval.setAdapter(adapter_reset);
         m_spinner_mmd1100_reset_interval.setPrompt("MSR MMD1100 Reset Interval");
-        if(!Lpu237Tools.is_support_mmd1100_reset(s_n,s_v)){
+        if(!Lpu237Tools.is_support_mmd1100_reset(m_s_n,m_s_v)){
             m_spinner_mmd1100_reset_interval.setEnabled(false);
         }
         else {
-            m_spinner_mmd1100_reset_interval.setEnabled(b_support_msr);
+            m_spinner_mmd1100_reset_interval.setEnabled(m_b_support_msr);
         }
         if(!m_spinner_mmd1100_reset_interval.isEnabled() ){
-            m_activity.findViewById(R.id.id_textview_reset_interval).setVisibility(View.GONE);
-            m_spinner_mmd1100_reset_interval.setVisibility(View.GONE);
+            //m_activity.findViewById(R.id.id_textview_reset_interval).setVisibility(View.GONE);
+            //m_spinner_mmd1100_reset_interval.setVisibility(View.GONE);
         }
 
         m_spinner_mmd1100_reset_interval.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                byte c_val = (byte)position;
-                if(c_val > 0x0F){
-                    c_val = 0;
+                if(m_b_support_msr) {
+                    int n_val = position;
+                    if (n_val > 15) {
+                        n_val = 0;
+                    }
+                    n_val <<= 4;
+                    ManagerDevice.getInstance().lpu237_set_mmd1100_reset_interval(n_val);
                 }
-                c_val <<= 4;
-                ManagerDevice.getInstance().lpu237_set_mmd1100_reset_interval(c_val);
             }
 
             @Override
@@ -447,25 +484,27 @@ public class PageCommon {
         );
         m_spinner_success_indication_condition.setAdapter(adapter_success_indication_condition);
         m_spinner_success_indication_condition.setPrompt("Success Indication Condition");
-        if(!Lpu237Tools.is_support_msr_success_indicate_condition(s_n,s_v)){
+        if(!Lpu237Tools.is_support_msr_success_indicate_condition(m_s_n,m_s_v)){
             m_spinner_success_indication_condition.setEnabled(false);
         }
         else {
-            m_spinner_success_indication_condition.setEnabled(b_support_msr);
+            m_spinner_success_indication_condition.setEnabled(m_b_support_msr);
         }
         if(!m_spinner_success_indication_condition.isEnabled() ){
-            m_activity.findViewById(R.id.id_textview_success_indication_condition).setVisibility(View.GONE);
-            m_spinner_success_indication_condition.setVisibility(View.GONE);
+            //m_activity.findViewById(R.id.id_textview_success_indication_condition).setVisibility(View.GONE);
+            //m_spinner_success_indication_condition.setVisibility(View.GONE);
         }
 
         m_spinner_success_indication_condition.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                boolean b_val = false;
-                if(position!=0){
-                    b_val = true;
+                if(m_b_support_msr) {
+                    boolean b_val = false;
+                    if (position != 0) {
+                        b_val = true;
+                    }
+                    ManagerDevice.getInstance().lpu237_set_any_good_indicate_success(b_val);
                 }
-                ManagerDevice.getInstance().lpu237_set_any_good_indicate_success(b_val);
             }
 
             @Override
@@ -485,29 +524,32 @@ public class PageCommon {
         );
         m_spinner_global_send_condition.setAdapter(adapter_condition);
         m_spinner_global_send_condition.setPrompt("Global tag send condition");
-        if(!Lpu237Tools.is_support_msr_global_tag_send_condition(s_n,s_v)){
+        if(!Lpu237Tools.is_support_msr_global_tag_send_condition(m_s_n,m_s_v)){
             m_spinner_global_send_condition.setEnabled(false);
         }
         else {
-            m_spinner_global_send_condition.setEnabled(b_support_msr);
+            m_spinner_global_send_condition.setEnabled(m_b_support_msr);
         }
         if(!m_spinner_global_send_condition.isEnabled() ){
-            m_activity.findViewById(R.id.id_textview_global_send_condition).setVisibility(View.GONE);
-            m_spinner_global_send_condition.setVisibility(View.GONE);
+            //m_activity.findViewById(R.id.id_textview_global_send_condition).setVisibility(View.GONE);
+            //m_spinner_global_send_condition.setVisibility(View.GONE);
         }
 
         m_spinner_global_send_condition.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                boolean b_chnaged = true;
-                switch(position){
-                    case 1://One or more tracks are normal
-                        b_chnaged = false;    break;
-                    case 0://No Error in all tracks
-                    default:
-                        break;
-                }//end switch
-                ManagerDevice.getInstance().lpu237_set_global_send_condition(b_chnaged);
+                if(m_b_support_msr) {
+                    boolean b_chnaged = true;
+                    switch (position) {
+                        case 1://One or more tracks are normal
+                            b_chnaged = false;
+                            break;
+                        case 0://No Error in all tracks
+                        default:
+                            break;
+                    }//end switch
+                    ManagerDevice.getInstance().lpu237_set_global_send_condition(b_chnaged);
+                }
             }
 
             @Override
@@ -526,34 +568,41 @@ public class PageCommon {
         );
         m_spinner_ibutton_mode.setAdapter(adapter_ibutton);
         m_spinner_ibutton_mode.setPrompt("i-Button Mode");
-        m_spinner_ibutton_mode.setEnabled(b_support_ibutton);
+        m_spinner_ibutton_mode.setEnabled(m_b_support_ibutton);
         if(!m_spinner_ibutton_mode.isEnabled() ){
-            m_activity.findViewById(R.id.id_textview_ibutton_function).setVisibility(View.GONE);
-            m_spinner_ibutton_mode.setVisibility(View.GONE);
-            m_button_ibutton_extension.setVisibility(View.GONE);
+            //m_activity.findViewById(R.id.id_textview_ibutton_function).setVisibility(View.GONE);
+            //m_spinner_ibutton_mode.setVisibility(View.GONE);
+            //m_button_ibutton_extension.setVisibility(View.GONE);
         }
 
         m_spinner_ibutton_mode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = m_spinner_ibutton_mode.getSelectedItem().toString();
-                int[] n_change = Lpu237.convert_ibutton_mode_description_string_to_type_number(new String[]{selected});
-                if(n_change != null && n_change.length != 0) {
-                    ManagerDevice.getInstance().lpu237_set_ibutton_type(n_change[0]);
-                    switch (n_change[0]) {
-                        case Lpu237iButtonType.Zeros7://Zero is transmitted 7 times When i-button is removed
-                        case Lpu237iButtonType.F12://Send F12 When i-button is removed
-                        case Lpu237iButtonType.Addmit://Addimat company's Code stick
-                            m_button_ibutton_extension.setEnabled(false);
-                            break;
-                        case Lpu237iButtonType.None://user defined
-                            m_button_ibutton_extension.setEnabled(true);
-                            break;
-                        case Lpu237iButtonType.Zeros://Send Zeros When i-button is removed
-                        default:
-                            m_button_ibutton_extension.setEnabled(false);
-                            break;
-                    }//end switch
+                if(m_b_support_ibutton) {
+                    String selected = m_spinner_ibutton_mode.getSelectedItem().toString();
+                    int[] n_change = Lpu237.convert_ibutton_mode_description_string_to_type_number(new String[]{selected});
+                    if (n_change != null && n_change.length != 0) {
+                        ManagerDevice.getInstance().lpu237_set_ibutton_type(n_change[0]);
+                        switch (n_change[0]) {
+                            case Lpu237iButtonType.Zeros7://Zero is transmitted 7 times When i-button is removed
+                            case Lpu237iButtonType.F12://Send F12 When i-button is removed
+                            case Lpu237iButtonType.Addmit://Addimat company's Code stick
+                                m_button_ibutton_extension.setEnabled(false);
+                                break;
+                            case Lpu237iButtonType.None://user defined
+                                if(Lpu237Tools.is_support_change_ibutton_range(m_s_n,m_s_v)) {
+                                    m_button_ibutton_extension.setEnabled(true);
+                                }
+                                else{
+                                    m_button_ibutton_extension.setEnabled(false);
+                                }
+                                break;
+                            case Lpu237iButtonType.Zeros://Send Zeros When i-button is removed
+                            default:
+                                m_button_ibutton_extension.setEnabled(false);
+                                break;
+                        }//end switch
+                    }
                 }
             }
 
@@ -568,7 +617,9 @@ public class PageCommon {
         m_button_ibutton_extension.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                PageCommon.do_modal_for_ibutton_range(m_activity);
+                if(m_b_support_ibutton) {
+                    PageCommon.do_modal_for_ibutton_range(m_activity);
+                }
             }
         });
         ////////////////////////////////////////////
@@ -589,8 +640,10 @@ public class PageCommon {
 
     }
 
-    public void setup_from_device_manager(){
+    public void update_control_from_device_manager(ActivityMainBinding binding){
         do{
+            //_link_item_to_layout(binding);
+
             int n_sel = 0;
             //
             switch(ManagerDevice.getInstance().lpu237_get_interface()){
@@ -628,59 +681,66 @@ public class PageCommon {
 
             m_spinner_language.setSelection(n_sel);
             //
-            for( int i = 0; i<3; i++ ) {
-                if( ManagerDevice.getInstance().lpu237_get_enable_track(i) )
-                    m_spinner_enable[i].setSelection(0);
-                else
-                    m_spinner_enable[i].setSelection(1);
-            }//end for
-            //
-            m_spinner_reading_direction.setSelection(
-                    (int)ManagerDevice.getInstance().lpu237_get_reading_direction()
-            );
-            //
-            String[] s_order = {
-                    "123","132","213","231","312","321"
-            };
-            byte[] order = ManagerDevice.getInstance().lpu237_get_track_order();
-            String sOrder="";
-            for(int i=0; i<order.length; i++ ){
-                sOrder += String.valueOf(order[i]+1);
-            }//end for i
+            if(m_b_support_msr) {
+                for( int i = 0; i<3; i++ ) {
+                    if( ManagerDevice.getInstance().lpu237_get_enable_track(i) )
+                        m_spinner_enable[i].setSelection(0);
+                    else
+                        m_spinner_enable[i].setSelection(1);
+                }//end for
+                //
+                m_spinner_reading_direction.setSelection(
+                        (int) ManagerDevice.getInstance().lpu237_get_reading_direction()
+                );
+                //
+                String[] s_order = {
+                        "123", "132", "213", "231", "312", "321"
+                };
+                byte[] order = ManagerDevice.getInstance().lpu237_get_track_order();
+                String sOrder = "";
+                for (int i = 0; i < order.length; i++) {
+                    sOrder += String.valueOf(order[i] + 1);
+                }//end for i
 
-            int n_order = 0;
-            for(int i=0; i<s_order.length; i++ ){
-                if(sOrder.compareTo(s_order[i])==0){
-                    n_order = i;
-                    break;
+                int n_order = 0;
+                for (int i = 0; i < s_order.length; i++) {
+                    if (sOrder.compareTo(s_order[i]) == 0) {
+                        n_order = i;
+                        break;
+                    }
+                }//end for i
+
+                m_spinner_track_order.setSelection(n_order);
+                //
+                int n_rest = ManagerDevice.getInstance().lpu237_get_mmd1100_reset_interval();
+                n_rest >>= 4;
+                m_spinner_mmd1100_reset_interval.setSelection(n_rest);
+                //
+                if (ManagerDevice.getInstance().lpu237_get_any_good_indicate_success()) {
+                    m_spinner_success_indication_condition.setSelection(1);
+                } else {
+                    m_spinner_success_indication_condition.setSelection(0);
                 }
-            }//end for i
-
-            m_spinner_track_order.setSelection(n_order);
-            //
-            int n_rest  = ManagerDevice.getInstance().lpu237_get_mmd1100_reset_interval();
-            n_rest >>= 4;
-            m_spinner_mmd1100_reset_interval.setSelection(n_rest);
-            //
-            if( ManagerDevice.getInstance().lpu237_get_any_good_indicate_success() ){
-                m_spinner_success_indication_condition.setSelection(1);
-            }
-            else{
-                m_spinner_success_indication_condition.setSelection(0);
+                //
+                if (ManagerDevice.getInstance().lpu237_get_global_send_condition())
+                    m_spinner_global_send_condition.setSelection(0);
+                else
+                    m_spinner_global_send_condition.setSelection(1);
             }
             //
-            if( ManagerDevice.getInstance().lpu237_get_global_send_condition() )
-                m_spinner_global_send_condition.setSelection(0);
-            else
-                m_spinner_global_send_condition.setSelection(1);
-            //
-            n_sel = ManagerDevice.getInstance().lpu237_get_ibutton_type();
-            m_spinner_ibutton_mode.setSelection(n_sel);
-            if( n_sel == Lpu237iButtonType.None ){
-                m_button_ibutton_extension.setEnabled(true);
-            }
-            else{
-                m_button_ibutton_extension.setEnabled(false);
+            if(m_b_support_ibutton) {
+                n_sel = ManagerDevice.getInstance().lpu237_get_ibutton_type();
+                m_spinner_ibutton_mode.setSelection(n_sel);
+                if (n_sel == Lpu237iButtonType.None) {
+                    if(Lpu237Tools.is_support_change_ibutton_range(m_s_n,m_s_v)) {
+                        m_button_ibutton_extension.setEnabled(true);
+                    }
+                    else{
+                        m_button_ibutton_extension.setEnabled(false);
+                    }
+                } else {
+                    m_button_ibutton_extension.setEnabled(false);
+                }
             }
             //
         }while(false);

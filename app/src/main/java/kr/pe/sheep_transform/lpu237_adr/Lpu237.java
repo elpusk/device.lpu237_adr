@@ -844,7 +844,7 @@ public class Lpu237 extends HidDevice
                         Lpu237iButtonType.Zeros7,
                         Lpu237iButtonType.F12,
                         Lpu237iButtonType.Addmit,
-                        Lpu237iButtonType.None
+                        Lpu237iButtonType.None // this case : when i-button is removed,  msr sends user-defined remove-values.
                 };
                 continue;
             }
@@ -853,7 +853,8 @@ public class Lpu237 extends HidDevice
                         Lpu237iButtonType.Zeros,
                         Lpu237iButtonType.Zeros7,
                         Lpu237iButtonType.F12,
-                        Lpu237iButtonType.Addmit
+                        Lpu237iButtonType.Addmit,
+                        Lpu237iButtonType.None // this case : when i-button is removed,  msr doesn't send anything
                 };
                 continue;
             }
@@ -2720,7 +2721,20 @@ public class Lpu237 extends HidDevice
             n_offset = Lpu237SystemStructureOffset.nBuzzerFrequency;
             n_size = Lpu237SystemStructureSize.nBuzzerFrequency;
 
+            //this cod eis dragon
             int n_data = m_parameters.get_buzzer_frequency();
+            if( n_data <= 500 ){
+                n_data = 500;
+            }
+            if(m_parameters.get_decoder_mmd1000()){
+                if(n_data==2500){
+                    n_data = 1600;
+                }
+            }
+            if( m_parameters.get_version_system().get_major() >4 && n_data == 1600 ){
+                n_data = 2500;
+            }
+
             byte[] s_data = IntByteConvert.intTobyte(n_data*10,ByteOrder.LITTLE_ENDIAN);
 
             InPacket packet = new InPacket();

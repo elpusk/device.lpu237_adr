@@ -12,11 +12,17 @@ import android.os.SystemClock;
 import androidx.annotation.NonNull;//import android.support.annotation.NonNull;
 import androidx.annotation.Nullable;//import android.support.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
+
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Button;
 import android.widget.Toast;
@@ -26,6 +32,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import kr.pe.sheep_transform.lpu237_adr.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
     private boolean m_b_need_finish_this_activity = false;
@@ -62,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     private PageiButtonTag m_page_ibutton_remove_tag = null;
     private PageTag m_cur_tag_page = null;
 
+    private boolean m_b_no_need_ibutton_remove_resize = false;
+    private ActivityMainBinding m_binding;
     //////////////////////////////
     // keyboard
     private TagKeyboard m_tag_keyboard;
@@ -227,7 +237,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        m_binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(m_binding.getRoot());
+        //setContentView(R.layout.activity_main);
         //
         registerReceiver();
 
@@ -266,24 +279,28 @@ public class MainActivity extends AppCompatActivity {
     {
         if( v.getId() == R.id.id_pretag_area ) {
             View v_old = (View)findViewById(R.id.id_posttag_area);
-            //v_old.setBackground(getDrawable(R.drawable.non_select_border));
-            v_old.setElevation(0*this.getResources().getDisplayMetrics().density);
+            if(v_old != null && v!= null ) {
+                //v_old.setBackground(getDrawable(R.drawable.non_select_border));
+                v_old.setElevation(0 * this.getResources().getDisplayMetrics().density);
 
-            //v.setBackground(getDrawable(R.drawable.select_border));
-            v.setElevation(8*this.getResources().getDisplayMetrics().density);
-            m_cur_tag_page.select_prefix_tag(true);
+                //v.setBackground(getDrawable(R.drawable.select_border));
+                v.setElevation(8 * this.getResources().getDisplayMetrics().density);
+                m_cur_tag_page.select_prefix_tag(true);
+            }
         }
     }
     public void onClickPostfixSection(View v)
     {
         if( v.getId() == R.id.id_posttag_area ) {
             View v_old = (View)findViewById(R.id.id_pretag_area);
-            //v_old.setBackground(getDrawable(R.drawable.non_select_border));
-            v_old.setElevation(0*this.getResources().getDisplayMetrics().density);
+            if(v_old != null && v!= null ) {
+                //v_old.setBackground(getDrawable(R.drawable.non_select_border));
+                v_old.setElevation(0 * this.getResources().getDisplayMetrics().density);
 
-            //v.setBackground(getDrawable(R.drawable.select_border));
-            v.setElevation(8*this.getResources().getDisplayMetrics().density);
-            m_cur_tag_page.select_prefix_tag(false);
+                //v.setBackground(getDrawable(R.drawable.select_border));
+                v.setElevation(8 * this.getResources().getDisplayMetrics().density);
+                m_cur_tag_page.select_prefix_tag(false);
+            }
         }
     }
 
@@ -348,6 +365,80 @@ public class MainActivity extends AppCompatActivity {
         m_button_ibutton_remove = (Button)findViewById(R.id.id_button_ibutton_remove);
         m_button_ibutton_remove_tag = (Button)findViewById(R.id.id_button_ibutton_remove_tag);
 
+        // ViewTreeObserver를 사용하여 레이아웃이 완료된 후에 버튼 높이를 가져옴
+        m_button_ibutton_remove_tag.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                // 화면 크기나 밀도에 따라 텍스트 크기 설정
+                DisplayMetrics metrics = getResources().getDisplayMetrics();
+                float screenWidthDp = metrics.widthPixels / (metrics.densityDpi / 160f);
+                Log.d("info", "screenWidthDp = "+ screenWidthDp);
+
+                int originalHeight = m_button_info.getHeight();// 버튼의 기존 높이를 가져옴
+                int newHeight = originalHeight;
+
+                float f_txx_sp_size = 18.0f;
+                if(screenWidthDp <= 1280.0f ){//max zoom(largest)
+                    f_txx_sp_size = 14.0f;//-4
+                    newHeight = (int) (originalHeight * 0.9);// 기존 높이의 10%를 뺀 높이로 설정
+                }
+                else if(screenWidthDp <= 1450.0f){//larger
+
+                }
+                else if(screenWidthDp<=1652.0f){//large
+
+                }
+                else if(screenWidthDp<=1920.0f){//default
+                }
+                else{//small. maybe 2258.8235
+                    f_txx_sp_size = 22.0f;//+4
+                    newHeight = (int) (originalHeight * 1.1);// 기존 높이의 10%를 더한 높이로 설정
+                }
+
+                ViewGroup.LayoutParams params = null;
+
+                // 레이아웃 파라미터를 사용하여 높이를 변경
+                m_button_info.setTextSize(TypedValue.COMPLEX_UNIT_SP, f_txx_sp_size);
+                params = m_button_info.getLayoutParams();
+                params.height = newHeight;
+                m_button_info.setLayoutParams(params);
+
+                m_button_common.setTextSize(TypedValue.COMPLEX_UNIT_SP, f_txx_sp_size);
+                params = m_button_common.getLayoutParams();
+                params.height = newHeight;
+                m_button_common.setLayoutParams(params);
+
+                m_button_global.setTextSize(TypedValue.COMPLEX_UNIT_SP, f_txx_sp_size);
+                params = m_button_global.getLayoutParams();
+                params.height = newHeight;
+                m_button_global.setLayoutParams(params);
+
+                for(int i=0; i<3; i++) {
+                    m_button_private[i].setTextSize(TypedValue.COMPLEX_UNIT_SP, f_txx_sp_size);
+                    params = m_button_private[i].getLayoutParams();
+                    params.height = newHeight;
+                    m_button_private[i].setLayoutParams(params);
+                }
+
+                m_button_ibutton_tag.setTextSize(TypedValue.COMPLEX_UNIT_SP, f_txx_sp_size);
+                params = m_button_ibutton_tag.getLayoutParams();
+                params.height = newHeight;
+                m_button_ibutton_tag.setLayoutParams(params);
+
+                m_button_ibutton_remove.setTextSize(TypedValue.COMPLEX_UNIT_SP, f_txx_sp_size);
+                params = m_button_ibutton_remove.getLayoutParams();
+                params.height = newHeight;
+                m_button_ibutton_remove.setLayoutParams(params);
+
+                m_button_ibutton_remove_tag.setTextSize(TypedValue.COMPLEX_UNIT_SP, f_txx_sp_size);
+                params = m_button_ibutton_remove_tag.getLayoutParams();
+                params.height = newHeight;
+                m_button_ibutton_remove_tag.setLayoutParams(params);
+
+                // 리스너를 제거하여 한 번만 실행되도록 함
+                m_button_ibutton_remove_tag.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
 
         m_button_info.setOnClickListener( new Button.OnClickListener(){
             @Override
@@ -394,7 +485,8 @@ public class MainActivity extends AppCompatActivity {
         m_button_ibutton_remove.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                change_page( FramePage.PageiButtonRemove,true );
+                change_page( FramePage.PageiButtonRemove,m_b_no_need_ibutton_remove_resize );
+                m_b_no_need_ibutton_remove_resize = true;//first time only resize
             }
         });
         m_button_ibutton_remove_tag.setOnClickListener(new Button.OnClickListener(){
@@ -481,6 +573,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ini_post( int n_dev_index ){
+        String s_v = ManagerDevice.getInstance().lpu237_getVersionSystem();
+        String s_n = ManagerDevice.getInstance().lpu237_getName();
 
         enable_all_button(true);
         m_map_tab_button.clear();
@@ -508,13 +602,26 @@ public class MainActivity extends AppCompatActivity {
                     m_map_tab_button.put(new Integer(FramePage.PageTrack3), m_button_private[2]);
 
                     m_map_tab_button.put(new Integer(FramePage.PageiButtonTag), m_button_ibutton_tag);
-                    m_map_tab_button.put(new Integer(FramePage.PageiButtonRemove), m_button_ibutton_remove);
-                    m_map_tab_button.put(new Integer(FramePage.PageiButtonRemoveTag), m_button_ibutton_remove_tag);
+
+                    if(Lpu237Tools.is_support_ibutton_prepostfix_on_remove(s_n,s_v)){
+                        m_map_tab_button.put(new Integer(FramePage.PageiButtonRemove), m_button_ibutton_remove);
+                        m_map_tab_button.put(new Integer(FramePage.PageiButtonRemoveTag), m_button_ibutton_remove_tag);
+                    }
+                    else{
+                        m_button_ibutton_remove.setEnabled(false);
+                        m_button_ibutton_remove_tag.setEnabled(false);
+                    }
                     break;
                 case Lpu237DeviceType.IbuttonOlny:
                     m_map_tab_button.put(new Integer(FramePage.PageiButtonTag), m_button_ibutton_tag);
-                    m_map_tab_button.put(new Integer(FramePage.PageiButtonRemove), m_button_ibutton_remove);
-                    m_map_tab_button.put(new Integer(FramePage.PageiButtonRemoveTag), m_button_ibutton_remove_tag);
+                    if(Lpu237Tools.is_support_ibutton_prepostfix_on_remove(s_n,s_v)){
+                        m_map_tab_button.put(new Integer(FramePage.PageiButtonRemove), m_button_ibutton_remove);
+                        m_map_tab_button.put(new Integer(FramePage.PageiButtonRemoveTag), m_button_ibutton_remove_tag);
+                    }
+                    else{
+                        m_button_ibutton_remove.setEnabled(false);
+                        m_button_ibutton_remove_tag.setEnabled(false);
+                    }
 
                     m_button_global.setEnabled(false);
                     m_button_private[0].setEnabled(false);
@@ -651,11 +758,11 @@ public class MainActivity extends AppCompatActivity {
 
             switch(n_page){
                 case FramePage.PageDevice:
-                    m_page_device.ini();
+                     m_page_device.ini();
                     break;
                 case FramePage.PageCommon:
-                    m_page_common.ini();
-                    m_page_common.setup_from_device_manager();
+                    m_page_common.ini(m_binding);
+                    m_page_common.update_control_from_device_manager(m_binding);
                     break;
                 case FramePage.PageGlobal:
                     b_tag_page = true;
@@ -718,6 +825,39 @@ public class MainActivity extends AppCompatActivity {
 
                 //findViewById(R.id.id_pretag_area).setBackground(getDrawable(R.drawable.select_border));
                 findViewById(R.id.id_pretag_area).setElevation(8*this.getResources().getDisplayMetrics().density);
+
+                if(!b_status_change_only){
+                    /*
+                    ListView lv = findViewById(R.id.id_listview_pretag);
+                    // 화면 크기나 밀도에 따라 텍스트 크기 설정
+                    DisplayMetrics metrics = getResources().getDisplayMetrics();
+                    float screenWidthDp = metrics.widthPixels / (metrics.densityDpi / 160f);
+                    Log.d("info", "screenWidthDp = "+ screenWidthDp);
+
+                    int originalHeight = lv.getHeight();// 버튼의 기존 높이를 가져옴
+                    int newHeight = originalHeight;
+
+                    if(screenWidthDp <= 1280.0f ){//max zoom(largest)
+                    }
+                    else if(screenWidthDp <= 1450.0f){//larger
+
+                    }
+                    else if(screenWidthDp<=1652.0f){//large
+
+                    }
+                    else if(screenWidthDp<=1920.0f){//default
+                        newHeight = (int) (originalHeight * 1.2);// 기존 높이의 20%를 더한 높이로 설정
+                    }
+                    else{//small. maybe 2258.8235
+                        newHeight = (int) (originalHeight * 2.0);// 기존 높이의 40%를 더한 높이로 설정
+                    }
+
+                    // 레이아웃 파라미터를 사용하여 높이를 변경
+                    ViewGroup.LayoutParams params = lv.getLayoutParams();
+                    params.height = newHeight;
+                    lv.setLayoutParams(params);
+                    */
+                }
                 //
                 m_tag_keyboard.registerPage(m_cur_tag_page);
                 m_tag_keyboard.registerTagListView(m_n_id_list_view_ibutton_remove,array_item);

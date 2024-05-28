@@ -526,6 +526,7 @@ class ManagerDevice implements Runnable
                 continue;
             if( m_b_stop_update_activiy.get())
                 continue;
+            //
             String s_deferred_fw_ok_message = m_s_deferred_fw_ok_message;
             Tools.showOkDialog(
                     m_update_activity
@@ -1992,7 +1993,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_mmd1100_reset_interval( byte n_reset ){
+    public void lpu237_set_mmd1100_reset_interval( int n_reset ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -2656,19 +2657,37 @@ class ManagerDevice implements Runnable
                 continue;
             }
 
+            boolean b_need_permission = true;
+
             PendingIntent pendingIntent = null;
             for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
                 UsbDevice device = entry.getValue();
 
                 if( (device.getVendorId() == Lpu237Info.USB_VID) && (device.getProductId() == Lpu237Info.USB_PID )) {
-                    pendingIntent =
-                            PendingIntent.getBroadcast(
-                                    request.getContext()//m_application
-                                    , 0
-                                    , new Intent(ManagerIntentAction.LPU237_PERMISSION)
-                                    , PendingIntent.FLAG_MUTABLE
-                            );
-                    m_usbManager.requestPermission(device, pendingIntent);
+                    if( m_system_mode.is_start_up_bootloader() ){
+                        if( m_usbManager.hasPermission(device)) {
+                            _add_to_list(new Lpu237(m_usbManager, device));//add device
+                            select_lpu237(0);
+
+                            b_need_permission = false;
+                            m_system_mode.disable_bootloader();
+                            if(m_update_activity != null){
+                                m_update_activity.finish();//close
+                                m_update_activity = null;
+                            }
+                            //showFwDownloadOk("Parameters is default.(by bootloader)");
+                        }
+                    }
+                    if(b_need_permission) {
+                        pendingIntent =
+                                PendingIntent.getBroadcast(
+                                        request.getContext()//m_application
+                                        , 0
+                                        , new Intent(ManagerIntentAction.LPU237_PERMISSION)
+                                        , PendingIntent.FLAG_MUTABLE
+                                );
+                        m_usbManager.requestPermission(device, pendingIntent);
+                    }
                     result = TypeRequestResult.RequestResult_success;
                     b_result = true;
                     break;//exit for - only one device supports

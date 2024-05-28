@@ -1,4 +1,36 @@
 # lpu237_adr
+* Current
+  + version 3.2.0
+  + funcationality
+    - change interface.
+    - buzzer on/off
+    - i-button 4 mode(zeros,F12, zeros7, addmit and none(used definition))
+    - i-button range function(none mode)
+    - msr reading direction.
+    - track orders
+    - mmd1100 reset interval
+    - track en/disable
+    - msr global pre/postfix sending condition.
+    - msr success indication condition.
+    - firmware update with rom file.
+    - supports callisto, ganymede and himalia.
+  + NOT SUUPORT
+    - langeuage change function.
+    - firmware with raw binary file.
+    - save the system parameters to file.
+    - load the system parameters from file.
+
+# history
+* 2024.05.27 - version 3.2 release
+  + change icon as google rule.
+  + firmware update with rom file in android12.
+  + fix buzzer bug of himalia.
+  + test OK of ganymede v5.22.
+  + test OK of himalia v2.2.( YOU MUST USE himalia v2.2 greater then equal.)
+    - checked firmware update with lpu23x_00032.rom.
+    - checked recovering system parameters after updating.
+    - checked try firmware recover when app is started.
+
 * 2024.05.24 - version 3.1.1 release
   + change for building apk in release.
   + build release test signed version apk
