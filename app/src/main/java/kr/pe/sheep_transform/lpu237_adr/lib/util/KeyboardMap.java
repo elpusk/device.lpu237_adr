@@ -1,4 +1,6 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.util;
+
+import kr.pe.sheep_transform.lpu237_adr.lib.util.KeyboardConst;
 
 public class KeyboardMap {
     //<><><><><><><>

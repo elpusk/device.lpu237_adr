@@ -2,6 +2,8 @@ package kr.pe.sheep_transform.lpu237_adr;
 
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
 
+import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.ManagerDevice;
+
 public class PageTrack extends PageTag{
     private int m_n_track = -1;
 

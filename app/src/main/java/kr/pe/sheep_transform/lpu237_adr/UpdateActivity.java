@@ -11,15 +11,17 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;//android.support.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Button;
-import android.widget.Toast;
 
 import java.io.File;
+
+import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.ManagerDevice;
+import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.MgmtTypeRequest;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.Rom;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.RomResult;
 
 public class UpdateActivity extends AppCompatActivity implements FileDialog.FileSelectedListener {
 
@@ -44,11 +46,12 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
             dialog.dismiss();
             //UpdateActivity.super.onBackPressed();
             ManagerDevice.getInstance().unload();
+            Manager.getInstance().unload();
             //
-            if( ManagerDevice.getInstance().get_update_activity() != null )
-                ManagerDevice.getInstance().get_update_activity().finishAffinity();
-            if( ManagerDevice.getInstance().get_startup_activity() != null ) {
-                ManagerDevice.getInstance().get_startup_activity().finishAffinity();
+            if( Manager.getInstance().get_update_activity() != null )
+                Manager.getInstance().get_update_activity().finishAffinity();
+            if( Manager.getInstance().get_startup_activity() != null ) {
+                Manager.getInstance().get_startup_activity().finishAffinity();
             }
             System.runFinalization();
             System.exit(0);
@@ -126,7 +129,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
 
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
+        if (resultCode == RESULT_OK && requestCode == IntentRequestCode.OPEN_ROM_FILE) {
             Uri uri = data.getData();
             m_fw_file = Tools.fileFromContentUri(this,uri);
             if(m_fw_file != null) {
@@ -179,7 +182,8 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
         m_textview_recover = findViewById(R.id.id_textview_step4);//recover
         //
         m_textview_start_boot.setText(" SUCCESS : Starts Bootloader.");
-        ManagerDevice.getInstance().set_update_activity(this);
+        Manager.getInstance().set_update_activity(this);
+        ManagerDevice.getInstance().addCallbackParameter(this);
 
         // recovering the instance state
         if (savedInstanceState == null) {
@@ -194,7 +198,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                 }
             } else {
                 m_textview_info.setText("Please Waits!  Getting the sector info of system.");
-                if (!ManagerDevice.getInstance().push_requst(TypeRequest.Request_firmware_sector_info, this)) {
+                if (!ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_firmware_sector_info, this)) {
                     Tools.showOkDialogForErrorTerminate(this, "FU06", "ERROR", this.getResources().getString(R.string.msg_dialog_error_reboot));
                 }
             }
@@ -206,8 +210,8 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
     @Override
     protected void onResume() {
         super.onResume();
-        ManagerDevice.getInstance().stop_update_activity(false);
-        ManagerDevice.getInstance().showFwDownloadOk();
+        Manager.getInstance().stop_update_activity(false);
+        Manager.getInstance().showFwDownloadOk();
         Log.i("onResume","UpdateActivity : onResume");
     }
 
@@ -225,15 +229,15 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
     protected void onDestroy() {
         unregisterReceiver();
         super.onDestroy();
-        ManagerDevice.getInstance().set_update_activity(null);
-        ManagerDevice.getInstance().stop_update_activity(true);
+        Manager.getInstance().set_update_activity(null);
+        Manager.getInstance().stop_update_activity(true);
         Log.i("onDestroy","UpdateActivity : onDestroy");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        ManagerDevice.getInstance().stop_update_activity(true);
+        Manager.getInstance().stop_update_activity(true);
         Log.i("onStop","UpdateActivity : onStop");
     }
 
@@ -317,7 +321,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
 
                             ManagerDevice.getInstance().set_rom_file(0,m_fw_file,n_index);
                             m_textview_info.setText("Please Waits!  Getting the sector info of system.");
-                            if (ManagerDevice.getInstance().push_requst(TypeRequest.Request_firmware_sector_info,UpdateActivity.this)) {
+                            if (ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_firmware_sector_info,UpdateActivity.this)) {
                                 Log.i("fileSelected", "success : Request_firmware_sector_info");
                             } else {
                                 Log.i("fileSelected", "error : Request_firmware_sector_info");
@@ -411,7 +415,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                         _callback_recover_parameter(context, intent);
                         break;
                     case ManagerIntentAction.INT_GENERAL_TERMINATE_APP:
-                        ManagerDevice.getInstance().set_update_activity(null);
+                        Manager.getInstance().set_update_activity(null);
                         finish();
                     default:
                         Log.i("UpdateAct::onReceive", intent.getAction());

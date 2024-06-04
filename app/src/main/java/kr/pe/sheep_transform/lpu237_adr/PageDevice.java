@@ -2,19 +2,10 @@ package kr.pe.sheep_transform.lpu237_adr;
 
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.provider.ContactsContract;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultCaller;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;//android.support.v4.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;//android.support.v4.content.ContextCompat;
@@ -22,11 +13,15 @@ import androidx.core.content.ContextCompat;//android.support.v4.content.ContextC
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.Manifest;
 
 import java.io.File;
+
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Tools;
+import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.ManagerDevice;
+import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.MgmtTypeRequest;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.Rom;
 
 interface UpdateStep{
     int Reset = 0;
@@ -59,9 +54,6 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
     }
 
     public void ini(){
-        if(DebugDefine.WhenNoDeviceFileSelect) {
-            return;
-        }
         m_textview_info = (TextView) m_activity.findViewById(R.id.id_textview_info);
         m_button_update = (Button)m_activity.findViewById(R.id.id_button_update_firmware);
         //
@@ -86,7 +78,7 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
                 ActivityCompat.requestPermissions(
                         m_activity,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        RequestCode.LOADFROM_EXTERNAL_STORAGE
+                        IntentRequestCode.LOADFROM_EXTERNAL_STORAGE
                 );
             } else {
                 select_firmware();
@@ -125,7 +117,7 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
             }
 
             if (ManagerDevice.getInstance().push_requst(
-                    TypeRequest.Request_start_bootloader
+                    MgmtTypeRequest.Request_start_bootloader
                     , m_activity.getBaseContext()
                     , file
                     , ManagerDevice.getInstance().lpu237_getName()

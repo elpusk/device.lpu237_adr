@@ -13,238 +13,21 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.Build;
-import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
-import android.util.Log;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 
 import static java.util.Arrays.copyOf;
 
-import androidx.activity.result.ActivityResultLauncher;
-import android.webkit.MimeTypeMap;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-interface DebugDefine{
-    boolean WhenNoDeviceFileSelect = false;
-}
-
-interface RequestCode{
-    int LOADFROM_EXTERNAL_STORAGE = 2;
-    int OPEN_ROM_FILE = 3;
-}
-
-interface ManagerIntentAction{
-
-    String USB_ATTACHED = "android.hardware.usb.action.USB_DEVICE_ATTACHED";
-    String USB_DETACHED = "android.hardware.usb.action.USB_DEVICE_DETACHED";
-    String UPDATE_LIST_NO_DEVICE = "kr.pe.sheep_transform.lpu237_adr.UPDATE_LIST_NO_DEVICE";
-
-    String LPU237_PERMISSION = "kr.pe.sheep_transform.lpu237_adr.LPU237_PERMISSION";
-    String GET_INFO_FOR_LIST = "kr.pe.sheep_transform.lpu237_adr.GET_INFO_FOR_LIST";
-    String UPDATE_UID = "kr.pe.sheep_transform.lpu237_adr.UPDATE_UID";
-    String GET_PARAMETERS = "kr.pe.sheep_transform.lpu237_adr.GET_PARAMETERS";
-    String SET_PARAMETERS = "kr.pe.sheep_transform.lpu237_adr.SET_PARAMETERS";
-
-    String BOOTLOADER_PERMISSION = "kr.pe.sheep_transform.lpu237_adr.BOOTLOADER_PERMISSION";
-    String START_BOOTLOADER = "kr.pe.sheep_transform.lpu237_adr.START_BOOTLOADER";
-    String SECTOR_INFO = "kr.pe.sheep_transform.lpu237_adr.SECTOR_INFO";
-    String ERASE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.ERASE_SECTOR";
-    String ERASE_COMPLETE = "kr.pe.sheep_transform.lpu237_adr.ERASE_COMPLETE";
-    String WRITE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.WRITE_SECTOR";
-    String WRITE_COMPLETE = "kr.pe.sheep_transform.lpu237_adr.WRITE_COMPLETE";
-    String START_APP = "kr.pe.sheep_transform.lpu237_adr.START_APP";
-    String RECOVER_PARAMETER = "kr.pe.sheep_transform.lpu237_adr.RECOVER_PARAMETER";
-
-    String ACTIVITY_STARTUP_DISPLAY_DEVICE_LIST = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_STARTUP_DISPLAY_DEVICE_LIST";
-
-    String ACTIVITY_MAIN_COMPLETE_GET_PARAMETERS = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_MAIN_COMPLETE_GET_PARAMETERS";
-    String ACTIVITY_MAIN_COMPLETE_SET_PARAMETERS = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_MAIN_COMPLETE_SET_PARAMETERS";
-    String ACTIVITY_MAIN_START_BOOT = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_MAIN_START_BOOT";
-
-    String ACTIVITY_UPDATE_START_BOOT = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_START_BOOT";
-    String ACTIVITY_UPDATE_SECTOR_INFO = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_SECTOR_INFO";
-    String ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR";
-    String ACTIVITY_UPDATE_DETAIL_ERASE_INFO = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_DETAIL_ERASE_INFO";
-    String ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE";
-    String ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR";
-    String ACTIVITY_UPDATE_DETAIL_WRITE_INFO = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_DETAIL_WRITE_INFO";
-    String ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE";
-    String ACTIVITY_UPDATE_START_APP = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_START_APP";
-    String ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS";
-    String ACTIVITY_UPDATE_RECOVER_PARAMETER = "kr.pe.sheep_transform.lpu237_adr.ACTIVITY_UPDATE_RECOVER_PARAMETER";
-
-    String GENERAL_TERMINATE_APP = "kr.pe.sheep_transform.lpu237_adr.GENERAL_TERMINATE_APP";
-    //
-    int INT_ALL_ACTION = 0xFFFFFFFF;
-    int INT_UNKNOWN = 0;
-    int INT_USB_ATTACHED =  0x01000001;
-    int INT_USB_DETACHED =  0x01000002;
-    int INT_UPDATE_LIST_NO_DEVICE =   0x01000004;
-    int INT_ALL_USB =    0x010000FF;
-
-    int INT_LPU237_PERMISSION =     0x02000000;
-    int INT_GET_INFO_FOR_LIST =     0x02000001;
-    int INT_UPDATE_UID =            0x02000002;
-    int INT_GET_PARAMETERS =        0x02000004;
-    int INT_SET_PARAMETERS =        0x02000008;
-    int INT_ALL_LPU237 =         0x020000FF;
-
-    int INT_BOOTLOADER_PERMISSION =     0x04000000;
-    int INT_START_BOOTLOADER =          0x04000001;
-    int INT_SECTOR_INFO =            0x04000002;
-    int INT_ERASE_SECTOR =            0x04000004;
-    int INT_ERASE_COMPLETE =          0x04000008;
-    int INT_WRITE_SECTOR =            0x04000010;
-    int INT_WRITE_COMPLETE =            0x04000020;
-    int INT_START_APP =                 0x04000040;
-    int INT_RECOVER_PARAMETER =         0x04000080;
-    int INT_ALL_BOOTLOADER =         0x040000FF;
-
-    int INT_ACTIVITY_STARTUP_DISPLAY_DEVICE_LIST = 0x08000000;
-    int INT_ALL_ACTIVITY_STARTUP              = 0x080000FF;
-
-    int INT_ACTIVITY_MAIN_COMPLETE_GET_PARAMETERS = 0x10000000;
-    int INT_ACTIVITY_MAIN_COMPLETE_SET_PARAMETERS = 0x10000001;
-    int INT_ACTIVITY_MAIN_START_BOOT              = 0x10000002;
-    int INT_ALL_ACTIVITY_MAIN                     = 0x100000FF;
-
-    int INT_ACTIVITY_UPDATE_START_BOOT              = 0x20000001;
-    int INT_ACTIVITY_UPDATE_SECTOR_INFO             = 0x20000002;
-    int INT_ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR   = 0x20000004;
-    int INT_ACTIVITY_UPDATE_DETAIL_ERASE_INFO       = 0x20000008;
-    int INT_ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE = 0x20000010;
-    int INT_ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR   = 0x20000020;
-    int INT_ACTIVITY_UPDATE_DETAIL_WRITE_INFO       = 0x20000040;
-    int INT_ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE = 0x20000080;
-    int INT_ACTIVITY_UPDATE_START_APP               = 0x20000100;
-    int INT_ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS = 0x20000200;
-    int INT_ACTIVITY_UPDATE_RECOVER_PARAMETER       = 0x20000400;
-    int INT_ALL_ACTIVITY_UPDATE                     = 0x2000FFFF;
-
-    int INT_GENERAL_TERMINATE_APP         = 0x40000000;
-    int INT_ALL_GENERAL                 = 0x400000FF;
-
-    //extra data index of intent.
-    String EXTRA_NAME_RESPONSE_INDEX = "kr.pe.sheep_transform.lpu237_adr.EXTRA_NAME_RESPONSE_INDEX";
-    String EXTRA_NAME_RESPONSE_SECTOR_INDEX = "kr.pe.sheep_transform.lpu237_adr.EXTRA_NAME_RESPONSE_SECTOR_INDEX";
-    String EXTRA_NAME_RESPONSE_SECTOR = "kr.pe.sheep_transform.lpu237_adr.EXTRA_NAME_RESPONSE_SECTOR";
-    String EXTRA_NAME_RESPONSE_SECTOR_CHAIN = "kr.pe.sheep_transform.lpu237_adr.EXTRA_NAME_RESPONSE_SECTOR_CHAIN";
-    String EXTRA_NAME_RESPONSE_BOOL_RESULT_FOR_ACTIVITY = "kr.pe.sheep_transform.lpu237_adr.EXTRA_NAME_RESPONSE_BOOL_RESULT_FOR_ACTIVITY";
-    String EXTRA_NAME_RESPONSE_INT_RESULT_FOR_ACTIVITY = "kr.pe.sheep_transform.lpu237_adr.EXTRA_NAME_RESPONSE_INT_RESULT_FOR_ACTIVITY";
-
-}
+import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.ManagerDevice;
 
 public class Tools {
-    static public String byteArrayToHex(byte[] a) {
-        StringBuilder sb = new StringBuilder();
-        for(final byte b: a)
-            sb.append(String.format("%02x ", b&0xff));
-        return sb.toString();
-    }
-    static public String byteToHex(byte a){
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%02x ", a&0xff));
-        return sb.toString();
-    }
-
-    static public String   StringOfHidKey( byte c_modifier, byte c_key ){
-        String s_key = "";
-
-        if( (c_modifier & KeyboardConst.HIDKEY_MOD_L_CTL) == KeyboardConst.HIDKEY_MOD_L_CTL ){
-            s_key += "CTRL + ";
-        }
-        if( (c_modifier & KeyboardConst.HIDKEY_MOD_L_ALT) == KeyboardConst.HIDKEY_MOD_L_ALT ){
-            s_key += "ALT + ";
-        }
-        if( (c_modifier & KeyboardConst.HIDKEY_MOD_L_SFT) == KeyboardConst.HIDKEY_MOD_L_SFT ){
-
-            if( MapCodeToString.CvtShiftCodeToString.containsKey(c_key) ){
-                if( MapCodeToString.CvtUnshiftCodeToString.containsKey(c_key) ){
-                    String s_unshift_key = MapCodeToString.CvtUnshiftCodeToString.get(c_key);
-                    String s_shift_key = MapCodeToString.CvtShiftCodeToString.get(c_key);
-                    if( !s_shift_key.equals(s_unshift_key)){
-                        s_key += "(SHIFT) + ";
-                        s_key += MapCodeToString.CvtShiftCodeToString.get(c_key);
-                    }
-                    else{
-                        s_key += "SHIFT + ";
-                        s_key += MapCodeToString.CvtShiftCodeToString.get(c_key);
-                    }
-                }
-                else {
-                    s_key += "SHIFT + ";
-                    s_key += MapCodeToString.CvtShiftCodeToString.get(c_key);
-                }
-            }
-            else{
-                s_key += "SHIFT + ";
-                s_key += Tools.byteToHex(c_key);
-            }
-        }
-        else{
-            if( MapCodeToString.CvtUnshiftCodeToString.containsKey(c_key) ){
-                s_key += MapCodeToString.CvtUnshiftCodeToString.get(c_key);
-            }
-            else{
-                s_key += Tools.byteToHex(c_key);
-            }
-        }
-        return s_key;
-    }
-
-    static public String getStringFromByteArray( byte[] s_array ){
-        String s_data = "";
-
-        do {
-            try {
-                if (s_array == null)
-                    continue;
-                int n_len = 0;
-                for(byte c:s_array){
-                    if( c == 0x00)
-                        break;
-                    else
-                        n_len++;
-                }
-                if( n_len == 0 )
-                    continue;
-                byte[] s_array_out = Arrays.copyOf(s_array,n_len);
-                s_data = new String(s_array_out, "UTF-8");  // Best way to decode using "UTF-8"
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-                s_data = "";
-            }
-        }while (false);
-        return s_data;
-    }
-
-    static public boolean is_all_zeros( byte[] s_data ){
-        boolean b_zero = false;
-
-        do{
-            if( s_data == null )
-                continue;
-
-            b_zero = true;
-
-            for( byte c : s_data){
-                if( c != 0 ){
-                    b_zero = false;
-                    break;
-                }
-            }//end for
-        }while(false);
-        return b_zero;
-    }
 
     static public IntentFilter getIntentFilter( int n_actions ) {
         IntentFilter filter = new IntentFilter();
@@ -514,19 +297,20 @@ public class Tools {
 
             //terminate app
             ManagerDevice.getInstance().unload();
+            Manager.getInstance().unload();
 
-            if( ManagerDevice.getInstance().get_update_activity() != null ) {
-                ManagerDevice.getInstance().get_update_activity().finishAffinity();
-                ManagerDevice.getInstance().set_update_activity(null);
+            if( Manager.getInstance().get_update_activity() != null ) {
+                Manager.getInstance().get_update_activity().finishAffinity();
+                Manager.getInstance().set_update_activity(null);
             }
 
-            if( ManagerDevice.getInstance().get_main_activity() != null ) {
-                ManagerDevice.getInstance().get_main_activity().finishAffinity();
-                ManagerDevice.getInstance().set_main_activity(null);
+            if( Manager.getInstance().get_main_activity() != null ) {
+                Manager.getInstance().get_main_activity().finishAffinity();
+                Manager.getInstance().set_main_activity(null);
             }
-            if( ManagerDevice.getInstance().get_startup_activity() != null ) {
-                ManagerDevice.getInstance().get_startup_activity().finishAffinity();
-                ManagerDevice.getInstance().set_startup_activiy(null);
+            if( Manager.getInstance().get_startup_activity() != null ) {
+                Manager.getInstance().get_startup_activity().finishAffinity();
+                Manager.getInstance().set_startup_activiy(null);
             }
             System.runFinalization();
             System.exit(0);
@@ -541,17 +325,19 @@ public class Tools {
 
             //terminate app
             ManagerDevice.getInstance().unload();
-            if( ManagerDevice.getInstance().get_update_activity() != null ) {
-                ManagerDevice.getInstance().get_update_activity().finishAffinity();
-                ManagerDevice.getInstance().set_update_activity(null);
+            Manager.getInstance().unload();
+
+            if( Manager.getInstance().get_update_activity() != null ) {
+                Manager.getInstance().get_update_activity().finishAffinity();
+                Manager.getInstance().set_update_activity(null);
             }
-            if( ManagerDevice.getInstance().get_main_activity() != null ) {
-                ManagerDevice.getInstance().get_main_activity().finishAffinity();
-                ManagerDevice.getInstance().set_main_activity(null);
+            if( Manager.getInstance().get_main_activity() != null ) {
+                Manager.getInstance().get_main_activity().finishAffinity();
+                Manager.getInstance().set_main_activity(null);
             }
-            if( ManagerDevice.getInstance().get_startup_activity() != null ) {
-                ManagerDevice.getInstance().get_startup_activity().finishAffinity();
-                ManagerDevice.getInstance().set_startup_activiy(null);
+            if( Manager.getInstance().get_startup_activity() != null ) {
+                Manager.getInstance().get_startup_activity().finishAffinity();
+                Manager.getInstance().set_startup_activiy(null);
             }
             System.runFinalization();
             System.exit(0);
@@ -616,7 +402,7 @@ public class Tools {
         String pickerInitialUri = "Download";
         intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
 
-        startActivityForResult(activity, intent, RequestCode.OPEN_ROM_FILE, null);
+        startActivityForResult(activity, intent, IntentRequestCode.OPEN_ROM_FILE, null);
 
     }
     static public void selectFirmwareLessApi29(Activity activity,FileDialog.FileSelectedListener listener){
@@ -745,16 +531,4 @@ public class Tools {
     }
 }
 
-interface FramePage{
-    int PageNone = -1;
-    int PageDevice = 0;
-    int PageCommon = 1;
-    int PageGlobal = 2;
-    int PageTrack1 = 3;
-    int PageTrack2 = 4;
-    int PageTrack3 = 5;
-    int PageiButtonTag = 6;
-    int PageiButtonRemove = 7;
-    int PageiButtonRemoveTag = 8;
-    int PageTotal = PageiButtonRemoveTag+1;
-}
+

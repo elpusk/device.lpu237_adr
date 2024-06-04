@@ -2,51 +2,30 @@ package kr.pe.sheep_transform.lpu237_adr;
 
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.hardware.usb.UsbManager;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultCaller;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
 
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.databinding.DataBindingUtil;//android.databinding.DataBindingUtil;
-import android.os.Bundle;
-import com.google.android.material.snackbar.Snackbar;//android.support.design.widget.Snackbar;
-import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
-import androidx.recyclerview.widget.DividerItemDecoration;//android.support.v7.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;//android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.RelativeLayout;
-import androidx.recyclerview.widget.RecyclerView;//android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.hardware.usb.UsbDevice;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import android.util.Log;
 
 import kr.pe.sheep_transform.lpu237_adr.databinding.ActivityStartUpBinding;
+import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.ManagerDevice;
+import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.MgmtTypeRequest;
 
 public class StartUpActivity extends AppCompatActivity
 {
@@ -153,8 +132,8 @@ public class StartUpActivity extends AppCompatActivity
         //////////////////////
         //////////////////////
         registerReceiver();
-        ManagerDevice.getInstance().set_startup_activiy(this);
-        if( !ManagerDevice.getInstance().push_requst(TypeRequest.Request_update_list,this) ){
+        Manager.getInstance().set_startup_activiy(this);
+        if( !ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_update_list,this) ){
             Tools.showOkDialogForErrorTerminate(this,"FN00","ERROR",getResources().getString(R.string.msg_dialog_error_terminate));
         }
 
@@ -221,7 +200,7 @@ public class StartUpActivity extends AppCompatActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);//add code ....
         do{//for debugging code.
             switch (requestCode) {
-                case RequestCode.LOADFROM_EXTERNAL_STORAGE:
+                case IntentRequestCode.LOADFROM_EXTERNAL_STORAGE:
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                         b_permitted = true;
                     }
@@ -229,12 +208,6 @@ public class StartUpActivity extends AppCompatActivity
             }//end switch
 
             if( b_permitted ){
-                if(DebugDefine.WhenNoDeviceFileSelect) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        // 현재 API 레벨이 29 (안드로이드 10) 이상인 경우 실행할 코드
-                        Tools.selectFirmwareGreaterThenEqualApi29(this);
-                    }
-                }
                 continue;
             }
 
@@ -244,7 +217,7 @@ public class StartUpActivity extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
+        if (resultCode == RESULT_OK && requestCode == IntentRequestCode.OPEN_ROM_FILE) {
             Uri uri = data.getData();
             /*
             File file = Tools.fileFromContentUri(this,uri);
@@ -264,13 +237,13 @@ public class StartUpActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         //registerReceiver();
-        ManagerDevice.getInstance().resume_startup_activity(true);
+        Manager.getInstance().resume_startup_activity(true);
         Log.i("onResume","StartUpActivity : onResume");
     }
 
     @Override
     protected void onPause() {
-        ManagerDevice.getInstance().resume_startup_activity(false);
+        Manager.getInstance().resume_startup_activity(false);
         super.onPause();
         //unregisterReceiver();
         Log.i("onPause","StartUpActivity : onPause");

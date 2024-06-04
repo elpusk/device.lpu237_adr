@@ -1,4 +1,4 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.util;
 
 public class FwVersion {
     public final static int SIZE_VERSION = 4;

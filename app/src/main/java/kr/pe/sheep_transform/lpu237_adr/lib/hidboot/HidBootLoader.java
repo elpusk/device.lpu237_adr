@@ -1,7 +1,6 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.hidboot;
 
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
@@ -11,29 +10,18 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-interface HidBootLoaderRequest{
-    byte cmdUnknown = 0;
-    byte cmdWrite = 10;
-    byte cmdRead = 20;
-    byte cmdErase = 30;
-    byte cmdRunApp = 40;
+import kr.pe.sheep_transform.lpu237_adr.lib.hid.HidDevice;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.Rom;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.RomErrorCodeFirmwareIndex;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.RomResult;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.FwVersion;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.IntByteConvert;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.SectorOrder;
 
-    //get sector info(from MH1902T), return data field : 4 bytes little endian start sector number,
-    // 4 bytes little endian the number of sector(except boot area)
-    byte cmdGetSectorInfo = 50;
-}
 
-interface  HidBootLoaderResponse{
-    byte resultSuccess = 0;
-    byte resultError = (byte)0xFF;
-}
+public class HidBootLoader extends HidDevice {
 
-interface HidBootLoaderInfo{
-    int USB_VID = 0x134b;
-    int USB_PID = 0x0243;
-}
-public class HidBootLoader extends HidDevice{
-
+    private HidBootCallback m_cb = null;
     private Rom m_rom = new Rom();
     private final int SIZE_SECTOR = 4096;
     private int m_n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_matched_name;
@@ -598,6 +586,11 @@ public class HidBootLoader extends HidDevice{
     }
     public  HidBootLoader(UsbManager usbManager, UsbDevice usbDevice){
         super(usbManager,usbDevice);
+        m_cb = null;
+    }
+    public  HidBootLoader(UsbManager usbManager, UsbDevice usbDevice,HidBootCallback cb){
+        super(usbManager,usbDevice);
+        m_cb = cb;
     }
 
     public boolean df_run_app(){
@@ -736,17 +729,26 @@ public class HidBootLoader extends HidDevice{
                         + ", tx size = "+String.valueOf(ps_data.length)
                 );
                 */
-                if( context != null){
-                    //send intent to updateActivitiy.
-                    Intent intent = new Intent(ManagerIntentAction.ACTIVITY_UPDATE_DETAIL_WRITE_INFO);
-                    intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR, n_sector);
-                    intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_CHAIN, w_chain);
-                    context.sendBroadcast(intent);
+                if(m_cb!=null){
+                    if(!m_cb.cbWriteSectorBeforeDo(context,w_chain,n_sector,m_order_write.get_the_number_of_sectors())){
+                        b_result = false;
+                        break;//exit while by user
+                    }
                 }
 
                 w_chain++;
 
                 n_tx = this.write(out_p.get_raw_packet());
+                if(m_cb!=null){
+                    boolean b_tx = true;
+                    if( n_tx != get_out_report_size() ){
+                        b_tx = false;//error
+                    }
+                    if(!m_cb.cbWriteSectorAfterDone(context,b_tx,w_chain,n_sector,m_order_write.get_the_number_of_sectors())){
+                        b_result = false;
+                        break;//exit while by user
+                    }
+                }
                 if( n_tx != get_out_report_size() ){
                     break;//exit while with error
                 }
@@ -799,17 +801,26 @@ public class HidBootLoader extends HidDevice{
                                 + ", tx size = "+String.valueOf(ps_data.length)
                 );
                 */
-                if( context != null){
-                    //send intent to updateActivitiy.
-                    Intent intent = new Intent(ManagerIntentAction.ACTIVITY_UPDATE_DETAIL_WRITE_INFO);
-                    intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR, n_sector);
-                    intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_CHAIN, w_chain);
-                    context.sendBroadcast(intent);
+                if(m_cb!=null){
+                    if(!m_cb.cbWriteSectorBeforeDo(context,w_chain,n_sector,m_order_write.get_the_number_of_sectors())){
+                        b_result = false;
+                        break;//exit while by user
+                    }
                 }
 
                 w_chain++;
                 //send data.
                 n_tx = this.write(out_p.get_raw_packet());
+                if(m_cb!=null){
+                    boolean b_tx = true;
+                    if( n_tx != get_out_report_size() ){
+                        b_tx = false;//error
+                    }
+                    if(!m_cb.cbWriteSectorAfterDone(context,b_tx,w_chain,n_sector,m_order_write.get_the_number_of_sectors())){
+                        b_result = false;
+                        break;//exit while by user
+                    }
+                }
                 if( n_tx != get_out_report_size() ){
                     b_result = false;
                     break;//error
@@ -910,11 +921,10 @@ public class HidBootLoader extends HidDevice{
 
             b_result = _df_erase_sector(n_sector);//For LPC1343 chip
 
-            if( context != null){
-                //send intent to updateActivitiy.
-                Intent intent = new Intent(ManagerIntentAction.ACTIVITY_UPDATE_DETAIL_ERASE_INFO);
-                intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR, n_sector);
-                context.sendBroadcast(intent);
+            if(m_cb != null){
+                if( !m_cb.cbEraseSectorAfterDone(context,b_result,n_sector,m_order_erase.get_the_number_of_sectors()) ){
+                    b_result = false;//break by user.
+                }
             }
 
         }while (false);

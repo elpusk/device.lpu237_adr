@@ -1,21 +1,12 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.mgmt;
 
-import android.Manifest;
 import android.app.Application;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Environment;
-import androidx.core.app.ActivityCompat;//android.support.v4.app.ActivityCompat;
-import androidx.core.content.ContextCompat;//android.support.v4.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 import android.hardware.usb.*;
 
@@ -30,7 +21,27 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class ManagerDevice implements Runnable
+import kr.pe.sheep_transform.lpu237_adr.HidBootCallbackImpl;
+import kr.pe.sheep_transform.lpu237_adr.MainActivity;
+import kr.pe.sheep_transform.lpu237_adr.ManagerIntentAction;
+import kr.pe.sheep_transform.lpu237_adr.R;
+import kr.pe.sheep_transform.lpu237_adr.StartUpActivity;
+//import kr.pe.sheep_transform.lpu237_adr.Tools;
+import kr.pe.sheep_transform.lpu237_adr.UpdateActivity;
+
+import kr.pe.sheep_transform.lpu237_adr.lib.hidboot.HidBootLoader;
+import kr.pe.sheep_transform.lpu237_adr.lib.hidboot.HidBootLoaderInfo;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Const;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Direction;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Tags;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.Rom;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.RomErrorCodeFirmwareIndex;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.RomResult;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.FwVersion;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.KeyboardConst;
+
+public class ManagerDevice implements Runnable
 {
 
     private static class Singleton {
@@ -98,19 +109,19 @@ class ManagerDevice implements Runnable
     private final int MAX_REQUEST = 50;
     public class Request{
 
-        private TypeRequest m_request = TypeRequest.Request_none;
+        private MgmtTypeRequest m_request = MgmtTypeRequest.Request_none;
         private Context m_context = null;
         private File m_file_firmware = null;
         private FwVersion m_version = null;
         private String m_s_data = "";
 
-        public Request( TypeRequest request, Context context )
+        public Request(MgmtTypeRequest request, Context context )
         {
             m_request = request;
             m_context = context;
         }
 
-        public Request( TypeRequest request, Context context,File file_firmware,String s_data, FwVersion version )
+        public Request(MgmtTypeRequest request, Context context, File file_firmware, String s_data, FwVersion version )
         {
             m_request = request;
             m_context = context;
@@ -119,7 +130,7 @@ class ManagerDevice implements Runnable
             m_version = version;
         }
 
-        public TypeRequest getRequest()
+        public MgmtTypeRequest getRequest()
         {
             return m_request;
         }
@@ -140,29 +151,29 @@ class ManagerDevice implements Runnable
 
     private final int MAX_RESPONSE = 50;
     public class Response{
-        private TypeRequest m_request = TypeRequest.Request_none;
-        private TypeRequestResult m_result = TypeRequestResult.RequestResult_ing;
+        private MgmtTypeRequest m_request = MgmtTypeRequest.Request_none;
+        private MgmtTypeRequestResult m_result = MgmtTypeRequestResult.RequestResult_ing;
         private Context m_context = null;
         private File m_file_firmware = null;
         //
-        public Response( TypeRequest request, Context context, TypeRequestResult result ){
+        public Response(MgmtTypeRequest request, Context context, MgmtTypeRequestResult result ){
             m_request = request;
             m_context = context;
             m_result = result;
         }
-        public Response( TypeRequest request, Context context, TypeRequestResult result, File file ){
+        public Response(MgmtTypeRequest request, Context context, MgmtTypeRequestResult result, File file ){
             m_request = request;
             m_context = context;
             m_result = result;
             m_file_firmware = file;
         }
 
-        public TypeRequest getRequest()
+        public MgmtTypeRequest getRequest()
         {
             return m_request;
         }
 
-        public TypeRequestResult getResult() {
+        public MgmtTypeRequestResult getResult() {
             return m_result;
         }
 
@@ -172,10 +183,11 @@ class ManagerDevice implements Runnable
 
         public File getFile(){  return m_file_firmware; }
 
-        public void setResult( TypeRequestResult result ){
+        public void setResult( MgmtTypeRequestResult result ){
             m_result = result;
         }
     }
+
     private Integer m_index_response=0;
     private HashMap<Integer,Response> m_map_response = new HashMap<>(MAX_RESPONSE);
     private Object m_locker_response_map = new Object();
@@ -196,18 +208,13 @@ class ManagerDevice implements Runnable
 
     private Lpu237.Parameters m_parameter_for_recover = new Lpu237.Parameters();
 
-    private StartUpActivity m_startup_activiy = null;
-    private MainActivity m_main_activity = null;
-    private UpdateActivity m_update_activity = null;
-
-    private AtomicBoolean m_b_resume_startup_activiy;
-    private AtomicBoolean m_b_resume_main_activiy;
-    private AtomicBoolean m_b_stop_update_activiy;
-    private String m_s_deferred_fw_ok_message = "";
-
     private Boolean m_b_waits_attach_bootloader = false;
 
-    private PageDevice m_debug_device = null;
+    public void addCallbackParameter(Object c){
+        if(m_cb != null){
+            m_cb.addUserPara(c);
+        }
+    }
     /**
      *
      * @param rom_file using rom file
@@ -243,108 +250,11 @@ class ManagerDevice implements Runnable
     public Boolean is_waits_attach_bootloader(){
         return m_b_waits_attach_bootloader;
     }
-    public void resume_startup_activity( boolean b_resume ){
-        m_b_resume_startup_activiy.set(b_resume);
-    }
-    public void resume_main_activity( boolean b_resume ){
-        m_b_resume_main_activiy.set(b_resume);
-    }
-    public void stop_update_activity( boolean b_stop ){
-        if( b_stop )
-            Log.i("stop_update_activity","update_activity : stop");
-        else
-            Log.i("stop_update_activity","update_activity : run");
-        m_b_stop_update_activiy.set(b_stop);
-    }
-    public boolean is_resume_startup_activity(){
-        return m_b_resume_startup_activiy.get();
-    }
-    public boolean is_resume_main_activity(){
-        return m_b_resume_main_activiy.get();
-    }
-    public boolean is_stop_update_activity(){
-        return m_b_stop_update_activiy.get();
-    }
-
-    public void set_startup_activiy( StartUpActivity act ){
-        m_startup_activiy = act;
-    }
-    public void set_main_activity( MainActivity act ){
-        m_main_activity = act;
-    }
-    public void set_update_activity( UpdateActivity act ){
-        m_update_activity = act;
-    }
-
-    public StartUpActivity get_startup_activity(){ return m_startup_activiy; }
-    public MainActivity get_main_activity(){ return m_main_activity; }
-    public UpdateActivity get_update_activity(){ return m_update_activity; }
 
 
     public boolean is_startup_with_bootloader(){
         return m_system_mode.is_start_up_bootloader();
     }
-
-    private DialogInterface.OnClickListener m_listener_dlg_fw_download_yes = new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int which) {
-            // when bootloader is found at starting app. and display yes, no dialog to select download firmware
-            // this listener is Yes.
-            dialog.dismiss();
-            //
-            m_system_mode.enable_startup_bootloader();
-            Tools.start_update_activity(m_startup_activiy);
-        }
-    };
-
-    private DialogInterface.OnClickListener m_listener_dlg_fw_download_no = new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int which) {
-            // when bootloader is found at starting app. and display yes, no dialog to select download firmware
-            // this listener is No.
-            dialog.dismiss();
-            Tools.showOkDialogForErrorTerminate(m_startup_activiy,"FS00","Notice",m_startup_activiy.getResources().getString(R.string.msg_dialog_need_download_terminate));
-            //Toast.makeText(m_startup_activiy, "ERROR : Please Restart App.", Toast.LENGTH_LONG).show();
-        }
-    };
-    private DialogInterface.OnCancelListener m_listener_dlg_fw_download_cancel = new DialogInterface.OnCancelListener() {
-        @Override
-        public void onCancel(DialogInterface dialog) {
-            // when bootloader is found at starting app. and display yes, no dialog to select download firmware
-            // this listener is No.
-            dialog.dismiss();
-            Tools.showOkDialogForErrorTerminate(m_startup_activiy,"FS00","Notice",m_startup_activiy.getResources().getString(R.string.msg_dialog_need_download_terminate));
-            //Toast.makeText(m_startup_activiy, "ERROR : Please Restart App.", Toast.LENGTH_LONG).show();
-        }
-    };
-
-
-    private DialogInterface.OnClickListener m_listener_dlg_fw_download_ok = new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int which) {
-            // when firmware update ok.
-            //dialog.dismiss();
-            //
-            if( m_update_activity != null ){
-                m_update_activity.finish();
-                m_update_activity = null;
-            }
-            if( !push_requst( TypeRequest.Request_get_info_for_list,m_startup_activiy) ){
-                Tools.showOkDialogForErrorTerminate(m_startup_activiy,"FU21","ERROR",m_startup_activiy.getResources().getString(R.string.msg_dialog_error_terminate));
-            }
-        }
-    };
-    private DialogInterface.OnCancelListener m_listener_dlg_fw_download_ok_cancel = new DialogInterface.OnCancelListener() {
-        @Override
-        public void onCancel(DialogInterface dialog) {
-            // when firmware update ok.
-            dialog.dismiss();
-            //
-            if( m_update_activity != null ){
-                m_update_activity.finish();
-                m_update_activity = null;
-            }
-            push_requst( TypeRequest.Request_get_info_for_list,m_startup_activiy);
-            //Tools.start_main_activity(m_startup_activiy);
-        }
-    };
 
     /////////////////////////////////////////////////////////////////////////////////
     // methods.
@@ -376,25 +286,16 @@ class ManagerDevice implements Runnable
         };
     }
 
-    public boolean load(Application application ){
+    public boolean load(Application application,MgmtCallback cb ){
         boolean b_result = false;
 
         do{
             m_application = application;
+            m_cb =cb;
             //
-            m_application.registerReceiver(m_usbReceiver, Tools.getIntentFilter(
-                    ManagerIntentAction.INT_ALL_USB |
-                            ManagerIntentAction.INT_ALL_LPU237 |
-                            ManagerIntentAction.INT_ALL_BOOTLOADER
-            ));
-
             m_usbManager = (UsbManager) m_application.getSystemService(m_application.USB_SERVICE);
 
             m_working = new AtomicBoolean(true);
-            m_b_resume_startup_activiy  = new AtomicBoolean(false);
-            m_b_resume_main_activiy  = new AtomicBoolean(false);
-            m_b_stop_update_activiy  = new AtomicBoolean(false);
-
             m_thread = new Thread(ManagerDevice.this);
             m_thread.start();
             b_result = true;
@@ -412,13 +313,12 @@ class ManagerDevice implements Runnable
             }
             m_working.set(false);//kill thread.
             try {
-                m_blockingQueue.put( new Request(TypeRequest.Request_kill, m_application));
+                m_blockingQueue.put( new Request(MgmtTypeRequest.Request_kill, m_application));
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 continue;
             }
             //
-            m_application.unregisterReceiver(m_usbReceiver);
 
             if( size_lpu237() > 0 ){
                 lpu237_close();
@@ -432,7 +332,7 @@ class ManagerDevice implements Runnable
         return b_result;
     }
 
-    public boolean push_requst( TypeRequest req, Context context, File file_fw,String s_data, FwVersion version )
+    public boolean push_requst(MgmtTypeRequest req, Context context, File file_fw, String s_data, FwVersion version )
     {
         boolean b_result = false;
         do{
@@ -451,7 +351,7 @@ class ManagerDevice implements Runnable
 
         return b_result;
     }
-    public boolean push_requst( TypeRequest req, Context context  )
+    public boolean push_requst(MgmtTypeRequest req, Context context  )
     {
         return push_requst(req,context,null,"",null);
     }
@@ -470,29 +370,7 @@ class ManagerDevice implements Runnable
         }
     }
 
-    private void _start_waits_connected_timer(Context context){
-        synchronized (m_lock_lpu237_permission) {
-            /*
-            if (m_timer_connect == null) {
-                m_timer_connect = new Timer();
-            }
-            m_timer_connect.schedule(m_timer_task_waits_connected, TIMEOUT_CONNECT_MMSEC);
-            */
-        }
-    }
-    private void _stop_waits_connected_timer(){
-        synchronized (m_lock_lpu237_permission) {
-            /*
-            if (m_timer_connect != null) {
-                m_timer_connect.cancel();
-                m_timer_connect.purge();
-                m_timer_connect = null;
-            }
-            */
-        }
-    }
-
-    public Integer setResponse( TypeRequest request, Context context, TypeRequestResult result ){
+    public Integer setResponse(MgmtTypeRequest request, Context context, MgmtTypeRequestResult result ){
         Integer index = -1;
 
         synchronized (m_locker_response_map){
@@ -516,94 +394,7 @@ class ManagerDevice implements Runnable
         return response;
     }
 
-    public void showFwDownloadOk() {
-        do {
-            if( m_s_deferred_fw_ok_message == null )
-                continue;
-            if( m_s_deferred_fw_ok_message.isEmpty() )
-                continue;
-            if (m_update_activity == null )
-                continue;
-            if( m_b_stop_update_activiy.get())
-                continue;
-            //
-            String s_deferred_fw_ok_message = m_s_deferred_fw_ok_message;
-            Tools.showOkDialog(
-                    m_update_activity
-                    , "Update-Firmware."
-                    , "The Firmware Update OK.\r\n" + s_deferred_fw_ok_message
-                    , m_listener_dlg_fw_download_ok
-                    , m_listener_dlg_fw_download_ok_cancel
-            );
-            m_s_deferred_fw_ok_message="";
-        }while(false);
-    }
 
-    private void showFwDownloadOk( String s_additional_message ) {
-        if (m_update_activity != null && !m_b_stop_update_activiy.get() ) {
-            m_s_deferred_fw_ok_message="";
-            Tools.showOkDialog(
-                    m_update_activity
-                    , "Update-Firmware."
-                    , "The Firmware Update OK.\r\n"+s_additional_message
-                    , m_listener_dlg_fw_download_ok
-                    , m_listener_dlg_fw_download_ok_cancel
-            );
-        }
-        else{
-            m_s_deferred_fw_ok_message = s_additional_message;
-        }
-    }
-
-    //don't call this function in worker thread.
-    //call only receiver.
-    private void _result_broadcast_to_activity(
-            boolean b_main_activity
-            ,String s_toast_message
-            ,Context context
-            , String s_action
-            , Boolean b_result
-            , int n_data){
-
-        if( context == null )
-            context = m_application;
-
-        boolean b_resume = true;
-        if( b_main_activity )
-            b_resume = is_resume_main_activity();
-        else
-            b_resume = is_resume_startup_activity();
-
-        b_resume = true;
-
-        if( b_resume ) {
-            Intent intent = new Intent(s_action);
-            intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_BOOL_RESULT_FOR_ACTIVITY, b_result);
-            intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INT_RESULT_FOR_ACTIVITY, n_data);
-            context.sendBroadcast(intent);
-        }
-        else{
-            if( b_result )
-                Toast.makeText(m_application, "SUCCESS : "+s_toast_message, Toast.LENGTH_LONG).show();
-            else{
-                Toast.makeText(m_application, "ERROR : "+s_toast_message, Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-    private void _result_broadcast_to_activity(
-            Context context
-            , String s_action
-            , Boolean b_result
-            , int n_data){
-
-        if( context == null )
-            context = m_application;
-
-        Intent intent = new Intent(s_action);
-        intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_BOOL_RESULT_FOR_ACTIVITY, b_result);
-        intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INT_RESULT_FOR_ACTIVITY, n_data);
-        context.sendBroadcast(intent);
-    }
     //don't call this function in worker thread.
     private void _broadcast_terminate_app(){
         //
@@ -614,495 +405,7 @@ class ManagerDevice implements Runnable
         unload();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // receiver sub-function
-
-    private boolean _callback_normal_usb_attached(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            if( device == null )
-                continue;
-            if( device.getVendorId() != Lpu237Info.USB_VID )
-                continue;
-            //
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-    private boolean _callback_boot_usb_attached(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            if( device == null )
-                continue;
-            if( device.getVendorId() != Lpu237Info.USB_VID )
-                continue;
-
-            if( device.getProductId() == Lpu237Info.USB_PID ) {
-                if (!push_requst(TypeRequest.Request_update_list, context)) {
-                    //Toast.makeText(m_application, "_callback_usb_attached : error", Toast.LENGTH_SHORT).show();
-                    Tools.showOkDialogForErrorTerminate(m_update_activity,"FU14","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_reboot));
-                    continue;
-                }
-                b_result = true;
-                continue;
-            }
-
-            if( device.getProductId() == HidBootLoaderInfo.USB_PID ) {
-                if (!push_requst(TypeRequest.Request_update_list, context)) {
-                    //Toast.makeText(m_application, "updateBootloaderList : error", Toast.LENGTH_SHORT).show();
-                    Tools.showOkDialogForErrorTerminate(m_main_activity,"FU03","ERROR",m_main_activity.getResources().getString(R.string.msg_dialog_error_reboot));
-                    continue;
-                }
-            }
-
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-    private boolean _callback_normal_detached(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            Toast.makeText(m_application, "Removed Usb device.......", Toast.LENGTH_SHORT).show();
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-    private boolean _callback_boot_detached(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            Toast.makeText(m_application, "Removed Usb device.", Toast.LENGTH_SHORT).show();
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-    private void _test_file_select(AppCompatActivity act){
-        // firmware update button
-
-        do {
-            String state = Environment.getExternalStorageState();
-            if (!Environment.MEDIA_MOUNTED.equals(state)) {
-                return;
-            }
-
-            String[] PERMISSIONS_STORAGE = {
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-            };
-            if (ContextCompat.checkSelfPermission(act, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        act,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        RequestCode.LOADFROM_EXTERNAL_STORAGE
-                );
-            } else {
-                m_debug_device.select_firmware();
-            }
-        }while(false);
-    }
-
-    private boolean _callback_update_list_no_device(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            //this intent always error
-            if (!_result_from_worker_is_success( intent )) {
-                //Toast.makeText(m_application, "ERROR : No device. Please Restart App.", Toast.LENGTH_LONG).show();//_broadcast_terminate_app();
-                Context available_context = null;
-
-                if( m_update_activity != null ) {
-                    available_context = m_update_activity;
-                    Tools.showOkDialogForErrorTerminate(available_context,"FU15","ERROR",available_context.getResources().getString(R.string.msg_dialog_error_reboot));
-                }
-                else if( m_main_activity != null ) {
-                    available_context = m_main_activity;
-                    Tools.showOkDialogForErrorTerminate(available_context,"FU04","ERROR",available_context.getResources().getString(R.string.msg_dialog_error_reboot));
-                }
-                else if( m_startup_activiy != null ) {
-                    available_context = m_startup_activiy;
-                    if(DebugDefine.WhenNoDeviceFileSelect) {
-                        m_debug_device = new PageDevice(m_startup_activiy);
-                        m_debug_device.ini();
-                        _test_file_select(m_startup_activiy);//for debugg
-                    }
-                    else {
-                        Tools.showOkDialogForErrorTerminate(available_context, "FN01", "ERROR", available_context.getResources().getString(R.string.msg_dialog_no_device_terminate));
-                    }
-                }
-                else
-                    available_context = context;
-            }
-
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-
-    private boolean _callback_normal_lpu237_permission(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
-            if (granted){
-                _add_to_list(new Lpu237(m_usbManager, device));//add device
-                select_lpu237(0);
-                //
-                if(!push_requst( TypeRequest.Request_get_info_for_list,context) )
-                    Tools.showOkDialogForErrorTerminate(m_startup_activiy,"FN02","ERROR",m_startup_activiy.getResources().getString(R.string.msg_dialog_error_terminate));
-            }
-            else{ // User not accepted our USB connection. Send an Intent to the Main Activity
-                Toast.makeText(m_application, "ERROR : You must accept that your device is accessed.", Toast.LENGTH_LONG).show();
-                //retry permission.
-                PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(
-                                m_application,
-                                0,
-                                new Intent(ManagerIntentAction.LPU237_PERMISSION),
-                                PendingIntent.FLAG_MUTABLE
-                        );
-                m_usbManager.requestPermission(device, pendingIntent);
-            }
-
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-    private boolean _callback_boot_lpu237_permission(Context context, Intent intent){
-        boolean b_result = false;
-        _stop_waits_connected_timer();
-        do{
-            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
-            if (granted){
-                _add_to_list(new Lpu237(m_usbManager, device));//add device
-                select_lpu237(0);
-                //
-                if( m_system_mode.is_start_up_bootloader() ){
-                    m_system_mode.disable_bootloader();
-
-                    showFwDownloadOk("Parameters is default.");
-                }
-                else {
-                    if( !push_requst(TypeRequest.Request_get_parameters, m_update_activity) ){
-                        Tools.showOkDialogForErrorTerminate(m_update_activity,"FU16","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_terminate));
-                    }
-                }
-            }
-            else{ // User not accepted our USB connection. Send an Intent to the Main Activity
-                Toast.makeText(m_application, "ERROR : You must accept that your device is accessed.", Toast.LENGTH_LONG).show();
-                //retry permission.
-                PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(
-                                m_application,
-                                0,
-                                new Intent(ManagerIntentAction.LPU237_PERMISSION),
-                                PendingIntent.FLAG_MUTABLE
-                        );
-                m_usbManager.requestPermission(device, pendingIntent);
-            }
-
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-
-    private boolean _callback_normal_get_info_for_list(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            if (!_result_from_worker_is_success( intent )) {
-                //Toast.makeText(m_application, "ERROR : can not the basic information from device.", Toast.LENGTH_SHORT).show();
-                Tools.showOkDialogForErrorTerminate(m_startup_activiy,"FN04","ERROR",m_startup_activiy.getResources().getString(R.string.msg_dialog_error_terminate));
-            }
-            else{
-                //send intent to StartupActivity.
-                Intent intent_display = new Intent(ManagerIntentAction.ACTIVITY_STARTUP_DISPLAY_DEVICE_LIST);
-                context.sendBroadcast(intent_display);
-            }
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-    private boolean _callback_boot_get_info_for_list(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            if (!_result_from_worker_is_success( intent )) {
-                Toast.makeText(m_application, "ERROR : _callback_boot_get_info_for_list", Toast.LENGTH_SHORT).show();
-                continue;
-            }
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-
-    private boolean _callback_normal_get_parameters(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            ManagerDevice.Response response = _response_from_worker_is_success( intent );
-            if( response.getResult() != TypeRequestResult.RequestResult_success ){
-                continue;
-            }
-
-            b_result = true;
-        }while(false);
-        //send intent to MainActivity.
-        _result_broadcast_to_activity( context,ManagerIntentAction.ACTIVITY_MAIN_COMPLETE_GET_PARAMETERS,b_result,0);
-        return b_result;
-    }
-    private boolean _callback_boot_get_parameters(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            ManagerDevice.Response response = _response_from_worker_is_success( intent );
-            if( response.getResult() != TypeRequestResult.RequestResult_success ){
-                //send intent to UpdateActivity.
-                _result_broadcast_to_activity(context,ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS,false,0);
-            }
-            else{
-                //send intent to UpdateActivity.
-                _result_broadcast_to_activity(context,ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS,true,0);
-                if( !ManagerDevice.getInstance().push_requst(TypeRequest.Request_recover_parameters, context) ){
-                    Tools.showOkDialogForErrorTerminate(m_update_activity,"FU18","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_terminate));
-                }
-            }
-
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-
-    private boolean _callback_normal_set_parameters(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            if (_result_from_worker_is_success( intent )) {
-                b_result = true;
-            }
-        }while(false);
-        _result_broadcast_to_activity( context,ManagerIntentAction.ACTIVITY_MAIN_COMPLETE_SET_PARAMETERS,b_result,0);
-        return b_result;
-    }
-
-    private boolean _callback_started_bootloader(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            if (_result_from_worker_is_success( intent )) {
-                m_b_waits_attach_bootloader = true;
-                b_result = true;
-                continue;
-            }
-            //
-            Tools.showOkDialogForError(m_main_activity,"FU02","ERROR",m_main_activity.getResources().getString(R.string.msg_dialog_error));
-        }while(false);
-        _result_broadcast_to_activity( true,"Starts bootloader.",context,ManagerIntentAction.ACTIVITY_MAIN_START_BOOT,b_result,0);
-        return b_result;
-    }
-    private boolean _callback_normal_bootloader_permission(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            Boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
-            if (granted){
-                HidBootLoader bootloader = new HidBootLoader(m_usbManager, device);
-
-                _add_to_list(bootloader);
-                select_bootloader(0);
-
-                Tools.showYesNoDialog(
-                        m_startup_activiy
-                        ,"Download firmware"
-                        ,"Do you wan to download a firmware?"
-                        ,m_listener_dlg_fw_download_yes
-                        ,m_listener_dlg_fw_download_no
-                        ,m_listener_dlg_fw_download_cancel
-                );
-            }
-            else{ // User not accepted our USB connection. Send an Intent to the Main Activity
-                Toast.makeText(m_application, "ERROR : You must accept that your device is accessed.", Toast.LENGTH_SHORT).show();
-                //retry permission.
-                PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(
-                                m_application,
-                                0,
-                                new Intent(ManagerIntentAction.BOOTLOADER_PERMISSION),
-                                PendingIntent.FLAG_MUTABLE
-                        );
-                m_usbManager.requestPermission(device, pendingIntent);
-            }
-
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-    private boolean _callback_boot_bootloader_permission(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            Boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
-            if (granted){
-                clear_list_lpu237();
-
-                HidBootLoader bootloader = new HidBootLoader(m_usbManager, device);
-                _add_to_list(bootloader);
-                select_bootloader(0);
-
-                if( m_main_activity != null ) {
-                    m_b_waits_attach_bootloader = false;
-                    m_main_activity.finish();
-                    m_main_activity = null;
-                }
-                Tools.start_update_activity(m_startup_activiy);
-
-                set_rom_file(
-                        0
-                        ,m_system_mode.get_firmware_file()
-                        ,m_system_mode.get_device_system_name()
-                        ,m_system_mode.get_device_version()
-                );
-            }
-            else{ // User not accepted our USB connection. Send an Intent to the Main Activity
-                Toast.makeText(m_application, "ERROR : You must accept that your device is accessed.", Toast.LENGTH_SHORT).show();
-                //retry permission.
-                PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(
-                                m_application,
-                                0,
-                                new Intent(ManagerIntentAction.BOOTLOADER_PERMISSION),
-                                PendingIntent.FLAG_MUTABLE
-                        );
-                m_usbManager.requestPermission(device, pendingIntent);
-            }
-
-            b_result = true;
-        }while(false);
-        return b_result;
-    }
-
-    private boolean _callback_boot_sector_info(Context context, Intent intent){
-        boolean b_result = false;
-        int n_sector = -1;
-        do{
-            // erase result. here.
-            if( intent == null )
-                continue;
-            ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
-                    intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
-            );
-            n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX,-1);
-
-            if (response.getResult() != TypeRequestResult.RequestResult_success) {
-                continue;
-            }
-            if( !push_requst(TypeRequest.Request_firmware_erase,context ) ){
-                Tools.showOkDialogForErrorTerminate(m_update_activity,"FU08","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_terminate_as));
-            }
-            b_result = true;
-        }while(false);
-        _result_broadcast_to_activity(true,"Erase the Firmware"+String.valueOf(n_sector)+".",context, ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR, b_result, n_sector);
-        return b_result;
-    }
-
-    private boolean _callback_boot_erase_sector(Context context, Intent intent){
-        boolean b_result = false;
-        int n_sector = -1;
-        do{
-            // erase result. here.
-            if( intent == null )
-                continue;
-            ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
-                    intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
-            );
-            n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX,-1);
-
-            if (response.getResult() != TypeRequestResult.RequestResult_success) {
-                continue;
-            }
-            if( !push_requst(TypeRequest.Request_firmware_erase,context ) ){
-                Tools.showOkDialogForErrorTerminate(m_update_activity,"FU08","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_terminate_as));
-            }
-            b_result = true;
-        }while(false);
-        _result_broadcast_to_activity(true,"Erase the Firmware"+String.valueOf(n_sector)+".",context, ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_SECTOR, b_result, n_sector);
-        return b_result;
-    }
-    private boolean _callback_boot_erase_complete(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            // erase result. here.
-            if (_result_from_worker_is_success( intent )) {
-                if( !push_requst(TypeRequest.Request_firmware_write,context ) ){
-                    Tools.showOkDialogForErrorTerminate(m_update_activity,"FU08","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_terminate_as));
-                }
-                b_result = true;
-            }
-        }while(false);
-        _result_broadcast_to_activity(true,"Erase the Firmware.",context, ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_ERASE_FIRMWARE, b_result, 0);
-        return b_result;
-    }
-
-    private boolean _callback_boot_write_sector(Context context, Intent intent){
-        boolean b_result = false;
-        int n_sector = -1;
-        do{
-            //write sector
-            if( intent == null )
-                continue;
-            ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
-                    intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
-            );
-            n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX,-1);
-
-            if (response.getResult() != TypeRequestResult.RequestResult_success) {
-                continue;
-            }
-            if( !push_requst(TypeRequest.Request_firmware_write,context ) ){
-                Tools.showOkDialogForErrorTerminate(m_update_activity,"FU10","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_reboot));
-            }
-            b_result = true;
-        }while(false);
-        _result_broadcast_to_activity( true,"Write a sector"+String.valueOf(n_sector)+".",context,ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_WRITE_SECTOR,b_result,n_sector);
-        return b_result;
-    }
-    private boolean _callback_boot_write_complete(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            if (_result_from_worker_is_success( intent )) {
-                //always true........ here
-
-                if( !push_requst(TypeRequest.Request_run_app,context ) ){
-                    Tools.showOkDialogForErrorTerminate(m_update_activity,"FU11","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_reboot));
-                }
-                b_result = true;
-            }
-        }while(false);
-        _result_broadcast_to_activity( true, "Write the firmware",context,ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_WRITE_FIRMWARE,b_result,0);
-        return b_result;
-    }
-    private boolean _callback_boot_started_app(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            if (_result_from_worker_is_success( intent )) {
-                clear_list_bootloader();
-                b_result = true;
-            }
-        }while(false);
-        _result_broadcast_to_activity( true,"Starts App.",context,ManagerIntentAction.ACTIVITY_UPDATE_START_APP,b_result,0);
-        return b_result;
-    }
-    private boolean _callback_boot_recover_parameter(Context context, Intent intent){
-        boolean b_result = false;
-        do{
-            m_system_mode.disable_bootloader();
-
-            if (_result_from_worker_is_success( intent )) {
-                showFwDownloadOk("Recover Parameters OK.");
-                b_result = true;
-            }
-            else{
-                showFwDownloadOk("Recover Parameters Error.");
-            }
-        }while(false);
-        _result_broadcast_to_activity( true,"Recover the parameters.",context,ManagerIntentAction.ACTIVITY_UPDATE_RECOVER_PARAMETER,b_result,0);
-        return b_result;
-    }
-
-    void select_lpu237( int n_index ){
+    public void select_lpu237( int n_index ){
         do{
             synchronized (m_lock_device_list) {
                 if (m_list_devices == null)
@@ -1604,8 +907,8 @@ class ManagerDevice implements Runnable
         return n_data;
     }
 
-    public Lpu237.Tags lpu237_get_global_prefix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_global_prefix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1618,8 +921,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_global_postfix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_global_postfix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1632,8 +935,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_private_prefix( int n_track ){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_private_prefix( int n_track ){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1646,8 +949,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_private_postfix( int n_track ){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_private_postfix( int n_track ){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1660,8 +963,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_ibutton_tag_prefix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_tag_prefix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1675,8 +978,8 @@ class ManagerDevice implements Runnable
         return tag;
     }
 
-    public Lpu237.Tags lpu237_get_ibutton_tag_postfix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_tag_postfix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1690,8 +993,8 @@ class ManagerDevice implements Runnable
         return tag;
     }
 
-    public Lpu237.Tags lpu237_get_ibutton_remove(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_remove(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1705,8 +1008,8 @@ class ManagerDevice implements Runnable
         return tag;
     }
 
-    public Lpu237.Tags lpu237_get_ibutton_remove_tag_prefix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_remove_tag_prefix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1719,8 +1022,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_ibutton_remove_tag_postfix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_remove_tag_postfix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1810,7 +1113,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_global_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_global_prefix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1822,7 +1125,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_global_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_global_postfix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1834,7 +1137,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_private_prefix( int n_track,Lpu237.Tags tag){
+    public void lpu237_set_private_prefix( int n_track,Lpu237Tags tag){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1846,7 +1149,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_private_postfix( int n_track,Lpu237.Tags tag ){
+    public void lpu237_set_private_postfix( int n_track,Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1858,7 +1161,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_tag_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_tag_prefix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1870,7 +1173,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_tag_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_tag_postfix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1882,7 +1185,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_remove( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_remove( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1894,7 +1197,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_remove_tag_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_remove_tag_prefix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1906,7 +1209,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_remove_tag_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_remove_tag_postfix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1919,7 +1222,7 @@ class ManagerDevice implements Runnable
         }
     }
 
-    public void lpu237_set_uart_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_uart_prefix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1931,7 +1234,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_uart_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_uart_postfix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -2042,8 +1345,8 @@ class ManagerDevice implements Runnable
                     continue;
                 //
                 int n_track = 0;
-                Lpu237.Tags [] tags_pre = new Lpu237.Tags[3];
-                Lpu237.Tags [] tags_post = new Lpu237.Tags[3];
+                Lpu237Tags [] tags_pre = new Lpu237Tags[3];
+                Lpu237Tags [] tags_post = new Lpu237Tags[3];
 
                 for( n_track = 0; n_track<3; n_track++ ){
                     tags_pre[n_track] = m_list_devices.get(m_n_cur_lpu237).get_private_prefix(n_track);
@@ -2104,12 +1407,12 @@ class ManagerDevice implements Runnable
                     continue;
                 //
                 int n_track = 0;
-                Lpu237.Tags [] tags_pre = new Lpu237.Tags[3];
-                Lpu237.Tags [] tags_post = new Lpu237.Tags[3];
+                Lpu237Tags [] tags_pre = new Lpu237Tags[3];
+                Lpu237Tags [] tags_post = new Lpu237Tags[3];
 
                 for( n_track = 0; n_track<3; n_track++ ){
-                    tags_pre[n_track] = new Lpu237.Tags();
-                    tags_post[n_track] = new Lpu237.Tags();
+                    tags_pre[n_track] = new Lpu237Tags();
+                    tags_post[n_track] = new Lpu237Tags();
                 }//end for
 
                 n_track = 0;
@@ -2501,106 +1804,7 @@ class ManagerDevice implements Runnable
 
     ////////////////////////////
     private Application m_application;
-    private final BroadcastReceiver m_usbReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            boolean b_resut =false;
-
-            if(m_system_mode.is_bootloader()){
-                //bootloader mode
-                switch (Tools.getActionIntFromActionString(intent.getAction())) {
-                    case ManagerIntentAction.INT_USB_ATTACHED:
-                        b_resut = _callback_boot_usb_attached(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_USB_DETACHED:
-                        b_resut = _callback_boot_detached(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_UPDATE_LIST_NO_DEVICE:
-                        b_resut = _callback_update_list_no_device(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_LPU237_PERMISSION:
-                        b_resut = _callback_boot_lpu237_permission(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_GET_INFO_FOR_LIST:
-                        b_resut = _callback_boot_get_info_for_list(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_GET_PARAMETERS:
-                        b_resut = _callback_boot_get_parameters(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_START_BOOTLOADER:
-                        b_resut = _callback_started_bootloader(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_BOOTLOADER_PERMISSION:
-                        b_resut = _callback_boot_bootloader_permission(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_SECTOR_INFO:
-                        b_resut = _callback_boot_sector_info(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_ERASE_SECTOR:
-                        b_resut = _callback_boot_erase_sector(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_ERASE_COMPLETE:
-                        b_resut = _callback_boot_erase_complete(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_WRITE_SECTOR:
-                        b_resut = _callback_boot_write_sector(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_WRITE_COMPLETE:
-                        b_resut = _callback_boot_write_complete(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_START_APP:
-                        b_resut = _callback_boot_started_app(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_RECOVER_PARAMETER:
-                        b_resut = _callback_boot_recover_parameter(context, intent);
-                        break;
-                    default:
-                        b_resut = true;
-                        //Log.i("mgmt:BonReceive", intent.getAction());
-                        break;
-                }//end switch
-            }
-            else {//normal mode
-                switch (Tools.getActionIntFromActionString(intent.getAction())) {
-                    case ManagerIntentAction.INT_USB_ATTACHED:
-                        b_resut = _callback_normal_usb_attached(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_USB_DETACHED:
-                        b_resut = _callback_normal_detached(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_UPDATE_LIST_NO_DEVICE:
-                        b_resut = _callback_update_list_no_device(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_LPU237_PERMISSION:
-                        b_resut = _callback_normal_lpu237_permission(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_GET_INFO_FOR_LIST:
-                        b_resut = _callback_normal_get_info_for_list(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_GET_PARAMETERS:
-                        b_resut = _callback_normal_get_parameters(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_SET_PARAMETERS:
-                        b_resut = _callback_normal_set_parameters(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_START_BOOTLOADER:
-                        b_resut = _callback_started_bootloader(context, intent);
-                        break;
-                    case ManagerIntentAction.INT_BOOTLOADER_PERMISSION:
-                        b_resut = _callback_normal_bootloader_permission(context, intent);
-                        break;
-                    default:
-                        b_resut = true;
-                        //Log.i("mgmt:NonReceive", intent.getAction());
-                        break;
-                }//end switch
-            }
-
-            if( !b_resut ){
-                Log.i("mgmt:onReceive - error", intent.getAction());
-            }
-        }
-    };
+    private MgmtCallback m_cb = null;
 
     private boolean _result_from_worker_is_success(Intent intent ){
         boolean b_result = false;
@@ -2610,7 +1814,7 @@ class ManagerDevice implements Runnable
             ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
                     intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
             );
-            if (response.getResult() != TypeRequestResult.RequestResult_success)
+            if (response.getResult() != MgmtTypeRequestResult.RequestResult_success)
                 continue;
             //
             b_result = true;
@@ -2632,7 +1836,7 @@ class ManagerDevice implements Runnable
 
     private void _result_broadcast_from_worker(
             String s_action, ManagerDevice.Request request
-            , TypeRequestResult result, int n_secor_index ){
+            , MgmtTypeRequestResult result, int n_secor_index ){
         Integer index_result = setResponse( request.getRequest(), request.getContext(), result);
         Intent intent = null;
 
@@ -2649,7 +1853,7 @@ class ManagerDevice implements Runnable
     private boolean _run_update_list(ManagerDevice.Request request)
     {
         boolean b_result = false;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
 
         do{
             HashMap<String, UsbDevice> usbDevices = m_usbManager.getDeviceList();
@@ -2663,7 +1867,7 @@ class ManagerDevice implements Runnable
             for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
                 UsbDevice device = entry.getValue();
 
-                if( (device.getVendorId() == Lpu237Info.USB_VID) && (device.getProductId() == Lpu237Info.USB_PID )) {
+                if( (device.getVendorId() == Lpu237Const.USB_VID) && (device.getProductId() == Lpu237Const.USB_PID )) {
                     if( m_system_mode.is_start_up_bootloader() ){
                         if( m_usbManager.hasPermission(device)) {
                             _add_to_list(new Lpu237(m_usbManager, device));//add device
@@ -2671,37 +1875,26 @@ class ManagerDevice implements Runnable
 
                             b_need_permission = false;
                             m_system_mode.disable_bootloader();
-                            if(m_update_activity != null){
-                                m_update_activity.finish();//close
-                                m_update_activity = null;
+                            if(m_cb != null){
+                                m_cb.cbDetectLpu237AfterFwUpdateInBLStartModeNoNeedPermission(new ArrayList<>());
                             }
                             //showFwDownloadOk("Parameters is default.(by bootloader)");
                         }
                     }
                     if(b_need_permission) {
-                        pendingIntent =
-                                PendingIntent.getBroadcast(
-                                        request.getContext()//m_application
-                                        , 0
-                                        , new Intent(ManagerIntentAction.LPU237_PERMISSION)
-                                        , PendingIntent.FLAG_MUTABLE
-                                );
-                        m_usbManager.requestPermission(device, pendingIntent);
+                        if(m_cb != null){
+                            m_cb.cbDetectLpu237NeedPermission(request.getContext(),m_usbManager,device);
+                        }
                     }
-                    result = TypeRequestResult.RequestResult_success;
+                    result = MgmtTypeRequestResult.RequestResult_success;
                     b_result = true;
                     break;//exit for - only one device supports
                 }
                 else if( (device.getVendorId() == HidBootLoaderInfo.USB_VID) && (device.getProductId() == HidBootLoaderInfo.USB_PID )) {
-                    pendingIntent =
-                            PendingIntent.getBroadcast(
-                                    request.getContext()//m_application
-                                    , 0
-                                    , new Intent(ManagerIntentAction.BOOTLOADER_PERMISSION)
-                                    , PendingIntent.FLAG_MUTABLE
-                            );
-                    m_usbManager.requestPermission(device, pendingIntent);
-                    result = TypeRequestResult.RequestResult_success;
+                    if(m_cb != null){
+                        m_cb.cbDetectHidbootLoaderNeedPermission(request.getContext(),m_usbManager,device);
+                    }
+                    result = MgmtTypeRequestResult.RequestResult_success;
                     b_result = true;
                     break;//exit for - only one device supports
                 }
@@ -2722,7 +1915,7 @@ class ManagerDevice implements Runnable
         boolean b_need_close = false;
         boolean b_need_leave_config = false;
 
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
 
         do{
             if( !lpu237_open() ){
@@ -2760,7 +1953,7 @@ class ManagerDevice implements Runnable
                 continue;
             }
 
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2780,7 +1973,7 @@ class ManagerDevice implements Runnable
     {
         boolean b_result = false;
         boolean b_need_close = false;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
 
         do{
             if( !lpu237_open() ){
@@ -2795,7 +1988,7 @@ class ManagerDevice implements Runnable
                 continue;
             }
 
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2810,7 +2003,7 @@ class ManagerDevice implements Runnable
     {
         boolean b_result = false;
         boolean b_need_close = false;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
         do{
             if( !lpu237_open() ){
                 continue;
@@ -2821,7 +2014,7 @@ class ManagerDevice implements Runnable
                 continue;
             }
 
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2837,7 +2030,7 @@ class ManagerDevice implements Runnable
     {
         boolean b_result = false;
         boolean b_need_close = false;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
         do{
             if( !lpu237_open() ){
                 continue;
@@ -2848,7 +2041,7 @@ class ManagerDevice implements Runnable
                 continue;
             }
 
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2864,7 +2057,7 @@ class ManagerDevice implements Runnable
     {
         boolean b_result = false;
 
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
         do {
             //start bootloader
             if (request.getFile() == null)
@@ -2893,7 +2086,7 @@ class ManagerDevice implements Runnable
 
             m_system_mode.enable_bootloader( request.getStringData(),request.getVersion(), request.getFile());
 
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2908,13 +2101,13 @@ class ManagerDevice implements Runnable
      */
     private boolean _run_get_sector_info(ManagerDevice.Request request){
         boolean b_result = false;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
         do{
             if( !bootloader_df_get_sector_info() ){
                 continue;
             }
             //
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2925,7 +2118,7 @@ class ManagerDevice implements Runnable
     {
         boolean b_result = false;
         String s_action = ManagerIntentAction.ERASE_SECTOR;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
         do {
             if( !bootloader_df_erase_one_sector(request.getContext()) ){
                 continue;
@@ -2934,7 +2127,7 @@ class ManagerDevice implements Runnable
             if( bootloader_is_erase_complete() )
                 s_action = ManagerIntentAction.ERASE_COMPLETE;
 
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2950,7 +2143,7 @@ class ManagerDevice implements Runnable
     {
         boolean b_result = false;
         String s_action = ManagerIntentAction.WRITE_SECTOR;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
         do{
             if( !bootloader_df_write_one_sector(request.getContext()) ){
                 continue;
@@ -2959,7 +2152,7 @@ class ManagerDevice implements Runnable
             if( bootloader_is_write_complete() )
                 s_action = ManagerIntentAction.WRITE_COMPLETE;
             //
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2974,14 +2167,13 @@ class ManagerDevice implements Runnable
     private boolean _run_run_app(ManagerDevice.Request request)
     {
         boolean b_result = false;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
         do{
             if( !bootloader_df_run_app() ){
                 continue;
             }
 
-            _start_waits_connected_timer(m_update_activity);
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -2994,7 +2186,7 @@ class ManagerDevice implements Runnable
     {
         boolean b_result = false;
         boolean b_need_close = false;
-        TypeRequestResult result = TypeRequestResult.RequestResult_error;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
         do{
             if( !lpu237_open() ){
                 continue;
@@ -3007,7 +2199,7 @@ class ManagerDevice implements Runnable
 
             if( !lpu237_df_set_parameter() )
                 continue;
-            result = TypeRequestResult.RequestResult_success;
+            result = MgmtTypeRequestResult.RequestResult_success;
             b_result = true;
         }while(false);
 
@@ -3023,7 +2215,7 @@ class ManagerDevice implements Runnable
     public void run() {
 
         boolean b_result =false;
-        TypeRequestResult result = TypeRequestResult.RequestResult_ing;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_ing;
         Intent intent = null;
 
         while(m_working.get()){
@@ -3080,24 +2272,5 @@ class ManagerDevice implements Runnable
     }
 }
 
-enum TypeRequest{
-    Request_none,
-    Request_kill,
-    Request_update_list,
-    Request_get_info_for_list,
-    Request_get_uid,
-    Request_get_parameters,
-    Request_set_parameters,
-    Request_start_bootloader,
-    Request_firmware_sector_info,
-    Request_firmware_erase,
-    Request_firmware_write,
-    Request_run_app,
-    Request_recover_parameters
-}
 
-enum TypeRequestResult{
-    RequestResult_ing,
-    RequestResult_success,
-    RequestResult_error
-}
+
