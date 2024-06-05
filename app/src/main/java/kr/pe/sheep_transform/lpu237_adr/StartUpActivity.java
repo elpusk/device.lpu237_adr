@@ -133,7 +133,7 @@ public class StartUpActivity extends AppCompatActivity
         //////////////////////
         registerReceiver();
         Manager.getInstance().set_startup_activiy(this);
-        if( !ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_update_list,this) ){
+        if( !Manager.getInstance().push_requst(MgmtTypeRequest.Request_update_list,this) ){
             Tools.showOkDialogForErrorTerminate(this,"FN00","ERROR",getResources().getString(R.string.msg_dialog_error_terminate));
         }
 
@@ -297,7 +297,7 @@ public class StartUpActivity extends AppCompatActivity
                 if( m_activity == null )
                     continue;
                 //
-                ManagerDevice.Response response = null;
+                Manager.Response response = null;
 
                 switch(Tools.getActionIntFromActionString(intent.getAction())){
                     case ManagerIntentAction.INT_ACTIVITY_STARTUP_DISPLAY_DEVICE_LIST:

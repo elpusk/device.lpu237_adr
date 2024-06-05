@@ -39,6 +39,39 @@ public class Rom {
         return s_description;
     }
 
+    /**
+     *
+     * @param rom_file using rom file
+     * @param s_dev_name target device name
+     * @param dev_version target device version
+     * @return negative error code, zero or positive rom has a updatable firmware.
+     */
+    static public int check_firmware(File rom_file,String s_dev_name, FwVersion dev_version){
+        int n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_file_header;
+
+        do{
+            if( rom_file == null ) {
+                continue;
+            }
+            if( s_dev_name == null ) {
+                n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_device_name;
+                continue;
+            }
+            if( dev_version == null ) {
+                n_fw_index = RomErrorCodeFirmwareIndex.error_firmware_index_none_device_version;
+                continue;
+            }
+
+            Rom rom = new Rom();
+            if( rom.load_rom_header(rom_file) != RomResult.result_success ) {
+                continue;
+            }
+
+            n_fw_index = rom.set_updatable_firmware_index(s_dev_name,dev_version);
+        }while(false);
+        return n_fw_index;
+    }
+
     //condition mask
     private final static int mask_condition_no = 0;
     private final static int mask_condition_eq = 1;

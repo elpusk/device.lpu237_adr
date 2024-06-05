@@ -20,6 +20,7 @@ public abstract class HidDevice{
     protected UsbEndpoint m_usbEndpointIn;
     protected UsbEndpoint m_usbEndpointOut;
     protected Object m_locker;
+    protected boolean m_bOpened = false;
     protected UsbRequest m_usbRequestIn;
     protected UsbRequest m_usbRequestOut;
     protected ByteBuffer m_buffer_in;
@@ -42,6 +43,7 @@ public abstract class HidDevice{
     public HidDevice(UsbManager usbManager, UsbDevice usbDevice){
         this();
         //
+        m_bOpened = false;
         m_usbManager = usbManager;
         m_usbDevice = usbDevice;
         m_usbInterface = m_usbDevice.getInterface(get_interface_number());
@@ -58,6 +60,11 @@ public abstract class HidDevice{
         m_usbRequestOut = new UsbRequest();
     }
 
+    public boolean is_opened(){
+        synchronized (m_locker) {
+            return m_bOpened;
+        }
+    }
     public boolean open()
     {
         boolean b_result = false;
@@ -82,6 +89,7 @@ public abstract class HidDevice{
                     continue;
                 m_buffer_out.clear();
                 m_buffer_in.clear();
+                m_bOpened = true;
             }
             b_result = true;
         }while(false);
@@ -96,6 +104,7 @@ public abstract class HidDevice{
 
         do{
             synchronized (m_locker) {
+                m_bOpened = false;
                 if (m_usbDeviceConnection == null)
                     continue;
                 m_buffer_in.clear();

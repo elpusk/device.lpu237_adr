@@ -104,7 +104,7 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
         do {
             Log.d(getClass().getName(), "selected file " + file.toString());
 
-            int n_error = ManagerDevice.getInstance().check_firmware(
+            int n_error = Rom.check_firmware(
                     file
                     , ManagerDevice.getInstance().lpu237_getName()
                     , ManagerDevice.getInstance().lpu237_get_version_system());
@@ -116,7 +116,7 @@ public class PageDevice implements Button.OnClickListener, FileDialog.FileSelect
                 continue;
             }
 
-            if (ManagerDevice.getInstance().push_requst(
+            if (Manager.getInstance().push_requst(
                     MgmtTypeRequest.Request_start_bootloader
                     , m_activity.getBaseContext()
                     , file

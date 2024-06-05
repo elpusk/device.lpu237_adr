@@ -20,6 +20,11 @@ public class MgmtCallbackImpl implements MgmtCallback {
     public void addUserPara(Object c){
         m_list_user_para.add(c);
     }
+
+    public List<Object> getM_list_user_para() {
+        return m_list_user_para;
+    }
+
     public void cbDetectLpu237AfterFwUpdateInBLStartModeNoNeedPermission(List<Object> users){
         do{
             if(m_list_user_para.isEmpty()){
@@ -37,7 +42,11 @@ public class MgmtCallbackImpl implements MgmtCallback {
         }while(false);
     }
 
-    public void cbDetectLpu237NeedPermission(Context c,UsbManager m,UsbDevice d ){
+    public void set_list_user_para(List<Object> m_list_user_para) {
+        this.m_list_user_para = m_list_user_para;
+    }
+
+    public void cbLpu237NeedPermission(Context c, UsbManager m, UsbDevice d ){
         do{
 
             PendingIntent pendingIntent =
@@ -51,7 +60,7 @@ public class MgmtCallbackImpl implements MgmtCallback {
 
         }while(false);
     }
-    public void cbDetectHidbootLoaderNeedPermission(Context c,UsbManager m,UsbDevice d ){
+    public void cbHidbootLoaderNeedPermission(Context c,UsbManager m,UsbDevice d ){
         do{
 
             PendingIntent pendingIntent =

@@ -157,7 +157,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
         m_button_exit.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View v){
-                if(ManagerDevice.getInstance().is_startup_with_bootloader()) {
+                if(Manager.getInstance().is_startup_with_bootloader()) {
                     m_dlg_exit = Tools.showYesNoDialog(
                             UpdateActivity.this
                             , "Warning!"
@@ -187,7 +187,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
 
         // recovering the instance state
         if (savedInstanceState == null) {
-            if (ManagerDevice.getInstance().is_startup_with_bootloader()) {
+            if (Manager.getInstance().is_startup_with_bootloader()) {
                 m_textview_info.setText("Select a Rom file for updating.");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     // 현재 API 레벨이 29 (안드로이드 10) 이상인 경우 실행할 코드
@@ -198,7 +198,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
                 }
             } else {
                 m_textview_info.setText("Please Waits!  Getting the sector info of system.");
-                if (!ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_firmware_sector_info, this)) {
+                if (!Manager.getInstance().push_requst(MgmtTypeRequest.Request_firmware_sector_info, this)) {
                     Tools.showOkDialogForErrorTerminate(this, "FU06", "ERROR", this.getResources().getString(R.string.msg_dialog_error_reboot));
                 }
             }
@@ -249,7 +249,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
             m_dlg_exit = null;
         }
 
-        if(ManagerDevice.getInstance().is_startup_with_bootloader()) {
+        if(Manager.getInstance().is_startup_with_bootloader()) {
             m_dlg_exit = Tools.showYesNoDialog(
                     this
                     , "Warning!"
@@ -321,7 +321,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
 
                             ManagerDevice.getInstance().set_rom_file(0,m_fw_file,n_index);
                             m_textview_info.setText("Please Waits!  Getting the sector info of system.");
-                            if (ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_firmware_sector_info,UpdateActivity.this)) {
+                            if (Manager.getInstance().push_requst(MgmtTypeRequest.Request_firmware_sector_info,UpdateActivity.this)) {
                                 Log.i("fileSelected", "success : Request_firmware_sector_info");
                             } else {
                                 Log.i("fileSelected", "error : Request_firmware_sector_info");
@@ -375,7 +375,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
             do {
                 if (m_activity == null)
                     continue;
-                ManagerDevice.Response response = null;
+                Manager.Response response = null;
 
                 switch (Tools.getActionIntFromActionString(intent.getAction())) {
                     case ManagerIntentAction.INT_ACTIVITY_UPDATE_START_BOOT:

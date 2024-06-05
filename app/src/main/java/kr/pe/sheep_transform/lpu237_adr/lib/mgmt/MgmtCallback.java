@@ -10,6 +10,6 @@ public interface MgmtCallback {
     void addUserPara(Object c);
     void cbDetectLpu237AfterFwUpdateInBLStartModeNoNeedPermission(List<Object> users);
 
-    void cbDetectLpu237NeedPermission(Context c, UsbManager m, UsbDevice d );
-    void cbDetectHidbootLoaderNeedPermission(Context c, UsbManager m, UsbDevice d );
+    void cbLpu237NeedPermission(Context c, UsbManager m, UsbDevice d );
+    void cbHidbootLoaderNeedPermission(Context c, UsbManager m, UsbDevice d );
 }

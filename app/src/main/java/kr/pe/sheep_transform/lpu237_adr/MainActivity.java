@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
             //
             m_b_need_finish_this_activity = true;
             //
-            if( ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_set_parameters,getBaseContext())){
+            if( Manager.getInstance().push_requst(MgmtTypeRequest.Request_set_parameters,getBaseContext())){
                 Toast.makeText(getApplicationContext(), "Please Waits Updating.......", Toast.LENGTH_SHORT).show();
             }
             else{
@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         //
 
         if( !ManagerDevice.getInstance().is_waits_attach_bootloader() ) {
-            if (!ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_get_parameters, this)) {
+            if (!Manager.getInstance().push_requst(MgmtTypeRequest.Request_get_parameters, this)) {
                 Tools.showOkDialogForErrorTerminate(this, "FN08", "ERROR", getResources().getString(R.string.msg_dialog_error_terminate));
             } else {
                 m_tag_keyboard = new TagKeyboard(this, R.id.keyboardview);
@@ -344,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v){
                 _set_tag_data();
                 //
-                if( ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_set_parameters,getBaseContext())){
+                if( Manager.getInstance().push_requst(MgmtTypeRequest.Request_set_parameters,getBaseContext())){
                     Toast.makeText(getApplicationContext(), "Please Waits Updating.......", Toast.LENGTH_SHORT).show();
                 }
                 else{
@@ -585,7 +585,7 @@ public class MainActivity extends AppCompatActivity {
         m_map_tab_button.put(new Integer(FramePage.PageDevice),m_button_info);
         m_map_tab_button.put(new Integer(FramePage.PageCommon),m_button_common);
 
-        if( !ManagerDevice.getInstance().is_startup_with_bootloader() ) {
+        if( !Manager.getInstance().is_startup_with_bootloader() ) {
 
             switch (ManagerDevice.getInstance().lpu237_get_device_type()) {
                 case Lpu237DeviceType.Compact:
@@ -932,7 +932,7 @@ public class MainActivity extends AppCompatActivity {
             do{
                 if( m_activity == null )
                     continue;
-                ManagerDevice.Response response = null;
+                Manager.Response response = null;
 
                 switch(Tools.getActionIntFromActionString(intent.getAction())){
                     case ManagerIntentAction.INT_ACTIVITY_MAIN_COMPLETE_GET_PARAMETERS:

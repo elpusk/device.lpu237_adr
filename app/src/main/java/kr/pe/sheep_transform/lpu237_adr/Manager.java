@@ -12,6 +12,14 @@ import android.hardware.usb.UsbManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import kr.pe.sheep_transform.lpu237_adr.lib.hidboot.HidBootLoader;
@@ -21,9 +29,158 @@ import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Const;
 import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.ManagerDevice;
 import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.MgmtTypeRequest;
 import kr.pe.sheep_transform.lpu237_adr.lib.mgmt.MgmtTypeRequestResult;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.FwVersion;
 
-public class Manager {
+public class Manager  implements Runnable
+{
 
+    private class SystemMode{
+        private boolean m_b_bootloader = false;//the current bootloader is running
+        private boolean m_b_startup_with_bootloader = false;//when app start up, bootloader is connected.
+
+        private String m_s_device_system_name = "";
+        private FwVersion m_version_device = null;
+        private File m_file_firmware = null;
+
+        public boolean is_bootloader(){
+            return m_b_bootloader;
+        }
+        public boolean is_start_up_bootloader(){
+            return m_b_startup_with_bootloader;
+        }
+
+        public void enable_bootloader(String s_device_system_name,FwVersion version_device, File file_firmware){
+            m_b_bootloader = true;
+            m_s_device_system_name = s_device_system_name;
+            m_version_device = version_device;
+            m_file_firmware = file_firmware;
+        }
+        public void disable_bootloader(){
+            m_b_bootloader = m_b_startup_with_bootloader = false;
+            m_s_device_system_name = "";
+            m_version_device = null;
+            m_file_firmware = null;
+        }
+
+        public void enable_startup_bootloader(){
+            m_b_bootloader = m_b_startup_with_bootloader = true;
+            m_s_device_system_name = "";
+            m_version_device = null;
+            m_file_firmware = null;
+        }
+        public String get_device_system_name(){
+            return m_s_device_system_name;
+        }
+        public FwVersion get_device_version(){
+            return m_version_device;
+        }
+        public File get_firmware_file(){
+            return m_file_firmware;
+        }
+    }
+
+    private Object m_lock_lpu237_permission = new Object();
+
+    private final int TIMEOUT_REMOVE_MMSEC = 5000;
+    private final int TIMEOUT_CONNECT_MMSEC = 5000;
+
+    private TimerTask m_timer_task_waits_removed = null;
+    private TimerTask m_timer_task_waits_connected = null;
+
+    private Timer m_timer_connect = new Timer();
+    private Timer m_timer_remove = new Timer();
+
+    private final int MAX_REQUEST = 50;
+    public class Request{
+
+        private MgmtTypeRequest m_request = MgmtTypeRequest.Request_none;
+        private Context m_context = null;
+        private File m_file_firmware = null;
+        private FwVersion m_version = null;
+        private String m_s_data = "";
+
+        public Request(MgmtTypeRequest request, Context context )
+        {
+            m_request = request;
+            m_context = context;
+        }
+
+        public Request(MgmtTypeRequest request, Context context, File file_firmware, String s_data, FwVersion version )
+        {
+            m_request = request;
+            m_context = context;
+            m_file_firmware = file_firmware;
+            m_s_data = s_data;
+            m_version = version;
+        }
+
+        public MgmtTypeRequest getRequest()
+        {
+            return m_request;
+        }
+
+        public Context getContext() {
+            return m_context;
+        }
+
+        public File getFile(){  return m_file_firmware; }
+
+        public String getStringData(){
+            return m_s_data;
+        }
+        public FwVersion getVersion(){
+            return m_version;
+        }
+    }
+
+    private final int MAX_RESPONSE = 50;
+    public class Response{
+        private MgmtTypeRequest m_request = MgmtTypeRequest.Request_none;
+        private MgmtTypeRequestResult m_result = MgmtTypeRequestResult.RequestResult_ing;
+        private Context m_context = null;
+        private File m_file_firmware = null;
+        //
+        public Response(MgmtTypeRequest request, Context context, MgmtTypeRequestResult result ){
+            m_request = request;
+            m_context = context;
+            m_result = result;
+        }
+        public Response(MgmtTypeRequest request, Context context, MgmtTypeRequestResult result, File file ){
+            m_request = request;
+            m_context = context;
+            m_result = result;
+            m_file_firmware = file;
+        }
+
+        public MgmtTypeRequest getRequest()
+        {
+            return m_request;
+        }
+
+        public MgmtTypeRequestResult getResult() {
+            return m_result;
+        }
+
+        public Context getContext() {
+            return m_context;
+        }
+
+        public File getFile(){  return m_file_firmware; }
+
+        public void setResult( MgmtTypeRequestResult result ){
+            m_result = result;
+        }
+    }
+
+    private Integer m_index_response=0;
+    private HashMap<Integer,Response> m_map_response = new HashMap<>(MAX_RESPONSE);
+    private Object m_locker_response_map = new Object();
+
+
+    private BlockingQueue<Manager.Request> m_blockingQueue = new LinkedBlockingDeque<Manager.Request>(MAX_REQUEST);
+    private Thread m_thread;
+
+    private AtomicBoolean m_working;
     private String m_s_deferred_fw_ok_message = "";
 
     private StartUpActivity m_startup_activiy = null;
@@ -35,12 +192,79 @@ public class Manager {
     private AtomicBoolean m_b_resume_main_activiy;
     private AtomicBoolean m_b_stop_update_activiy;
 
+    private Manager.SystemMode m_system_mode = new Manager.SystemMode();
+
     private static class Singleton {
         private static final Manager instance = new Manager();
     }
 
     public static Manager getInstance () {
         return Manager.Singleton.instance;
+    }
+
+    public boolean is_startup_with_bootloader(){
+        return m_system_mode.is_start_up_bootloader();
+    }
+    private void _start_waits_removed_timer(Context context){
+        if( m_timer_remove == null){
+            m_timer_remove = new Timer();
+        }
+        m_timer_remove.schedule(m_timer_task_waits_removed,TIMEOUT_REMOVE_MMSEC);
+    }
+    private void _stop_waits_removed_timer(){
+        if( m_timer_remove != null) {
+            m_timer_remove.cancel();
+            m_timer_remove.purge();
+            m_timer_remove = null;
+        }
+    }
+
+    public Integer setResponse(MgmtTypeRequest request, Context context, MgmtTypeRequestResult result ){
+        Integer index = -1;
+
+        synchronized (m_locker_response_map){
+            index = m_index_response;
+            m_map_response.put(index,new Response( request, context, result ) );
+            m_index_response++;
+        }
+        return index;
+    }
+
+    public Response getResponse( Integer index ){
+        Response response = null;
+        do {
+            synchronized (m_locker_response_map) {
+                if( !m_map_response.containsKey(index) )
+                    continue;
+                response = m_map_response.get(index);
+                m_map_response.remove(index);
+            }
+        }while(false);
+        return response;
+    }
+
+    public boolean push_requst(MgmtTypeRequest req, Context context, File file_fw, String s_data, FwVersion version )
+    {
+        boolean b_result = false;
+        do{
+            if( m_application == null ) {
+                continue;
+            }
+            try {
+                m_blockingQueue.put( new Manager.Request(req, context, file_fw,s_data,version));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                continue;
+            }
+            //
+            b_result = true;
+        }while(false);
+
+        return b_result;
+    }
+    public boolean push_requst(MgmtTypeRequest req, Context context  )
+    {
+        return push_requst(req,context,null,"",null);
     }
 
     public void resume_startup_activity( boolean b_resume ){
@@ -119,6 +343,50 @@ public class Manager {
         }
     }
 
+    private boolean _result_from_worker_is_success(Intent intent ){
+        boolean b_result = false;
+        do{
+            if( intent == null )
+                continue;
+            Manager.Response response = Manager.getInstance().getResponse(
+                    intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
+            );
+            if (response.getResult() != MgmtTypeRequestResult.RequestResult_success)
+                continue;
+            //
+            b_result = true;
+        }while(false);
+        return b_result;
+    }
+
+    private Manager.Response _response_from_worker_is_success(Intent intent ){
+        Manager.Response response = null;
+        do{
+            if( intent == null )
+                continue;
+            response = Manager.getInstance().getResponse(
+                    intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
+            );
+        }while(false);
+        return response;
+    }
+
+    private void _result_broadcast_from_worker(
+            String s_action, Manager.Request request
+            , MgmtTypeRequestResult result, int n_secor_index ){
+        Integer index_result = setResponse( request.getRequest(), request.getContext(), result);
+        Intent intent = null;
+
+        Context context = request.getContext();
+        if( context == null )
+            context = m_application;
+
+        intent = new Intent(s_action );
+        intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, index_result.intValue());
+        intent.putExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX, n_secor_index);
+        context.sendBroadcast(intent);
+    }
+
     //don't call this function in worker thread.
     //call only receiver.
     private void _result_broadcast_to_activity(
@@ -185,6 +453,10 @@ public class Manager {
             m_b_resume_main_activiy  = new AtomicBoolean(false);
             m_b_stop_update_activiy  = new AtomicBoolean(false);
 
+            m_working = new AtomicBoolean(true);
+            m_thread = new Thread(Manager.this);
+            m_thread.start();
+
             b_result = true;
         }while(false);
 
@@ -198,6 +470,14 @@ public class Manager {
                 b_result = true;
                 continue;
             }
+            m_working.set(false);//kill thread.
+            try {
+                m_blockingQueue.put( new Manager.Request(MgmtTypeRequest.Request_kill, m_application));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                continue;
+            }
+
             //
             m_application.unregisterReceiver(m_bcReceiver);
 
@@ -210,6 +490,27 @@ public class Manager {
     }
 
     private Manager(){
+        m_timer_task_waits_removed = new TimerTask() {
+            @Override
+            public void run() {
+                //announce timeout of remove-waits
+                //nothing to do.
+            }
+        };
+        m_timer_task_waits_connected = new TimerTask() {
+            @Override
+            public void run() {
+                synchronized (m_lock_lpu237_permission){
+                    if( m_timer_connect != null ){
+                        /*
+                        if (!push_requst(TypeRequest.Request_update_list, m_update_activity)) {
+                            Toast.makeText(m_application, "m_timer_task_waits_connected : error", Toast.LENGTH_SHORT).show();
+                        }
+                        */
+                    }
+                }
+            }
+        };
 
     }
 
@@ -497,7 +798,6 @@ public class Manager {
     }
     private boolean _callback_boot_lpu237_permission(Context context, Intent intent){
         boolean b_result = false;
-        _stop_waits_connected_timer();
         do{
             UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
@@ -565,7 +865,7 @@ public class Manager {
     private boolean _callback_normal_get_parameters(Context context, Intent intent){
         boolean b_result = false;
         do{
-            ManagerDevice.Response response = _response_from_worker_is_success( intent );
+            Manager.Response response = _response_from_worker_is_success( intent );
             if( response.getResult() != MgmtTypeRequestResult.RequestResult_success ){
                 continue;
             }
@@ -579,7 +879,7 @@ public class Manager {
     private boolean _callback_boot_get_parameters(Context context, Intent intent){
         boolean b_result = false;
         do{
-            ManagerDevice.Response response = _response_from_worker_is_success( intent );
+            Manager.Response response = _response_from_worker_is_success( intent );
             if( response.getResult() != MgmtTypeRequestResult.RequestResult_success ){
                 //send intent to UpdateActivity.
                 _result_broadcast_to_activity(context,ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS,false,0);
@@ -587,7 +887,7 @@ public class Manager {
             else{
                 //send intent to UpdateActivity.
                 _result_broadcast_to_activity(context,ManagerIntentAction.ACTIVITY_UPDATE_COMPLETE_GET_PARAMETERS,true,0);
-                if( !ManagerDevice.getInstance().push_requst(MgmtTypeRequest.Request_recover_parameters, context) ){
+                if( !Manager.getInstance().push_requst(MgmtTypeRequest.Request_recover_parameters, context) ){
                     Tools.showOkDialogForErrorTerminate(m_update_activity,"FU18","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_terminate));
                 }
             }
@@ -710,7 +1010,7 @@ public class Manager {
             // erase result. here.
             if( intent == null )
                 continue;
-            ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
+            Manager.Response response = Manager.getInstance().getResponse(
                     intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
             );
             n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX,-1);
@@ -734,7 +1034,7 @@ public class Manager {
             // erase result. here.
             if( intent == null )
                 continue;
-            ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
+            Manager.Response response = Manager.getInstance().getResponse(
                     intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
             );
             n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX,-1);
@@ -772,7 +1072,7 @@ public class Manager {
             //write sector
             if( intent == null )
                 continue;
-            ManagerDevice.Response response = ManagerDevice.getInstance().getResponse(
+            Manager.Response response = Manager.getInstance().getResponse(
                     intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_INDEX, -1)
             );
             n_sector = intent.getIntExtra(ManagerIntentAction.EXTRA_NAME_RESPONSE_SECTOR_INDEX,-1);
@@ -829,6 +1129,427 @@ public class Manager {
         }while(false);
         _result_broadcast_to_activity( true,"Recover the parameters.",context,ManagerIntentAction.ACTIVITY_UPDATE_RECOVER_PARAMETER,b_result,0);
         return b_result;
+    }
+
+
+    private boolean _run_update_list(Manager.Request request)
+    {
+        boolean b_result = false;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+
+        do{
+            HashMap<String, UsbDevice> usbDevices = m_usbManager.getDeviceList();
+            if( usbDevices.isEmpty() ){
+                continue;
+            }
+
+            boolean b_need_permission = true;
+
+            PendingIntent pendingIntent = null;
+            for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
+                UsbDevice device = entry.getValue();
+
+                if( (device.getVendorId() == Lpu237Const.USB_VID) && (device.getProductId() == Lpu237Const.USB_PID )) {
+                    if( m_system_mode.is_start_up_bootloader() ){
+                        if( m_usbManager.hasPermission(device)) {
+                            _add_to_list(new Lpu237(m_usbManager, device));//add device
+                            select_lpu237(0);
+
+                            b_need_permission = false;
+                            m_system_mode.disable_bootloader();
+                            if(m_cb != null){
+                                m_cb.cbDetectLpu237AfterFwUpdateInBLStartModeNoNeedPermission(new ArrayList<>());
+                            }
+                            //showFwDownloadOk("Parameters is default.(by bootloader)");
+                        }
+                    }
+                    if(b_need_permission) {
+                        if(m_cb != null){
+                            m_cb.cbLpu237NeedPermission(request.getContext(),m_usbManager,device);
+                        }
+                    }
+                    result = MgmtTypeRequestResult.RequestResult_success;
+                    b_result = true;
+                    break;//exit for - only one device supports
+                }
+                else if( (device.getVendorId() == HidBootLoaderInfo.USB_VID) && (device.getProductId() == HidBootLoaderInfo.USB_PID )) {
+                    if(m_cb != null){
+                        m_cb.cbHidbootLoaderNeedPermission(request.getContext(),m_usbManager,device);
+                    }
+                    result = MgmtTypeRequestResult.RequestResult_success;
+                    b_result = true;
+                    break;//exit for - only one device supports
+                }
+            }//end for
+
+        }while(false);
+
+        if( !b_result ) {
+            //error case only
+            _result_broadcast_from_worker(ManagerIntentAction.UPDATE_LIST_NO_DEVICE, request, result, -1);
+        }
+        return b_result;
+    }
+
+    private boolean _run_get_info_for_list(Manager.Request request)
+    {
+        boolean b_result = false;
+        boolean b_need_close = false;
+        boolean b_need_leave_config = false;
+
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+
+        do{
+            if( !lpu237_open() ){
+                Log.i("run","error : open");
+                continue;
+            }
+
+            b_need_close = true;
+
+            if( !lpu237_df_enter_config() ){
+                Log.i("run","error : df_enter_config");
+                continue;
+            }
+            b_need_leave_config = true;
+
+            if( !lpu237_df_get_name() ){
+                Log.i("run","error : lpu237_df_get_name");
+                continue;
+            }
+            if( !lpu237_df_get_version_system() ){
+                Log.i("run","error : lpu237_df_get_version_system");
+                continue;
+            }
+            if( !lpu237_df_get_ibutton_only_type()) {
+                Log.i("run","error : lpu237_df_get_ibutton_only_type");
+                continue;
+            }
+
+            if( !lpu237_df_get_uid() ){
+                Log.i("run","error : df_get_uid");
+                continue;
+            }
+            if( !lpu237_df_get_type() ){
+                Log.i("run","error : df_get_type");
+                continue;
+            }
+
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        if( b_need_leave_config ) {
+            if (!lpu237_df_leave_config()) {
+                Log.i("run", "error : df_leave_config");
+            }
+        }
+        if( b_need_close )
+            lpu237_close();
+        //
+        _result_broadcast_from_worker( ManagerIntentAction.GET_INFO_FOR_LIST,request, result,-1 );
+        return b_result;
+    }
+
+    private boolean _run_get_uid(Manager.Request request)
+    {
+        boolean b_result = false;
+        boolean b_need_close = false;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+
+        do{
+            if( !lpu237_open() ){
+                Log.i("run","error : open");
+                continue;
+            }
+
+            b_need_close = true;
+
+            if( !lpu237_df_get_uid() ){
+                Log.i("run","error : df_get_uid");
+                continue;
+            }
+
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        if( b_need_close )
+            lpu237_close();
+        //
+        _result_broadcast_from_worker( ManagerIntentAction.UPDATE_UID,request, result,-1 );
+        return b_result;
+    }
+
+    private boolean _run_get_parameters(Manager.Request request)
+    {
+        boolean b_result = false;
+        boolean b_need_close = false;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+        do{
+            if( !lpu237_open() ){
+                continue;
+            }
+            b_need_close = true;
+
+            if( !lpu237_df_get_parameter() ){
+                continue;
+            }
+
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        if( b_need_close )
+            lpu237_close();
+        //
+        _result_broadcast_from_worker( ManagerIntentAction.GET_PARAMETERS,request, result,-1 );
+
+        return b_result;
+    }
+
+    private boolean _run_set_parameters(Manager.Request request)
+    {
+        boolean b_result = false;
+        boolean b_need_close = false;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+        do{
+            if( !lpu237_open() ){
+                continue;
+            }
+            b_need_close = true;
+
+            if( !lpu237_df_set_parameter() ){
+                continue;
+            }
+
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        if( b_need_close )
+            lpu237_close();
+        //
+        _result_broadcast_from_worker( ManagerIntentAction.SET_PARAMETERS,request, result,-1 );
+
+        return b_result;
+    }
+
+    private boolean _run_start_bootloader(Manager.Request request)
+    {
+        boolean b_result = false;
+
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+        do {
+            //start bootloader
+            if (request.getFile() == null)
+                continue;
+            //
+            if (!lpu237_open()) {
+                continue;
+            }
+            if( !lpu237_save_parameter() ){
+                Log.i("run","error : lpu237_save_parameter");
+                continue;
+            }
+            if( !lpu237_df_enter_config() ){
+                Log.i("run","error : df_enter_config");
+                continue;
+            }
+
+            if (!lpu237_df_run_bootloader()){
+                lpu237_df_leave_config();
+                lpu237_close();
+                continue;
+            }
+
+            //success start bootloader.
+            lpu237_close();
+
+            m_system_mode.enable_bootloader( request.getStringData(),request.getVersion(), request.getFile());
+
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        _result_broadcast_from_worker( ManagerIntentAction.START_BOOTLOADER,request, result,-1 );
+
+        return b_result;
+    }
+
+    /**
+     * get sector information from device.( for himalia )
+     * @param request
+     */
+    private boolean _run_get_sector_info(Manager.Request request){
+        boolean b_result = false;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+        do{
+            if( !bootloader_df_get_sector_info() ){
+                continue;
+            }
+            //
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        _result_broadcast_from_worker(ManagerIntentAction.SECTOR_INFO, request, result, -1);
+        return b_result;
+    }
+    private boolean _run_firmware_erase(Manager.Request request)
+    {
+        boolean b_result = false;
+        String s_action = ManagerIntentAction.ERASE_SECTOR;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+        do {
+            if( !bootloader_df_erase_one_sector(request.getContext()) ){
+                continue;
+            }
+            //
+            if( bootloader_is_erase_complete() )
+                s_action = ManagerIntentAction.ERASE_COMPLETE;
+
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        int n_sector = bootloader_get_current_erase_sector();
+
+        if( m_working.get() ) {
+            _result_broadcast_from_worker(s_action, request, result, n_sector);
+        }
+        return b_result;
+    }
+
+    private boolean _run_firmware_write(Manager.Request request)
+    {
+        boolean b_result = false;
+        String s_action = ManagerIntentAction.WRITE_SECTOR;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+        do{
+            if( !bootloader_df_write_one_sector(request.getContext()) ){
+                continue;
+            }
+
+            if( bootloader_is_write_complete() )
+                s_action = ManagerIntentAction.WRITE_COMPLETE;
+            //
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        int n_sector = bootloader_get_current_write_sector();
+
+        if( m_working.get() )
+            _result_broadcast_from_worker( s_action,request, result, n_sector );
+
+        return b_result;
+    }
+
+    private boolean _run_run_app(Manager.Request request)
+    {
+        boolean b_result = false;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+        do{
+            if( !bootloader_df_run_app() ){
+                continue;
+            }
+
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        _result_broadcast_from_worker( ManagerIntentAction.START_APP,request, result,-1 );
+
+        return b_result;
+    }
+
+    private boolean _run_recover_parameter(Manager.Request request)
+    {
+        boolean b_result = false;
+        boolean b_need_close = false;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_error;
+        do{
+            if( !lpu237_open() ){
+                continue;
+            }
+
+            b_need_close = true;
+
+            if( !lpu237_recover_parameter() )
+                continue;
+
+            if( !lpu237_df_set_parameter() )
+                continue;
+            result = MgmtTypeRequestResult.RequestResult_success;
+            b_result = true;
+        }while(false);
+
+        if( b_need_close )
+            lpu237_close();
+        //
+        _result_broadcast_from_worker( ManagerIntentAction.RECOVER_PARAMETER,request, result,-1 );
+
+        return b_result;
+    }
+    @Override
+    public void run() {
+
+        boolean b_result =false;
+        MgmtTypeRequestResult result = MgmtTypeRequestResult.RequestResult_ing;
+        Intent intent = null;
+
+        while(m_working.get()){
+            try {
+                Manager.Request request = m_blockingQueue.take();
+                switch( request.getRequest() ){
+                    case Request_kill:
+                        b_result = true;
+                        continue;
+                    case Request_update_list:
+                        b_result = _run_update_list(request);
+                        break;
+                    case Request_get_info_for_list:
+                        b_result = _run_get_info_for_list(request);
+                        break;
+                    case Request_get_uid:
+                        b_result = _run_get_uid(request);
+                        break;
+                    case Request_get_parameters:
+                        b_result = _run_get_parameters(request);
+                        break;
+                    case Request_set_parameters:
+                        b_result = _run_set_parameters(request);
+                        break;
+                    case Request_start_bootloader:
+                        b_result = _run_start_bootloader(request);
+                        break;
+                    case Request_firmware_sector_info:
+                        b_result = _run_get_sector_info(request);
+                        break;
+                    case Request_firmware_erase:
+                        b_result = _run_firmware_erase(request);
+                        break;
+                    case Request_firmware_write:
+                        b_result = _run_firmware_write(request);
+                        break;
+                    case Request_run_app:
+                        b_result = _run_run_app(request);
+                        break;
+                    case Request_recover_parameters:
+                        b_result = _run_recover_parameter(request);
+                        break;
+                    default:
+                        break;
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            //Log.i("manager", "run:doing");
+        }//
+        Log.i("manager","run:exit");
+
     }
 
 }//the end of class
