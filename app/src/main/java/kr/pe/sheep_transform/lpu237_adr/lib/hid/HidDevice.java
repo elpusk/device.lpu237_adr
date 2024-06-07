@@ -1,4 +1,4 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.hid;
 
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;

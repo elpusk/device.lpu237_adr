@@ -1,20 +1,22 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
-import android.widget.TextView;
+
+import kr.pe.sheep_transform.lpu237_adr.lib.util.Tools;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Tags;
 
 public class PageTag {
     protected AppCompatActivity m_activity = null;
     protected int m_n_dev_index = -1;
 
-    protected Lpu237.Tags m_tag_prefix = null;
-    protected Lpu237.Tags m_tag_postfix = null;
+    protected Lpu237Tags m_tag_prefix = null;
+    protected Lpu237Tags m_tag_postfix = null;
     protected boolean m_b_selected_prefix = true;
 
     public PageTag(AppCompatActivity activity,int n_dev_index ) {
         do {
-            m_tag_prefix = new Lpu237.Tags();
-            m_tag_postfix = new Lpu237.Tags();
+            m_tag_prefix = new Lpu237Tags();
+            m_tag_postfix = new Lpu237Tags();
 
             if( activity==null)
                 continue;
@@ -24,7 +26,7 @@ public class PageTag {
         }while (false);
     }
 
-    public PageTag(AppCompatActivity activity,int n_dev_index,Lpu237.Tags tag_pre, Lpu237.Tags tag_post) {
+    public PageTag(AppCompatActivity activity, int n_dev_index, Lpu237Tags tag_pre, Lpu237Tags tag_post) {
         this( activity,n_dev_index);
         do {
             if( activity==null)
@@ -34,10 +36,10 @@ public class PageTag {
         }while (false);
     }
 
-    public PageTag(AppCompatActivity activity,int n_dev_index,Lpu237.Tags tag_pre) {
+    public PageTag(AppCompatActivity activity, int n_dev_index, Lpu237Tags tag_pre) {
         do {
-            m_tag_prefix = new Lpu237.Tags(Lpu237.Tags.NUMBER_IBUTTON_REMOVE_TAG);
-            m_tag_postfix = new Lpu237.Tags(Lpu237.Tags.NUMBER_IBUTTON_REMOVE_TAG);
+            m_tag_prefix = new Lpu237Tags(Lpu237Tags.NUMBER_IBUTTON_REMOVE_TAG);
+            m_tag_postfix = new Lpu237Tags(Lpu237Tags.NUMBER_IBUTTON_REMOVE_TAG);
 
             if( activity==null)
                 continue;
@@ -53,34 +55,34 @@ public class PageTag {
     public boolean is_selected_prefix_tag(){
         return m_b_selected_prefix;
     }
-    public Lpu237.Tags get_tag(){
+    public Lpu237Tags get_tag(){
         if( m_b_selected_prefix)
             return get_prefix_tag();
         else
             return get_postfix_tag();
     }
-    public Lpu237.Tags get_prefix_tag(){
+    public Lpu237Tags get_prefix_tag(){
         return m_tag_prefix;
     }
-    public Lpu237.Tags get_postfix_tag(){
+    public Lpu237Tags get_postfix_tag(){
         return m_tag_postfix;
     }
 
-    public void set_prefix_tag( Lpu237.Tags tag ){
+    public void set_prefix_tag( Lpu237Tags tag ){
         do{
             if( tag == null)
                 continue;
             m_tag_prefix.set_tag(tag);
         }while(false);
     }
-    public void set_postfix_tag( Lpu237.Tags tag ){
+    public void set_postfix_tag( Lpu237Tags tag ){
         do{
             if( tag == null)
                 continue;
             m_tag_postfix.set_tag(tag);
         }while(false);
     }
-    public void set_tag( Lpu237.Tags tag ){
+    public void set_tag( Lpu237Tags tag ){
         if( m_b_selected_prefix )
             set_prefix_tag(tag);
         else
@@ -160,7 +162,7 @@ public class PageTag {
                 continue;
             }
             //
-            Lpu237.Tags tag = m_tag_postfix;
+            Lpu237Tags tag = m_tag_postfix;
             if( n_pre_or_post == 0 )
                 tag = m_tag_prefix;
             //

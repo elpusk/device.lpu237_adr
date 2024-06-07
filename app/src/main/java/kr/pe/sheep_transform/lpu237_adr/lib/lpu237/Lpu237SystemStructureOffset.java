@@ -1,0 +1,186 @@
+package kr.pe.sheep_transform.lpu237_adr.lib.lpu237;
+
+/**
+ * see SYSINFO_STD C structure
+ */
+public interface Lpu237SystemStructureOffset {
+    int cBlank = 0;
+    int dwSize = 1 + 3;
+    int sStructVer = 5 + 3;
+    int sName = 9 + 3;
+    int sSysVer = 25 + 3;
+    int ModeBL = 29 + 3;
+    int ModeAP = 30 + 3;
+    int sSN = 31 + 3;
+    int Interface = 39 + 3;
+    int nBuzzerFrequency = 40 + 3;
+    int nNormalWDT = 44 + 3;
+    int nBootRunTime = 48 + 3;
+
+    int Uart_nCom = 52 + 3;
+    int Uart_nBaud = 56 + 3;
+
+    int ContainerInfoMsrObj_pInfoMsrObj0 = 60 + 3;
+    int ContainerInfoMsrObj_pInfoMsrObj1 = 64 + 3;
+    int ContainerInfoMsrObj_pInfoMsrObj2 = 68 + 3;
+    int ContainerInfoMsrObj_nCpdSystickMin = 72 + 3;
+    int ContainerInfoMsrObj_nCpdSystickMax = 76 + 3;
+    int ContainerInfoMsrObj_nGlobalTagCondition = 80 + 3;
+    int ContainerInfoMsrObj_nNumItem = 84 + 3;
+    int ContainerInfoMsrObj_nOrderObject0 = 88 + 3;
+    int ContainerInfoMsrObj_nOrderObject1 = 92 + 3;
+    int ContainerInfoMsrObj_nOrderObject2 = 96 + 3;
+    int ContainerInfoMsrObj_Keymap_nMappingIndex = 100 + 3;
+    int ContainerInfoMsrObj_Keymap_nNumMapTableItem = 104 + 3;
+    int ContainerInfoMsrObj_TagPre_cSize = 108 + 3;
+    int ContainerInfoMsrObj_TagPre_sTag = 109 + 3;
+    int ContainerInfoMsrObj_TagPost_cSize = 123 + 3;
+    int ContainerInfoMsrObj_TagPost_sTag = 124 + 3;
+    int ContainerInfoMsrObj_GlobalPrefix_cSize = 138 + 3;
+    int ContainerInfoMsrObj_GlobalPrefix_sTag = 139 + 3;
+    int ContainerInfoMsrObj_GlobalPostfix_cSize = 153 + 3;
+    int ContainerInfoMsrObj_GlobalPostfix_sTag = 154 + 3;
+
+    int InfoMsr0_cEnableTack = 168 + 3;
+    int InfoMsr0_cSupportNum = 169 + 3;
+    int InfoMsr0_cActiveCombination = 170 + 3;
+    int InfoMsr0_cMaxSize = 171 + 3;
+    int InfoMsr0_cBitSize = 174 + 3;
+    int InfoMsr0_cDataMask = 177 + 3;
+    int InfoMsr0_bUseParity = 180 + 3;
+    int InfoMsr0_cParityType = 183 + 3;
+    int InfoMsr0_cSTX = 186 + 3;
+    int InfoMsr0_cETX = 189 + 3;
+    int InfoMsr0_bUseErrorCorrect = 192 + 3;
+    int InfoMsr0_cECMType = 195 + 3;
+    int InfoMsr0_cRDirect = 198 + 3;
+    int InfoMsr0_nBufSize = 201 + 3;
+    int InfoMsr0_cAddValue = 205 + 3;
+    int InfoMsr0_bEnableEncryption = 208 + 3;
+    int InfoMsr0_sMasterKey = 209 + 3;
+    int InfoMsr0_sChangeKey = 225 + 3;
+    int InfoMsr0_PrivatePrefix0_cSize = 241 + 3;
+    int InfoMsr0_PrivatePrefix0_sTag = 242 + 3;
+    int InfoMsr0_PrivatePrefix1_cSize = 256 + 3;
+    int InfoMsr0_PrivatePrefix1_sTag = 257 + 3;
+    int InfoMsr0_PrivatePrefix2_cSize = 271 + 3;
+    int InfoMsr0_PrivatePrefix2_sTag = 272 + 3;
+    int InfoMsr0_PrivatePostfix0_cSize = 286 + 3;
+    int InfoMsr0_PrivatePostfix0_sTag = 287 + 3;
+    int InfoMsr0_PrivatePostfix1_cSize = 301 + 3;
+    int InfoMsr0_PrivatePostfix1_sTag = 302 + 3;
+    int InfoMsr0_PrivatePostfix2_cSize = 316 + 3;
+    int InfoMsr0_PrivatePostfix2_sTag = 317 + 3;
+    int InfoMsr0_Keymap0_nMappingIndex = 331 + 3;
+    int InfoMsr0_Keymap0_nNumMapTableItem = 335 + 3;
+    int InfoMsr0_Keymap1_nMappingIndex = 339 + 3;
+    int InfoMsr0_Keymap1_nNumMapTableItem = 343 + 3;
+    int InfoMsr0_Keymap2_nMappingIndex = 347 + 3;
+    int InfoMsr0_Keymap2_nNumMapTableItem = 351 + 3;
+
+    int InfoMsr1_cEnableTack = 355 + 3;
+    int InfoMsr1_cSupportNum = 356 + 3;
+    int InfoMsr1_cActiveCombination = 357 + 3;
+    int InfoMsr1_cMaxSize = 358 + 3;
+    int InfoMsr1_cBitSize = 361 + 3;
+    int InfoMsr1_cDataMask = 364 + 3;
+    int InfoMsr1_bUseParity = 367 + 3;
+    int InfoMsr1_cParityType = 370 + 3;
+    int InfoMsr1_cSTX = 373 + 3;
+    int InfoMsr1_cETX = 376 + 3;
+    int InfoMsr1_bUseErrorCorrect = 379 + 3;
+    int InfoMsr1_cECMType = 382 + 3;
+    int InfoMsr1_cRDirect = 385 + 3;
+    int InfoMsr1_nBufSize = 388 + 3;
+    int InfoMsr1_cAddValue = 392 + 3;
+    int InfoMsr1_bEnableEncryption = 395 + 3;
+    int InfoMsr1_sMasterKey = 396 + 3;
+    int InfoMsr1_sChangeKey = 412 + 3;
+    int InfoMsr1_PrivatePrefix0_cSize = 428 + 3;
+    int InfoMsr1_PrivatePrefix0_sTag = 429 + 3;
+    int InfoMsr1_PrivatePrefix1_Size = 443 + 3;
+    int InfoMsr1_PrivatePrefix1_sTag = 444 + 3;
+    int InfoMsr1_PrivatePrefix2_cSize = 458 + 3;
+    int InfoMsr1_PrivatePrefix2_sTag = 459 + 3;
+    int InfoMsr1_PrivatePostfix0_cSize = 473 + 3;
+    int InfoMsr1_PrivatePostfix0_sTag = 474 + 3;
+    int InfoMsr1_PrivatePostfix1_cSize = 488 + 3;
+    int InfoMsr1_PrivatePostfix1_sTag = 489 + 3;
+    int InfoMsr1_PrivatePostfix2_cSize = 503 + 3;
+    int InfoMsr1_PrivatePostfix2_sTag = 504 + 3;
+    int InfoMsr1_Keymap0_nMappingIndex = 518 + 3;
+    int InfoMsr1_Keymap0_nNumMapTableItem = 522 + 3;
+    int InfoMsr1_Keymap1_nMappingIndex = 526 + 3;
+    int InfoMsr1_Keymap1_nNumMapTableItem = 530 + 3;
+    int InfoMsr1_Keymap2_nMappingIndex = 534 + 3;
+    int InfoMsr1_Keymap2_nNumMapTableItem = 538 + 3;
+
+    int InfoMsr2_cEnableTack = 542 + 3;
+    int InfoMsr2_cSupportNum = 543 + 3;
+    int InfoMsr2_cActiveCombination = 544 + 3;
+    int InfoMsr2_cMaxSize = 545 + 3;
+    int InfoMsr2_cBitSize = 548 + 3;
+    int InfoMsr2_cDataMask = 551 + 3;
+    int InfoMsr2_bUseParity = 554 + 3;
+    int InfoMsr2_cParityType = 557 + 3;
+    int InfoMsr2_cSTX = 560 + 3;
+    int InfoMsr2_cETX = 563 + 3;
+    int InfoMsr2_bUseErrorCorrect = 566 + 3;
+    int InfoMsr2_cECMType = 569 + 3;
+    int InfoMsr2_cRDirect = 572 + 3;
+    int InfoMsr2_nBufSize = 575 + 3;
+    int InfoMsr2_cAddValue = 579 + 3;
+    int InfoMsr2_bEnableEncryption = 582 + 3;
+    int InfoMsr2_sMasterKey = 583 + 3;
+    int InfoMsr2_sChangeKey = 599 + 3;
+    int InfoMsr2_PrivatePrefix0_cSize = 615 + 3;
+    int InfoMsr2_PrivatePrefix0_sTag = 616 + 3;
+    int InfoMsr2_PrivatePrefix1_cSize = 630 + 3;
+    int InfoMsr2_PrivatePrefix1_sTag = 631 + 3;
+    int InfoMsr2_PrivatePrefix2_cSize = 645 + 3;
+    int InfoMsr2_PrivatePrefix2_sTag = 646 + 3;
+    int InfoMsr2_PrivatePostfix0_cSize = 660 + 3;
+    int InfoMsr2_PrivatePostfix0_sTag = 661 + 3;
+    int InfoMsr2_PrivatePostfix1_cSize = 675 + 3;
+    int InfoMsr2_PrivatePostfix1_sTag = 676 + 3;
+    int InfoMsr2_PrivatePostfix2_cSize = 690 + 3;
+    int InfoMsr2_PrivatePostfix2_sTag = 691 + 3;
+    int InfoMsr2_Keymap0_nMappingIndex = 705 + 3;
+    int InfoMsr2_Keymap0_nNumMapTableItem = 709 + 3;
+    int InfoMsr2_Keymap1_nMappingIndex = 713 + 3;
+    int InfoMsr2_Keymap1_nNumMapTableItem = 717 + 3;
+    int InfoMsr2_Keymap2_nMappingIndex = 721 + 3;
+    int InfoMsr2_Keymap2_nNumMapTableItem = 725 + 3;
+    // additional item from version 3.0
+    int InfoiButton_TagPre_cSize = 729 + 3;
+    int InfoiButton_TagPre_sTag = 730 + 3;
+    int InfoiButton_TagPost_cSize = 744 + 3;
+    int InfoiButton_TagPost_sTag = 745 + 3;
+    int InfoiButton_GlobalPrefix_cSize = 759 + 3;
+    int InfoiButton_GlobalPrefix_sTag = 760 + 3;
+    int InfoiButton_GlobalPostfix_cSize = 774 + 3;
+    int InfoiButton_GlobalPostfix_sTag = 775 + 3;
+
+    int InfoUart_TagPre_cSize = 789 + 3;
+    int InfoUart_TagPre_sTag = 790 + 3;
+    int InfoUart_TagPost_cSize = 804 + 3;
+    int InfoUart_TagPost_sTag = 805 + 3;
+    int InfoUart_GlobalPrefix_cSize = 819 + 3;
+    int InfoUart_GlobalPrefix_sTag = 820 + 3;
+    int InfoUart_GlobalPostfix_cSize = 834 + 3;
+    int InfoUart_GlobalPostfix_sTag = 835 + 3;
+
+    // new member from structure v4.0
+    int RemoveItemTag_cSize = 849 + 3;
+    int RemoveItemTag_cTag = 850 + 3;//40
+
+    int InfoiButtonRemove_TagPre_cSize = 890 + 3;
+    int InfoiButtonRemove_TagPre_sTag = 891 + 3;
+    int InfoiButtonRemove_TagPost_cSize = 905 + 3;
+    int InfoiButtonRemove_TagPost_sTag = 906 + 3;
+    int InfoiButtonRemove_GlobalPrefix_cSize = 920 + 3;
+    int InfoiButtonRemove_GlobalPrefix_sTag = 921 + 3;
+    int InfoiButtonRemove_GlobalPostfix_cSize = 935 + 3;
+    int InfoiButtonRemove_GlobalPostfix_sTag = 936 + 3;
+
+}

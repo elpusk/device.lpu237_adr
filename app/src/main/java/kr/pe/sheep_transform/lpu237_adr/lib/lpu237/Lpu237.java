@@ -1,558 +1,23 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.lpu237;
 
-import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbEndpoint;
-import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.hardware.usb.UsbRequest;
 import android.util.Log;
 
 //import junit.runner.Version;
 
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.HashSet;
 
-
-interface Lpu237Request{
-    byte cmdChangeAuthkey = 'c';
-    byte cmdChangeEnkey = 'k';
-    byte cmdChangeStatus = 'M';
-    byte cmdChangeSN = 'S';
-    byte cmdConfig = 'A';
-    byte cmdApply = 'B';
-    byte cmdEnterCS = 'X';
-    byte cmdLeaveCS = 'Y';
-    byte cmdGotoBootLoader = 'G';
-    byte cmdEnterOps = 'I';
-    byte cmdLeaveOps = 'J';
-    byte cmdHwIsStandard = 'D';
-    byte cmdHwIsOnlyiButton = 'W';
-    byte cmdReadUID = 'U';
-    byte cmdHwIsMMD1000 = 'N';
-    byte cmdDebInterface	='Z';//debugging
-    byte cmdRawMMD1000		='E';//Raw command for MMD1000
-    byte cmdUartBypass		='T';//bypass data to UART. supported in version 10.0 greater then equal
-    byte cmdConfigSecurity = 'a';//config security
-    byte cmdGetRandom = 'r';//get true random number
-    byte cmdChangeKsn = 's';//change KSN
-    byte cmdExternalAuthen = 'e';//external authentication.
-    byte cmdChangeInitalVector = 'i';//change initial vector for CBC mode.
-    byte cmdGetSecurityChangeInfo = 't';//get security changig info
-
-}
-
-interface Lpu237RequestSub{
-    byte subConfigSet = (byte) 200;
-    byte subConfigGet = (byte) 201;
-}
-
-interface  Lpu237Response{
-    byte prefix = 'R';//0x52 the prefix code of MSR response.
-    byte plaintextPrefix = 'P';// the prefix code of MSR raw data.
-    byte cipherPrefix = 'C';// the prefix code of MSR cipher data.
-
-    byte resultGood = -1;
-    byte resultGoodNegative = -128;//0x80;
-    byte resultErrorCrc = 1;
-    byte resultErrorMislength = 2;
-    byte resultErrorMiskey = 3;
-    byte resultErrorMisCheckBlock = 4;
-    byte resultErrorinvalid = 5;
-    byte resultErrorVerify = 6;
-
-}
-
-interface Lpu237Direction{
-    byte biDirection = 0;
-    byte forwardDirection = 1;
-    byte backwardDirection = 2;
-}
-interface Lpu237Interface{
-    byte usbKeyboard = 0;
-    byte usbVendorHid = 1;
-
-    byte usbVCom = 2;
-    byte uart = 10;
-    byte ps2StandAlone = 20;
-    byte ps2Bypass = 21;
-    byte hwSetting = 100;
-}
-
-interface Lpu237InterfaceString{
-    String sUsbKeyboard = "USB Keyboard";
-    String sUsbHid = "USB HID Vendor";
-    String sRS232 = "RS232";
-    String sUsbVCom = "USB Virtual COM";
-}
-
-interface Lpu237LanguageIndex{
-    byte english = 0;//USA
-    byte spanish = 1;
-    byte danish = 2;
-    byte french = 3;
-    byte german = 4;
-    byte italian = 5;
-    byte norwegian = 6;
-    byte swedish = 7;
-    byte ukEnglish = 8;
-    byte israel = 9;
-    byte turkey = 10;
-}
-
-interface Lpu237ChangedParameter{
-    int EnableTrack1 = 0;
-    int EnableTrack2 = 1;
-    int EnableTrack3 = 2;
-    int DeviceInterface = 3;
-    int DeviceLanguage = 4;
-    int BuzzerFrequency = 5;
-    int GlobalPrefix = 6;
-    int GlobalPostfix = 7;
-    int PrivatePrefixTrack1 = 8;
-    int PrivatePostfixTrack1 = 9;
-    int PrivatePrefixTrack2 = 10;
-    int PrivatePostfixTrack2 = 11;
-    int PrivatePrefixTrack3 = 12;
-    int PrivatePostfixTrack3 = 13;
-    int iButtonTagPrefix = 14;
-    int iButtonTagPostfix = 15;
-    int iButtonRemove = 16;
-    int iButtonRemoveTagPrefix = 17;
-    int iButtonRemoveTagPostfix = 18;
-    int UartPrefix = 19;
-    int UartPostfix = 20;
-    int GlobalSendCondition = 21;
-    int BlankField = 22;//ibutton type, reset interval, success condition
-    int MsrReadingDirection = 23;
-    int MsrTrackOrder = 24;
-}
-
-/**
- * see SYSINFO_STD C structure
- */
-interface Lpu237SystemStructureOffset{
-    int cBlank = 0;
-    int dwSize = 1+3;
-    int sStructVer = 5+3;
-    int sName = 9+3;
-    int sSysVer = 25+3;
-    int ModeBL = 29+3;
-    int ModeAP = 30+3;
-    int sSN = 31+3;
-    int Interface = 39+3;
-    int nBuzzerFrequency = 40+3;
-    int nNormalWDT = 44+3;
-    int nBootRunTime = 48+3;
-
-    int Uart_nCom = 52+3;
-    int Uart_nBaud = 56+3;
-
-    int	ContainerInfoMsrObj_pInfoMsrObj0 = 60+3;
-    int ContainerInfoMsrObj_pInfoMsrObj1 = 64+3;
-    int ContainerInfoMsrObj_pInfoMsrObj2 = 68+3;
-    int ContainerInfoMsrObj_nCpdSystickMin = 72+3;
-    int ContainerInfoMsrObj_nCpdSystickMax = 76+3;
-    int ContainerInfoMsrObj_nGlobalTagCondition = 80+3;
-    int ContainerInfoMsrObj_nNumItem = 84+3;
-    int ContainerInfoMsrObj_nOrderObject0 = 88+3;
-    int ContainerInfoMsrObj_nOrderObject1 = 92+3;
-    int ContainerInfoMsrObj_nOrderObject2 = 96+3;
-    int ContainerInfoMsrObj_Keymap_nMappingIndex = 100+3;
-    int ContainerInfoMsrObj_Keymap_nNumMapTableItem = 104+3;
-    int ContainerInfoMsrObj_TagPre_cSize = 108+3;
-    int ContainerInfoMsrObj_TagPre_sTag= 109+3;
-    int ContainerInfoMsrObj_TagPost_cSize = 123+3;
-    int ContainerInfoMsrObj_TagPost_sTag = 124+3;
-    int ContainerInfoMsrObj_GlobalPrefix_cSize = 138+3;
-    int ContainerInfoMsrObj_GlobalPrefix_sTag = 139+3;
-    int ContainerInfoMsrObj_GlobalPostfix_cSize = 153+3;
-    int ContainerInfoMsrObj_GlobalPostfix_sTag = 154+3;
-
-    int InfoMsr0_cEnableTack = 168+3;
-    int InfoMsr0_cSupportNum = 169+3;
-    int InfoMsr0_cActiveCombination = 170+3;
-    int InfoMsr0_cMaxSize = 171+3;
-    int InfoMsr0_cBitSize = 174+3;
-    int InfoMsr0_cDataMask = 177+3;
-    int InfoMsr0_bUseParity = 180+3;
-    int InfoMsr0_cParityType = 183+3;
-    int InfoMsr0_cSTX = 186+3;
-    int InfoMsr0_cETX = 189+3;
-    int InfoMsr0_bUseErrorCorrect = 192+3;
-    int InfoMsr0_cECMType = 195+3;
-    int InfoMsr0_cRDirect = 198+3;
-    int InfoMsr0_nBufSize = 201+3;
-    int InfoMsr0_cAddValue = 205+3;
-    int InfoMsr0_bEnableEncryption = 208+3;
-    int InfoMsr0_sMasterKey = 209+3;
-    int InfoMsr0_sChangeKey = 225+3;
-    int InfoMsr0_PrivatePrefix0_cSize = 241+3;
-    int InfoMsr0_PrivatePrefix0_sTag = 242+3;
-    int InfoMsr0_PrivatePrefix1_cSize = 256+3;
-    int InfoMsr0_PrivatePrefix1_sTag = 257+3;
-    int InfoMsr0_PrivatePrefix2_cSize = 271+3;
-    int InfoMsr0_PrivatePrefix2_sTag = 272+3;
-    int InfoMsr0_PrivatePostfix0_cSize = 286+3;
-    int InfoMsr0_PrivatePostfix0_sTag = 287+3;
-    int InfoMsr0_PrivatePostfix1_cSize = 301+3;
-    int InfoMsr0_PrivatePostfix1_sTag = 302+3;
-    int InfoMsr0_PrivatePostfix2_cSize = 316+3;
-    int InfoMsr0_PrivatePostfix2_sTag =  317+3;
-    int InfoMsr0_Keymap0_nMappingIndex = 331+3;
-    int InfoMsr0_Keymap0_nNumMapTableItem = 335+3;
-    int InfoMsr0_Keymap1_nMappingIndex = 339+3;
-    int InfoMsr0_Keymap1_nNumMapTableItem = 343+3;
-    int InfoMsr0_Keymap2_nMappingIndex = 347+3;
-    int InfoMsr0_Keymap2_nNumMapTableItem = 351+3;
-
-    int InfoMsr1_cEnableTack = 355+3;
-    int InfoMsr1_cSupportNum = 356+3;
-    int InfoMsr1_cActiveCombination = 357+3;
-    int InfoMsr1_cMaxSize = 358+3;
-    int InfoMsr1_cBitSize = 361+3;
-    int InfoMsr1_cDataMask = 364+3;
-    int InfoMsr1_bUseParity = 367+3;
-    int InfoMsr1_cParityType = 370+3;
-    int InfoMsr1_cSTX = 373+3;
-    int InfoMsr1_cETX = 376+3;
-    int InfoMsr1_bUseErrorCorrect = 379+3;
-    int InfoMsr1_cECMType = 382+3;
-    int InfoMsr1_cRDirect = 385+3;
-    int InfoMsr1_nBufSize = 388+3;
-    int InfoMsr1_cAddValue = 392+3;
-    int InfoMsr1_bEnableEncryption = 395+3;
-    int InfoMsr1_sMasterKey = 396+3;
-    int InfoMsr1_sChangeKey = 412+3;
-    int InfoMsr1_PrivatePrefix0_cSize = 428+3;
-    int InfoMsr1_PrivatePrefix0_sTag = 429+3;
-    int InfoMsr1_PrivatePrefix1_Size = 443+3;
-    int InfoMsr1_PrivatePrefix1_sTag = 444+3;
-    int InfoMsr1_PrivatePrefix2_cSize = 458+3;
-    int InfoMsr1_PrivatePrefix2_sTag = 459+3;
-    int InfoMsr1_PrivatePostfix0_cSize = 473+3;
-    int InfoMsr1_PrivatePostfix0_sTag = 474+3;
-    int InfoMsr1_PrivatePostfix1_cSize = 488+3;
-    int InfoMsr1_PrivatePostfix1_sTag = 489+3;
-    int InfoMsr1_PrivatePostfix2_cSize = 503+3;
-    int InfoMsr1_PrivatePostfix2_sTag = 504+3;
-    int InfoMsr1_Keymap0_nMappingIndex = 518+3;
-    int InfoMsr1_Keymap0_nNumMapTableItem = 522+3;
-    int InfoMsr1_Keymap1_nMappingIndex = 526+3;
-    int InfoMsr1_Keymap1_nNumMapTableItem = 530+3;
-    int InfoMsr1_Keymap2_nMappingIndex = 534+3;
-    int InfoMsr1_Keymap2_nNumMapTableItem = 538+3;
-
-    int InfoMsr2_cEnableTack = 542+3;
-    int InfoMsr2_cSupportNum = 543+3;
-    int InfoMsr2_cActiveCombination = 544+3;
-    int InfoMsr2_cMaxSize = 545+3;
-    int InfoMsr2_cBitSize = 548+3;
-    int InfoMsr2_cDataMask = 551+3;
-    int InfoMsr2_bUseParity = 554+3;
-    int InfoMsr2_cParityType = 557+3;
-    int InfoMsr2_cSTX = 560+3;
-    int InfoMsr2_cETX = 563+3;
-    int InfoMsr2_bUseErrorCorrect = 566+3;
-    int InfoMsr2_cECMType = 569+3;
-    int InfoMsr2_cRDirect = 572+3;
-    int InfoMsr2_nBufSize = 575+3;
-    int InfoMsr2_cAddValue = 579+3;
-    int InfoMsr2_bEnableEncryption = 582+3;
-    int InfoMsr2_sMasterKey = 583+3;
-    int InfoMsr2_sChangeKey = 599+3;
-    int InfoMsr2_PrivatePrefix0_cSize = 615+3;
-    int InfoMsr2_PrivatePrefix0_sTag = 616+3;
-    int InfoMsr2_PrivatePrefix1_cSize = 630+3;
-    int InfoMsr2_PrivatePrefix1_sTag = 631+3;
-    int InfoMsr2_PrivatePrefix2_cSize = 645+3;
-    int InfoMsr2_PrivatePrefix2_sTag = 646+3;
-    int InfoMsr2_PrivatePostfix0_cSize = 660+3;
-    int InfoMsr2_PrivatePostfix0_sTag = 661+3;
-    int InfoMsr2_PrivatePostfix1_cSize = 675+3;
-    int InfoMsr2_PrivatePostfix1_sTag = 676+3;
-    int InfoMsr2_PrivatePostfix2_cSize = 690+3;
-    int InfoMsr2_PrivatePostfix2_sTag = 691+3;
-    int InfoMsr2_Keymap0_nMappingIndex = 705+3;
-    int InfoMsr2_Keymap0_nNumMapTableItem = 709+3;
-    int InfoMsr2_Keymap1_nMappingIndex = 713+3;
-    int InfoMsr2_Keymap1_nNumMapTableItem = 717+3;
-    int InfoMsr2_Keymap2_nMappingIndex = 721+3;
-    int InfoMsr2_Keymap2_nNumMapTableItem = 725+3;
-    // additional item from version 3.0
-    int InfoiButton_TagPre_cSize = 729+3;
-    int InfoiButton_TagPre_sTag = 730+3;
-    int InfoiButton_TagPost_cSize = 744+3;
-    int InfoiButton_TagPost_sTag = 745+3;
-    int InfoiButton_GlobalPrefix_cSize = 759+3;
-    int InfoiButton_GlobalPrefix_sTag = 760+3;
-    int InfoiButton_GlobalPostfix_cSize = 774+3;
-    int InfoiButton_GlobalPostfix_sTag = 775+3;
-
-    int InfoUart_TagPre_cSize = 789+3;
-    int InfoUart_TagPre_sTag = 790+3;
-    int InfoUart_TagPost_cSize = 804+3;
-    int InfoUart_TagPost_sTag = 805+3;
-    int InfoUart_GlobalPrefix_cSize = 819+3;
-    int InfoUart_GlobalPrefix_sTag = 820+3;
-    int InfoUart_GlobalPostfix_cSize = 834+3;
-    int InfoUart_GlobalPostfix_sTag = 835+3;
-
-    // new member from structure v4.0
-    int RemoveItemTag_cSize = 849+3;
-    int RemoveItemTag_cTag = 850+3;//40
-
-    int InfoiButtonRemove_TagPre_cSize = 890+3;
-    int InfoiButtonRemove_TagPre_sTag = 891+3;
-    int InfoiButtonRemove_TagPost_cSize = 905+3;
-    int InfoiButtonRemove_TagPost_sTag = 906+3;
-    int InfoiButtonRemove_GlobalPrefix_cSize = 920+3;
-    int InfoiButtonRemove_GlobalPrefix_sTag = 921+3;
-    int InfoiButtonRemove_GlobalPostfix_cSize = 935+3;
-    int InfoiButtonRemove_GlobalPostfix_sTag = 936+3;
-
-}
-
-interface Lpu237SystemStructureSize{
-    int cBlank = 4;
-    int dwSize = 4;
-    int sStructVer = 4;
-    int sName = 16;
-    int sSysVer = 4;
-    int ModeBL = 1;
-    int ModeAP = 1;
-    int sSN = 8;
-    int Interface = 1;
-    int nBuzzerFrequency = 4;
-    int nNormalWDT = 4;
-    int nBootRunTime = 4;
-
-    int Uart_nCom = 4;
-    int Uart_nBaud = 4;
-
-    int	ContainerInfoMsrObj_pInfoMsrObj0 = 4;
-    int ContainerInfoMsrObj_pInfoMsrObj1 = 4;
-    int ContainerInfoMsrObj_pInfoMsrObj2 = 4;
-    int ContainerInfoMsrObj_nCpdSystickMin = 4;
-    int ContainerInfoMsrObj_nCpdSystickMax = 4;
-    int ContainerInfoMsrObj_nGlobalTagCondition = 4;
-    int ContainerInfoMsrObj_nNumItem = 4;
-    int ContainerInfoMsrObj_nOrderObject0 = 4;
-    int ContainerInfoMsrObj_nOrderObject1 = 4;
-    int ContainerInfoMsrObj_nOrderObject2 = 4;
-    int ContainerInfoMsrObj_Keymap_nMappingIndex = 4;
-    int ContainerInfoMsrObj_Keymap_nNumMapTableItem = 4;
-    int ContainerInfoMsrObj_TagPre_cSize = 1;
-    int ContainerInfoMsrObj_TagPre_sTag = 14;
-    int ContainerInfoMsrObj_TagPost_cSize = 1;
-    int ContainerInfoMsrObj_TagPost_sTag = 14;
-    int ContainerInfoMsrObj_GlobalPrefix_cSize = 1;
-    int ContainerInfoMsrObj_GlobalPrefix_sTag = 14;
-    int ContainerInfoMsrObj_GlobalPostfix_cSize = 1;
-    int ContainerInfoMsrObj_GlobalPostfix_sTag = 14;
-
-    int InfoMsr0_cEnableTack = 1;
-    int InfoMsr0_cSupportNum = 1;
-    int InfoMsr0_cActiveCombination = 1;
-    int InfoMsr0_cMaxSize = 3;
-    int InfoMsr0_cBitSize = 3;
-    int InfoMsr0_cDataMask = 3;
-    int InfoMsr0_bUseParity = 3;
-    int InfoMsr0_cParityType = 3;
-    int InfoMsr0_cSTX = 3;
-    int InfoMsr0_cETX = 3;
-    int InfoMsr0_bUseErrorCorrect = 3;
-    int InfoMsr0_cECMType = 3;
-    int InfoMsr0_cRDirect = 3;
-    int InfoMsr0_nBufSize = 4;
-    int InfoMsr0_cAddValue = 3;
-    int InfoMsr0_bEnableEncryption = 1;
-    int InfoMsr0_sMasterKey = 16;
-    int InfoMsr0_sChangeKey = 16;
-    int InfoMsr0_PrivatePrefix0_cSize = 1;
-    int InfoMsr0_PrivatePrefix0_sTag = 14;
-    int InfoMsr0_PrivatePrefix1_cSize = 1;
-    int InfoMsr0_PrivatePrefix1_sTag = 14;
-    int InfoMsr0_PrivatePrefix2_cSize = 1;
-    int InfoMsr0_PrivatePrefix2_sTag = 14;
-    int InfoMsr0_PrivatePostfix0_cSize = 1;
-    int InfoMsr0_PrivatePostfix0_sTag = 14;
-    int InfoMsr0_PrivatePostfix1_cSize = 1;
-    int InfoMsr0_PrivatePostfix1_sTag = 14;
-    int InfoMsr0_PrivatePostfix2_cSize = 1;
-    int InfoMsr0_PrivatePostfix2_sTag =  14;
-    int InfoMsr0_Keymap0_nMappingIndex = 4;
-    int InfoMsr0_Keymap0_nNumMapTableItem = 4;
-    int InfoMsr0_Keymap1_nMappingIndex = 4;
-    int InfoMsr0_Keymap1_nNumMapTableItem = 4;
-    int InfoMsr0_Keymap2_nMappingIndex = 4;
-    int InfoMsr0_Keymap2_nNumMapTableItem = 4;
-
-    int InfoMsr1_cEnableTack = 1;
-    int InfoMsr1_cSupportNum = 1;
-    int InfoMsr1_cActiveCombination = 1;
-    int InfoMsr1_cMaxSize = 3;
-    int InfoMsr1_cBitSize = 3;
-    int InfoMsr1_cDataMask = 3;
-    int InfoMsr1_bUseParity = 3;
-    int InfoMsr1_cParityType = 3;
-    int InfoMsr1_cSTX = 3;
-    int InfoMsr1_cETX = 3;
-    int InfoMsr1_bUseErrorCorrect = 3;
-    int InfoMsr1_cECMType = 3;
-    int InfoMsr1_cRDirect = 3;
-    int InfoMsr1_nBufSize = 4;
-    int InfoMsr1_cAddValue = 3;
-    int InfoMsr1_bEnableEncryption = 1;
-    int InfoMsr1_sMasterKey = 16;
-    int InfoMsr1_sChangeKey = 16;
-    int InfoMsr1_PrivatePrefix0_cSize = 1;
-    int InfoMsr1_PrivatePrefix0_sTag = 14;
-    int InfoMsr1_PrivatePrefix1_Size = 1;
-    int InfoMsr1_PrivatePrefix1_sTag = 14;
-    int InfoMsr1_PrivatePrefix2_cSize = 1;
-    int InfoMsr1_PrivatePrefix2_sTag = 14;
-    int InfoMsr1_PrivatePostfix0_cSize = 1;
-    int InfoMsr1_PrivatePostfix0_sTag = 14;
-    int InfoMsr1_PrivatePostfix1_cSize = 1;
-    int InfoMsr1_PrivatePostfix1_sTag = 14;
-    int InfoMsr1_PrivatePostfix2_cSize = 1;
-    int InfoMsr1_PrivatePostfix2_sTag = 14;
-    int InfoMsr1_Keymap0_nMappingIndex = 4;
-    int InfoMsr1_Keymap0_nNumMapTableItem = 4;
-    int InfoMsr1_Keymap1_nMappingIndex = 4;
-    int InfoMsr1_Keymap1_nNumMapTableItem = 4;
-    int InfoMsr1_Keymap2_nMappingIndex = 4;
-    int InfoMsr1_Keymap2_nNumMapTableItem = 4;
-
-    int InfoMsr2_cEnableTack = 1;
-    int InfoMsr2_cSupportNum = 1;
-    int InfoMsr2_cActiveCombination = 1;
-    int InfoMsr2_cMaxSize = 3;
-    int InfoMsr2_cBitSize = 3;
-    int InfoMsr2_cDataMask = 3;
-    int InfoMsr2_bUseParity = 3;
-    int InfoMsr2_cParityType = 3;
-    int InfoMsr2_cSTX = 3;
-    int InfoMsr2_cETX = 3;
-    int InfoMsr2_bUseErrorCorrect = 3;
-    int InfoMsr2_cECMType = 3;
-    int InfoMsr2_cRDirect = 3;
-    int InfoMsr2_nBufSize = 4;
-    int InfoMsr2_cAddValue = 3;
-    int InfoMsr2_bEnableEncryption = 1;
-    int InfoMsr2_sMasterKey = 16;
-    int InfoMsr2_sChangeKey = 16;
-    int InfoMsr2_PrivatePrefix0_cSize = 1;
-    int InfoMsr2_PrivatePrefix0_sTag = 14;
-    int InfoMsr2_PrivatePrefix1_cSize = 1;
-    int InfoMsr2_PrivatePrefix1_sTag = 14;
-    int InfoMsr2_PrivatePrefix2_cSize = 1;
-    int InfoMsr2_PrivatePrefix2_sTag = 14;
-    int InfoMsr2_PrivatePostfix0_cSize = 1;
-    int InfoMsr2_PrivatePostfix0_sTag = 14;
-    int InfoMsr2_PrivatePostfix1_cSize = 1;
-    int InfoMsr2_PrivatePostfix1_sTag = 14;
-    int InfoMsr2_PrivatePostfix2_cSize = 1;
-    int InfoMsr2_PrivatePostfix2_sTag = 14;
-    int InfoMsr2_Keymap0_nMappingIndex = 4;
-    int InfoMsr2_Keymap0_nNumMapTableItem = 4;
-    int InfoMsr2_Keymap1_nMappingIndex = 4;
-    int InfoMsr2_Keymap1_nNumMapTableItem = 4;
-    int InfoMsr2_Keymap2_nMappingIndex = 4;
-    int InfoMsr2_Keymap2_nNumMapTableItem = 4;
-    // additional item from version 3.0
-    int InfoiButton_TagPre_cSize = 1;
-    int InfoiButton_TagPre_sTag = 14;
-    int InfoiButton_TagPost_cSize = 1;
-    int InfoiButton_TagPost_sTag = 14;
-    int InfoiButton_GlobalPrefix_cSize = 1;
-    int InfoiButton_GlobalPrefix_sTag = 14;
-    int InfoiButton_GlobalPostfix_cSize = 1;
-    int InfoiButton_GlobalPostfix_sTag = 14;
-
-    int InfoUart_TagPre_cSize = 1;
-    int InfoUart_TagPre_sTag = 14;
-    int InfoUart_TagPost_cSize = 1;
-    int InfoUart_TagPost_sTag = 14;
-    int InfoUart_GlobalPrefix_cSize = 1;
-    int InfoUart_GlobalPrefix_sTag = 14;
-    int InfoUart_GlobalPostfix_cSize = 1;
-    int InfoUart_GlobalPostfix_sTag = 14;
-
-    // additional item from struture version 4.0
-    int RemoveItemTag_cSize = 1;
-    int RemoveItemTag_cTag = 40;//40
-
-    int InfoiButtonRemove_TagPre_cSize = 1;
-    int InfoiButtonRemove_TagPre_sTag = 14;
-    int InfoiButtonRemove_TagPost_cSize = 1;
-    int InfoiButtonRemove_TagPost_sTag = 14;
-    int InfoiButtonRemove_GlobalPrefix_cSize = 1;
-    int InfoiButtonRemove_GlobalPrefix_sTag = 14;
-    int InfoiButtonRemove_GlobalPostfix_cSize = 1;
-    int InfoiButtonRemove_GlobalPostfix_sTag = 14;
-
-}
-
-interface Lpu237Address{
-    int HidKeymapAddressOffset = 1024;
-    int Ps2KeymapAddressOffset = 2048;
-}
-
-interface Lpu237DeviceType{
-    int Standard = 0;
-    int Compact = 1;
-    int IbuttonOlny = 2;
-}
-
-interface Lpu237iButtonType{
-    int Zeros = 0;
-    int Zeros7 = 1;
-    int F12 = 2;
-    int Addmit = 3;
-
-    int None = 4;//pre.post position is defined by user.
-}
-interface Lpu237iButtonTypeDescriptionString{
-    String Zeros = "Send Zero 16 times When i-button is removed";
-    String Zeros7 = "Send Zero 7 times When i-button is removed";
-    String F12 = "Send F12 When i-button is removed";
-    String Addmit = "Send by Code stick protocol";
-
-    String None = "User definition";
-}
-
-interface Lpu237Info{
-    int USB_VID = 0x134b;
-    int USB_PID = 0x0206;
-    int USB_INF = 1;
-    int SIZE_REPORT_IN = 220;
-    int SIZE_REPORT_OUT = 64;
-    int SIZE_REQ_HEAD = 3;
-
-    int NUMBER_ISO_TRACK = 3;
-    int OFFSET_IN_BLANK_OF_IBUTTON_TYPE = 2;
-    byte MASK_IN_BLANK_OF_IBUTTON_ZEROS7 = 0x04;
-    byte MASK_IN_BLANK_OF_IBUTTON_F12 = 0x01;
-    byte MASK_IN_BLANK_OF_IBUTTON_ADDMIT = 0x08;
-    byte MASK_IN_BLANK_OF_IBUTTON_ZEROS = 0x02;
-
-    int OFFSET_IN_BLANK_OF_SUCCESS_INDICATE = 1;
-    byte MASK_IN_BLANK_OF_SUCCESS_INDICATE = 0x01;
-    int OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL = 1;
-    byte MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL = -16;//=0xf0;
-
-    int OFFSET_IN_BLANK_OF_IBUTTON_POSITION = 0;
-    byte MASK_IN_BLANK_OF_IBUTTON_POSITION_START = -16;//=0xf0 zero base
-    byte MASK_IN_BLANK_OF_IBUTTON_POSITION_END = 0x0f;//zero base
-
-
-}
+import kr.pe.sheep_transform.lpu237_adr.ManagerDevice;
+import kr.pe.sheep_transform.lpu237_adr.lib.hid.HidDevice;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.FwVersion;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.IntByteConvert;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.KeyboardConst;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.KeyboardMap;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.Tools;
 
 public class Lpu237 extends HidDevice
 {
@@ -747,12 +212,12 @@ public class Lpu237 extends HidDevice
     }
     @Override
     public int get_vid() {
-        return Lpu237Info.USB_VID;
+        return Lpu237Const.USB_VID;
     }
 
     @Override
     public int get_pid() {
-        return Lpu237Info.USB_PID;
+        return Lpu237Const.USB_PID;
     }
 
     /**
@@ -761,17 +226,17 @@ public class Lpu237 extends HidDevice
      */
     @Override
     public int get_interface_number() {
-        return Lpu237Info.USB_INF;
+        return Lpu237Const.USB_INF;
     }
 
     @Override
     public int get_in_report_size() {
-        return Lpu237Info.SIZE_REPORT_IN;
+        return Lpu237Const.SIZE_REPORT_IN;
     }
 
     @Override
     public int get_out_report_size() {
-        return Lpu237Info.SIZE_REPORT_OUT;
+        return Lpu237Const.SIZE_REPORT_OUT;
     }
 
     public String getDescription()
@@ -1104,30 +569,30 @@ public class Lpu237 extends HidDevice
         return s_data;
     }
 
-    public void set_global_prefix( Tags tag ){
+    public void set_global_prefix( Lpu237Tags tag ){
         if( m_parameters.set_global_prefix(tag) )
             _set_change(Lpu237ChangedParameter.GlobalPrefix);
     }
-    public Tags get_global_prefix(){
+    public Lpu237Tags get_global_prefix(){
         return m_parameters.get_global_prefix();
     }
     public String getGlobalPrefix(){
-        Tags tag = get_global_prefix();
+        Lpu237Tags tag = get_global_prefix();
         return tag.toString();
     }
 
-    public void set_global_postfix( Tags tag ){
+    public void set_global_postfix( Lpu237Tags tag ){
         if( m_parameters.set_global_postfix(tag) )
             _set_change(Lpu237ChangedParameter.GlobalPostfix);
     }
-    public Tags get_global_postfix(){
+    public Lpu237Tags get_global_postfix(){
         return m_parameters.get_global_postfix();
     }
     public String getGlobalPostfix(){
         return get_global_postfix().toString();
     }
 
-    public void set_private_prefix( int n_track,Tags tag){
+    public void set_private_prefix(int n_track, Lpu237Tags tag){
         if( m_parameters.set_private_prefix(n_track,tag) ) {
             switch( n_track ){
                 case 0: _set_change(Lpu237ChangedParameter.PrivatePrefixTrack1); break;
@@ -1136,14 +601,14 @@ public class Lpu237 extends HidDevice
             }//end switch
         }
     }
-    public Tags get_private_prefix( int n_track ){
+    public Lpu237Tags get_private_prefix(int n_track ){
         return m_parameters.get_private_prefix(n_track);
     }
     public String getPrivatePrefix( int n_track ){
         return get_private_prefix(n_track).toString();
     }
 
-    public void set_private_postfix( int n_track,Tags tag ){
+    public void set_private_postfix(int n_track, Lpu237Tags tag ){
         if( m_parameters.set_private_postfix(n_track,tag) ) {
             switch( n_track ){
                 case 0: _set_change(Lpu237ChangedParameter.PrivatePostfixTrack1); break;
@@ -1152,84 +617,84 @@ public class Lpu237 extends HidDevice
             }//end switch
         }
     }
-    public Tags get_private_postfix( int n_track ){
+    public Lpu237Tags get_private_postfix(int n_track ){
         return m_parameters.get_private_postfix(n_track);
     }
     public String getPrivatePostfix( int n_track ){
         return get_private_postfix(n_track).toString();
     }
 
-    public void set_ibutton_tag_prefix( Tags tag ){
+    public void set_ibutton_tag_prefix( Lpu237Tags tag ){
         if( m_parameters.set_ibutton_tag_prefix(tag) )
             _set_change(Lpu237ChangedParameter.iButtonTagPrefix);
     }
-    public Tags get_ibutton_tag_prefix(){
+    public Lpu237Tags get_ibutton_tag_prefix(){
         return m_parameters.get_ibutton_tag_prefix();
     }
     public String getIbuttonTagPrefix(){
         return get_ibutton_tag_prefix().toString();
     }
 
-    public void set_ibutton_tag_postfix( Tags tag ){
+    public void set_ibutton_tag_postfix( Lpu237Tags tag ){
         if( m_parameters.set_ibutton_tag_postfix(tag) )
             _set_change(Lpu237ChangedParameter.iButtonTagPostfix);
     }
-    public Tags get_ibutton_tag_postfix(){
+    public Lpu237Tags get_ibutton_tag_postfix(){
         return m_parameters.get_ibutton_tag_postfix();
     }
     public String getIbuttonTagPostfix(){
         return get_ibutton_tag_postfix().toString();
     }
     //
-    public void set_ibutton_remove( Tags tag ){
+    public void set_ibutton_remove( Lpu237Tags tag ){
         if( m_parameters.set_ibutton_remove(tag) )
             _set_change(Lpu237ChangedParameter.iButtonRemove);
     }
-    public Tags get_ibutton_remove(){
+    public Lpu237Tags get_ibutton_remove(){
         return m_parameters.get_ibutton_remove();
     }
     public String getIbuttonRemove(){
         return get_ibutton_remove().toString();
     }
 //
-    public void set_ibutton_remove_tag_prefix( Tags tag ){
+    public void set_ibutton_remove_tag_prefix( Lpu237Tags tag ){
         if( m_parameters.set_ibutton_remove_tag_prefix(tag) )
             _set_change(Lpu237ChangedParameter.iButtonRemoveTagPrefix);
     }
-    public Tags get_ibutton_remove_tag_prefix(){
+    public Lpu237Tags get_ibutton_remove_tag_prefix(){
         return m_parameters.get_ibutton_remove_tag_prefix();
     }
     public String getIbuttonRemoveTagPrefix(){
         return get_ibutton_remove_tag_prefix().toString();
     }
 
-    public void set_ibutton_remove_tag_postfix( Tags tag ){
+    public void set_ibutton_remove_tag_postfix( Lpu237Tags tag ){
         if( m_parameters.set_ibutton_remove_tag_postfix(tag) )
             _set_change(Lpu237ChangedParameter.iButtonRemoveTagPostfix);
     }
-    public Tags get_ibutton_remove_tag_postfix(){
+    public Lpu237Tags get_ibutton_remove_tag_postfix(){
         return m_parameters.get_ibutton_remove_tag_postfix();
     }
     public String getIbuttonRemoveTagPostfix(){
         return get_ibutton_remove_tag_postfix().toString();
     }
 
-    public void set_uart_prefix( Tags tag ){
+    public void set_uart_prefix( Lpu237Tags tag ){
         if( m_parameters.set_uart_prefix(tag) )
             _set_change(Lpu237ChangedParameter.UartPrefix);
     }
-    public Tags get_uart_prefix(){
+    public Lpu237Tags get_uart_prefix(){
         return m_parameters.get_uart_prefix();
     }
     public String getUartPrefix(){
         return get_uart_prefix().toString();
     }
 
-    public void set_uart_postfix( Tags tag ){
+    public void set_uart_postfix( Lpu237Tags tag ){
         if( m_parameters.set_uart_postfix( tag ) )
             _set_change(Lpu237ChangedParameter.UartPostfix);
     }
-    public Tags get_uart_postfix(){
+    public Lpu237Tags get_uart_postfix(){
         return m_parameters.get_uart_postfix();
     }
     public String getUartPostfix(){
@@ -1383,20 +848,20 @@ public class Lpu237 extends HidDevice
             int n_tx = 0;
 
             if(s_data == null)
-                n_tx = Lpu237Info.SIZE_REQ_HEAD;
+                n_tx = Lpu237Const.SIZE_REQ_HEAD;
             else if( s_data.length > 0  )
-                n_tx = Lpu237Info.SIZE_REQ_HEAD + s_data.length;
+                n_tx = Lpu237Const.SIZE_REQ_HEAD + s_data.length;
             //
 
             // send request.
             byte[] s_tx = new byte[n_tx];
             s_tx[0] = c_cmd;
             s_tx[1] = c_sub;
-            s_tx[2] = (byte)(s_tx.length-Lpu237Info.SIZE_REQ_HEAD);
-            if( n_tx > Lpu237Info.SIZE_REQ_HEAD )
-                System.arraycopy(s_data,0, s_tx, Lpu237Info.SIZE_REQ_HEAD, s_tx.length-Lpu237Info.SIZE_REQ_HEAD);
+            s_tx[2] = (byte)(s_tx.length- Lpu237Const.SIZE_REQ_HEAD);
+            if( n_tx > Lpu237Const.SIZE_REQ_HEAD )
+                System.arraycopy(s_data,0, s_tx, Lpu237Const.SIZE_REQ_HEAD, s_tx.length- Lpu237Const.SIZE_REQ_HEAD);
 
-            byte[] s_out_packet = new byte[Lpu237Info.SIZE_REPORT_OUT];
+            byte[] s_out_packet = new byte[Lpu237Const.SIZE_REPORT_OUT];
             int n_out_packet = 0;
             int n_offset = 0;
             boolean b_error = false;
@@ -1422,7 +887,7 @@ public class Lpu237 extends HidDevice
 
             // get response.
             int n_in_report = 0;
-            byte[] s_in_report = new byte[Lpu237Info.SIZE_REPORT_IN];
+            byte[] s_in_report = new byte[Lpu237Const.SIZE_REPORT_IN];
             s_in_report[0] = 0;
 
             n_in_report = read(s_in_report);
@@ -1436,7 +901,7 @@ public class Lpu237 extends HidDevice
             if( n_length < 0)
                 n_length = 0;
             //
-            byte[] s_rx = new byte[Lpu237Info.SIZE_REQ_HEAD+n_length];
+            byte[] s_rx = new byte[Lpu237Const.SIZE_REQ_HEAD+n_length];
             n_offset = 0;
             int n_rx = s_rx.length - n_offset;
             if( n_rx > s_in_report.length )
@@ -1487,7 +952,7 @@ public class Lpu237 extends HidDevice
             System.arraycopy(s_offset,0,s_data,0,s_offset.length);
             System.arraycopy(s_size,0,s_data, s_offset.length, s_size.length);
 
-            if( !_df_io(Lpu237Request.cmdConfig,Lpu237RequestSub.subConfigGet,s_data,packet) )
+            if( !_df_io(Lpu237Request.cmdConfig, Lpu237RequestSub.subConfigGet,s_data,packet) )
                 continue;
             b_result = true;
         }while(false);
@@ -2534,29 +1999,29 @@ public class Lpu237 extends HidDevice
 
             switch (m_parameters.get_ibutton_type()){
                 case Lpu237iButtonType.Zeros7:
-                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS7&0xFF;//for unsigned operation.
-                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ZEROS7&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     //this code need for firmware mis-coding. but maintains compatibility
-                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
-                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     break;
                 case Lpu237iButtonType.F12:
-                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_F12&0xFF;//for unsigned operation.
-                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_F12&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     //this code need for firmware mis-coding. but maintains compatibility
-                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
-                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     break;
                 case Lpu237iButtonType.Addmit:
-                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ADDMIT&0xFF;//for unsigned operation.
-                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ADDMIT&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     //this code need for firmware mis-coding. but maintains compatibility
-                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
-                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     break;
                 case Lpu237iButtonType.None:
-                    n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
-                    n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
+                    n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ZEROS&0xFF;//for unsigned operation.
+                    n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] |= n_op;
                     break;
                 case Lpu237iButtonType.Zeros:
                 default:
@@ -2564,25 +2029,25 @@ public class Lpu237 extends HidDevice
             }//end switch
 
             //success indication condition.
-            n_op = Lpu237Info.MASK_IN_BLANK_OF_SUCCESS_INDICATE&0xFF;//for unsigned operation.
+            n_op = Lpu237Const.MASK_IN_BLANK_OF_SUCCESS_INDICATE&0xFF;//for unsigned operation.
             if( m_parameters.get_any_good_indicate_success() ){
-                n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE] |= n_op;
+                n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE] |= n_op;
             }
             else{
-                n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE]  &= ~n_op;
+                n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE]  &= ~n_op;
             }
 
             //mmd1100 reset interval
-            n_op = Lpu237Info.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL&0xFF;//for unsigned operation.
+            n_op = Lpu237Const.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL&0xFF;//for unsigned operation.
             int n_mmd1100_reset_interval = m_parameters.get_mmd1100_reset_interval();
-            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] &= ~n_op;//reset
-            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] |= n_mmd1100_reset_interval;//set
+            n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] &= ~n_op;//reset
+            n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL] |= n_mmd1100_reset_interval;//set
 
             //ibutton position
-            int n_op_start = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_START&0xFF;//for unsigned operation.
+            int n_op_start = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_POSITION_START&0xFF;//for unsigned operation.
             int n_pos_start = m_parameters.get_ibutton_start();
 
-            int n_op_end = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_END&0xFF;//for unsigned operation.
+            int n_op_end = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_POSITION_END&0xFF;//for unsigned operation.
             int n_pos_end = m_parameters.get_ibutton_end();
 
             //this is dragon _______________
@@ -2593,11 +2058,11 @@ public class Lpu237 extends HidDevice
                 n_pos_end = 15;
             }
 
-            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] &= ~n_op_start;
-            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] |= (n_pos_start <<= 4);
+            n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] &= ~n_op_start;
+            n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] |= (n_pos_start <<= 4);
 
-            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] &= ~n_op_end;
-            n_blank[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] |= n_pos_end;
+            n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] &= ~n_op_end;
+            n_blank[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_POSITION] |= n_pos_end;
 
             for(int i=0; i<s_data.length; i++){
                 s_data[i] = (byte)n_blank[i];
@@ -2758,7 +2223,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.ContainerInfoMsrObj_GlobalPrefix_cSize
             + Lpu237SystemStructureSize.ContainerInfoMsrObj_GlobalPrefix_sTag;
 
-            Tags tag = m_parameters.get_global_prefix();
+            Lpu237Tags tag = m_parameters.get_global_prefix();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -2782,7 +2247,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.ContainerInfoMsrObj_GlobalPostfix_cSize
                     + Lpu237SystemStructureSize.ContainerInfoMsrObj_GlobalPostfix_sTag;
 
-            Tags tag = m_parameters.get_global_postfix();
+            Lpu237Tags tag = m_parameters.get_global_postfix();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -2821,7 +2286,7 @@ public class Lpu237 extends HidDevice
                          + Lpu237SystemStructureSize.InfoMsr2_PrivatePrefix0_sTag;
              }
 
-             Tags tag = m_parameters.get_private_prefix(n_track);
+             Lpu237Tags tag = m_parameters.get_private_prefix(n_track);
              byte[] s_data = tag.get_tag_stream_with_length();
 
              InPacket packet = new InPacket();
@@ -2859,7 +2324,7 @@ public class Lpu237 extends HidDevice
                         + Lpu237SystemStructureSize.InfoMsr2_PrivatePostfix0_sTag;
             }
 
-            Tags tag = m_parameters.get_private_postfix(n_track);
+            Lpu237Tags tag = m_parameters.get_private_postfix(n_track);
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -2883,7 +2348,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.InfoiButton_GlobalPrefix_cSize
                     + Lpu237SystemStructureSize.InfoiButton_GlobalPrefix_sTag;
 
-            Tags tag = m_parameters.get_ibutton_tag_prefix();
+            Lpu237Tags tag = m_parameters.get_ibutton_tag_prefix();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -2907,7 +2372,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.InfoiButton_GlobalPostfix_cSize
                     + Lpu237SystemStructureSize.InfoiButton_GlobalPostfix_sTag;
 
-            Tags tag = m_parameters.get_ibutton_tag_postfix();
+            Lpu237Tags tag = m_parameters.get_ibutton_tag_postfix();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -2931,7 +2396,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.RemoveItemTag_cSize
                     + Lpu237SystemStructureSize.RemoveItemTag_cTag;
 
-            Tags tag = m_parameters.get_ibutton_remove();
+            Lpu237Tags tag = m_parameters.get_ibutton_remove();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -2955,7 +2420,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.InfoiButtonRemove_GlobalPrefix_cSize
                     + Lpu237SystemStructureSize.InfoiButtonRemove_GlobalPrefix_sTag;
 
-            Tags tag = m_parameters.get_ibutton_remove_tag_prefix();
+            Lpu237Tags tag = m_parameters.get_ibutton_remove_tag_prefix();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -2979,7 +2444,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.InfoiButtonRemove_GlobalPostfix_cSize
                     + Lpu237SystemStructureSize.InfoiButtonRemove_GlobalPostfix_sTag;
 
-            Tags tag = m_parameters.get_ibutton_remove_tag_postfix();
+            Lpu237Tags tag = m_parameters.get_ibutton_remove_tag_postfix();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -3002,7 +2467,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.InfoUart_GlobalPrefix_cSize
                     + Lpu237SystemStructureSize.InfoUart_GlobalPrefix_sTag;
 
-            Tags tag = m_parameters.get_uart_prefix();
+            Lpu237Tags tag = m_parameters.get_uart_prefix();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -3026,7 +2491,7 @@ public class Lpu237 extends HidDevice
             n_size = Lpu237SystemStructureSize.InfoUart_GlobalPostfix_cSize
                     + Lpu237SystemStructureSize.InfoUart_GlobalPostfix_sTag;
 
-            Tags tag = m_parameters.get_uart_postfix();
+            Lpu237Tags tag = m_parameters.get_uart_postfix();
             byte[] s_data = tag.get_tag_stream_with_length();
 
             InPacket packet = new InPacket();
@@ -3299,9 +2764,9 @@ public class Lpu237 extends HidDevice
             }while (false);
             return order;
         }
-        Tags get_tag()
+        Lpu237Tags get_tag()
         {
-            Tags tag = new Tags();
+            Lpu237Tags tag = new Lpu237Tags();
 
             do{
                 boolean[] b_valid = {false,false};
@@ -3314,7 +2779,7 @@ public class Lpu237 extends HidDevice
                 else if( n_len == (Lpu237SystemStructureSize.RemoveItemTag_cSize
                         + Lpu237SystemStructureSize.RemoveItemTag_cTag ) ) {
                     b_valid[1] = true;
-                    tag.resize(Tags.NUMBER_IBUTTON_REMOVE_TAG);
+                    tag.resize(Lpu237Tags.NUMBER_IBUTTON_REMOVE_TAG);
                 }
                 if(!(b_valid[0]|b_valid[1])){
                     continue;
@@ -3381,8 +2846,8 @@ public class Lpu237 extends HidDevice
                 if( s_data == null )
                     continue;
                 int[] n = {
-                        s_data[Lpu237Info.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE]&0xFF,//for unsigned operation.
-                        Lpu237Info.MASK_IN_BLANK_OF_SUCCESS_INDICATE&0xFF//for unsigned operation.
+                        s_data[Lpu237Const.OFFSET_IN_BLANK_OF_SUCCESS_INDICATE]&0xFF,//for unsigned operation.
+                        Lpu237Const.MASK_IN_BLANK_OF_SUCCESS_INDICATE&0xFF//for unsigned operation.
                 };
                 int n_blank1 = n[0]&n[1];
                 if(n_blank1 == 0){
@@ -3408,8 +2873,8 @@ public class Lpu237 extends HidDevice
                     continue;
                 if( s_data == null )
                     continue;
-                byte c = s_data[Lpu237Info.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL];
-                c &= ((byte)Lpu237Info.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL);
+                byte c = s_data[Lpu237Const.OFFSET_IN_BLANK_OF_MMD1100_RESET_INTERVAL];
+                c &= ((byte) Lpu237Const.MASK_IN_BLANK_OF_MMD1100_RESET_INTERVAL);
 
                 // 비트 마스킹을 사용하여 unsigned 값을 얻음
                 n_reset = c&0xFF;
@@ -3427,8 +2892,8 @@ public class Lpu237 extends HidDevice
                     continue;
                 if( s_data == null )
                     continue;
-                n_pos = s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION]&0xFF;//for unsigned operation.
-                n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_START&0xFF;//for unsigned operation.
+                n_pos = s_data[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_POSITION]&0xFF;//for unsigned operation.
+                n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_POSITION_START&0xFF;//for unsigned operation.
                 n_pos = n_pos & n_op;
                 n_pos >>= 4;
             }while(false);
@@ -3443,8 +2908,8 @@ public class Lpu237 extends HidDevice
                     continue;
                 if( s_data == null )
                     continue;
-                n_pos = s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_POSITION]&0xFF;//for unsigned operation.
-                n_op = Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_POSITION_END&0xFF;//for unsigned operation.
+                n_pos = s_data[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_POSITION]&0xFF;//for unsigned operation.
+                n_op = Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_POSITION_END&0xFF;//for unsigned operation.
                 n_pos = n_pos & n_op;
             }while(false);
             return n_pos;
@@ -3459,25 +2924,25 @@ public class Lpu237 extends HidDevice
                     continue;
                 if( s_data == null )
                     continue;
-                byte c_f12 = (byte)(s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] & Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_F12);
+                byte c_f12 = (byte)(s_data[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] & Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_F12);
                 if( c_f12 != 0 ){
                     n_type = Lpu237iButtonType.F12;
                     continue;
                 }
 
-                byte c_zers7 = (byte)(s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] & Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS7);
+                byte c_zers7 = (byte)(s_data[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] & Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ZEROS7);
                 if( c_zers7 != 0 ) {
                     n_type = Lpu237iButtonType.Zeros7;
                     continue;
                 }
 
-                byte c_addmit = (byte)(s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] & Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ADDMIT);
+                byte c_addmit = (byte)(s_data[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] & Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ADDMIT);
                 if( c_addmit != 0 ) {
                     n_type = Lpu237iButtonType.Addmit;
                     continue;
                 }
 
-                byte c_none = (byte)(s_data[Lpu237Info.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] & Lpu237Info.MASK_IN_BLANK_OF_IBUTTON_ZEROS);
+                byte c_none = (byte)(s_data[Lpu237Const.OFFSET_IN_BLANK_OF_IBUTTON_TYPE] & Lpu237Const.MASK_IN_BLANK_OF_IBUTTON_ZEROS);
                 if( c_none !=0 ){
                     n_type = Lpu237iButtonType.None;
                     continue;
@@ -3604,152 +3069,6 @@ public class Lpu237 extends HidDevice
 
     /**
      * YES0514
-     * extended to variable size
-     */
-    static class Tags{
-        static final int NUMBER_IBUTTON_REMOVE_TAG=20;
-        static final int NUMBER_TAG=7;
-        static final int SIZE_TAG=2;
-        private byte[] m_s_tag;// = new byte[NUMBER_TAG*SIZE_TAG];
-        private int m_n_offset = 0;
-
-        public Tags(){
-            m_s_tag = new byte[NUMBER_TAG*SIZE_TAG];
-        }
-
-        public Tags(int n_tag){
-            if(n_tag>0){
-                m_s_tag = new byte[n_tag*SIZE_TAG];
-            }
-            else{
-                m_s_tag = new byte[NUMBER_TAG*SIZE_TAG];
-            }
-
-        }
-
-        public Tags( byte[] tags ){
-            if( tags != null ){
-                int n_length = m_s_tag.length;
-                if( n_length > tags.length )
-                    n_length = tags.length;
-                System.arraycopy(tags,0,m_s_tag,0,n_length );
-                m_n_offset = n_length;
-            }
-        }
-
-        void push_back( byte c_modifier, byte c_key ){
-            do{
-                if( is_full() )
-                    continue;
-                //
-                m_s_tag[m_n_offset++] = c_modifier;
-                m_s_tag[m_n_offset++] = c_key;
-
-            }while(false);
-        }
-        boolean is_empty(){
-            if( m_n_offset <= 0 )
-                return true;
-            else
-                return false;
-        }
-        boolean is_full(){
-            if( m_n_offset >= m_s_tag.length )
-                return true;
-            else
-                return false;
-        }
-
-        public int max_size(){
-            int n_size = 0;
-
-            if(m_s_tag!=null){
-                n_size = m_s_tag.length/SIZE_TAG;
-            }
-            return n_size;
-        }
-        public void resize(int n_tag){
-            m_s_tag = null;//release memory
-            if(n_tag>0){
-                m_s_tag = new byte[n_tag*SIZE_TAG];
-            }
-            else{
-                m_s_tag = new byte[NUMBER_TAG*SIZE_TAG];
-            }
-        }
-
-        public int get_length(){
-            return m_n_offset/2;
-        }
-        public void clear(){
-            Arrays.fill(m_s_tag,(byte)0 );
-            m_n_offset = 0;
-        }
-        public void set_tag( Tags tag ){
-            System.arraycopy(tag.m_s_tag,0,m_s_tag, 0, tag.m_s_tag.length);
-            m_n_offset = tag.m_n_offset;
-        }
-        public void set_tag( byte[] tags ){//tag isn't included length byte.
-            clear();
-            if( tags != null ){
-                int n_length = m_s_tag.length;
-                if( n_length > tags.length )
-                    n_length = tags.length;
-                System.arraycopy(tags,0,m_s_tag,0,n_length );
-                m_n_offset = n_length;
-            }
-        }
-
-        public byte[] get_tag() {
-            return m_s_tag;
-        }
-        public void copy_to( Tags dst ){
-            do{
-                if( dst == null )
-                    continue;
-                //
-                dst.m_n_offset = this.m_n_offset;
-                System.arraycopy(this.m_s_tag,0,dst.m_s_tag,0,this.m_s_tag.length);
-            }while (false);
-        }
-
-        public byte[] get_tag_stream_with_length(){
-            byte[] m_s_stream = new byte[1+m_s_tag.length];
-            System.arraycopy(m_s_tag,0,m_s_stream,1,m_s_tag.length);
-            m_s_stream[0] = (byte)m_n_offset;
-            return m_s_stream;
-        }
-        public boolean equal( Tags tag ){
-            boolean b_equal = false;
-
-            do{
-                if( tag == null )
-                    continue;
-
-                if( m_s_tag.length != tag.m_s_tag.length){
-                    continue;
-                }
-                b_equal = true;
-                for( int i = 0; i<m_s_tag.length; i++ ){
-                    if( m_s_tag[i] != tag.m_s_tag[i]){
-                        b_equal = false;
-                        break;//exit for
-                    }
-                }//end for
-
-            }while(false);
-            return b_equal;
-        }
-
-        @Override
-        public String toString() {
-            return Tools.byteArrayToHex(m_s_tag);
-        }
-
-    }
-
-    /**
-     * YES0514
      * add -
      * m_is_any_good_indicate_success
      * m_n_mmd1100_reset_interval
@@ -3765,7 +3084,7 @@ public class Lpu237 extends HidDevice
         static final int SIZE_UID=16;
         static final int SIZE_NAME=16;
         static final int SIZE_SERIAL_NUMBER=8;
-        static final int DEFAULT_FREQUENCY_BUZZER = 2500;
+        public static final int DEFAULT_FREQUENCY_BUZZER = 2500;
 
         private Object m_locker = new Object();
 
@@ -3780,17 +3099,17 @@ public class Lpu237 extends HidDevice
         private int m_n_language_index = (int)Lpu237LanguageIndex.english;
         private int m_n_buzzer_frequency = DEFAULT_FREQUENCY_BUZZER;
         private int m_n_boot_run_time = 0;
-        private Tags m_tag_global_prefix = new Tags();
-        private Tags m_tag_global_postfix = new Tags();
-        private Tags[] m_tag_private_prefix = new Tags[Lpu237Info.NUMBER_ISO_TRACK];
-        private Tags[] m_tag_private_postfix = new Tags[Lpu237Info.NUMBER_ISO_TRACK];
-        private Tags m_tag_ibutton_tag_prefix = new Tags();
-        private Tags m_tag_ibutton_tag_postfix = new Tags();
-        private Tags m_tag_ibutton_remove = new Tags(20);//tag number is 20
-        private Tags m_tag_ibutton_remove_tag_prefix = new Tags();
-        private Tags m_tag_ibutton_remove_tag_postfix = new Tags();
-        private Tags m_tag_uart_prefix = new Tags();
-        private Tags m_tag_uart_postfix = new Tags();
+        private Lpu237Tags m_tag_global_prefix = new Lpu237Tags();
+        private Lpu237Tags m_tag_global_postfix = new Lpu237Tags();
+        private Lpu237Tags[] m_tag_private_prefix = new Lpu237Tags[Lpu237Const.NUMBER_ISO_TRACK];
+        private Lpu237Tags[] m_tag_private_postfix = new Lpu237Tags[Lpu237Const.NUMBER_ISO_TRACK];
+        private Lpu237Tags m_tag_ibutton_tag_prefix = new Lpu237Tags();
+        private Lpu237Tags m_tag_ibutton_tag_postfix = new Lpu237Tags();
+        private Lpu237Tags m_tag_ibutton_remove = new Lpu237Tags(20);//tag number is 20
+        private Lpu237Tags m_tag_ibutton_remove_tag_prefix = new Lpu237Tags();
+        private Lpu237Tags m_tag_ibutton_remove_tag_postfix = new Lpu237Tags();
+        private Lpu237Tags m_tag_uart_prefix = new Lpu237Tags();
+        private Lpu237Tags m_tag_uart_postfix = new Lpu237Tags();
         private boolean m_is_all_no_false = true;//global tag send condition.
 
         //cBlank[1]' 0 bit set - If any track is normal reading done, indicates success.
@@ -3828,8 +3147,8 @@ public class Lpu237 extends HidDevice
 
         public Parameters(){
             for( int i = 0; i< m_tag_private_prefix.length; i++ ){
-                m_tag_private_prefix[i] = new Tags();
-                m_tag_private_postfix[i] = new Tags();
+                m_tag_private_prefix[i] = new Lpu237Tags();
+                m_tag_private_postfix[i] = new Lpu237Tags();
             }//end for
         }
 
@@ -4154,7 +3473,7 @@ public class Lpu237 extends HidDevice
             }
             return b_changed;
         }
-        public boolean set_global_prefix( Tags tag ){
+        public boolean set_global_prefix( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_global_prefix.equal(tag) ){
@@ -4164,7 +3483,7 @@ public class Lpu237 extends HidDevice
             }
             return b_changed;
         }
-        public boolean set_global_postfix( Tags tag ){
+        public boolean set_global_postfix( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_global_postfix.equal(tag)) {
@@ -4174,7 +3493,7 @@ public class Lpu237 extends HidDevice
             }
             return b_changed;
         }
-        public boolean set_private_prefix( int n_track, Tags tag ){
+        public boolean set_private_prefix( int n_track, Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if (n_track >= 0 && n_track < 3) {
@@ -4186,7 +3505,7 @@ public class Lpu237 extends HidDevice
             }
             return b_changed;
         }
-        public boolean set_private_postfix( int n_track, Tags tag ){
+        public boolean set_private_postfix( int n_track, Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if (n_track >=0 && n_track < 3) {
@@ -4198,7 +3517,7 @@ public class Lpu237 extends HidDevice
             }
             return b_changed;
         }
-        public boolean set_ibutton_tag_prefix( Tags tag ){
+        public boolean set_ibutton_tag_prefix( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_ibutton_tag_prefix.equal(tag)) {
@@ -4208,7 +3527,7 @@ public class Lpu237 extends HidDevice
             }
             return b_changed;
         }
-        public boolean set_ibutton_tag_postfix( Tags tag ){
+        public boolean set_ibutton_tag_postfix( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_ibutton_tag_postfix.equal(tag)) {
@@ -4219,7 +3538,7 @@ public class Lpu237 extends HidDevice
             return b_changed;
         }
 
-        public boolean set_ibutton_remove( Tags tag ){
+        public boolean set_ibutton_remove( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_ibutton_remove.equal(tag)) {
@@ -4230,7 +3549,7 @@ public class Lpu237 extends HidDevice
             return b_changed;
         }
 
-        public boolean set_ibutton_remove_tag_prefix( Tags tag ){
+        public boolean set_ibutton_remove_tag_prefix( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_ibutton_remove_tag_prefix.equal(tag)) {
@@ -4240,7 +3559,7 @@ public class Lpu237 extends HidDevice
             }
             return b_changed;
         }
-        public boolean set_ibutton_remove_tag_postfix( Tags tag ){
+        public boolean set_ibutton_remove_tag_postfix( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_ibutton_remove_tag_postfix.equal(tag)) {
@@ -4251,7 +3570,7 @@ public class Lpu237 extends HidDevice
             return b_changed;
         }
 
-        public boolean set_uart_postfix( Tags tag ){
+        public boolean set_uart_postfix( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_uart_postfix.equal(tag)) {
@@ -4261,7 +3580,7 @@ public class Lpu237 extends HidDevice
             }
             return b_changed;
         }
-        public boolean set_uart_prefix( Tags tag ){
+        public boolean set_uart_prefix( Lpu237Tags tag ){
             boolean b_changed = false;
             synchronized (m_locker) {
                 if( !m_tag_uart_prefix.equal(tag) ) {
@@ -4346,7 +3665,7 @@ public class Lpu237 extends HidDevice
             boolean b_enable = true;
             synchronized (m_locker){
                 do{
-                    if( n_track < 0 || n_track >(Lpu237Info.NUMBER_ISO_TRACK-1))
+                    if( n_track < 0 || n_track >(Lpu237Const.NUMBER_ISO_TRACK-1))
                         continue;
                     b_enable = m_enable_track[n_track];
                 }while (false);
@@ -4383,72 +3702,72 @@ public class Lpu237 extends HidDevice
                 return m_n_boot_run_time;
             }
         }
-        public Tags get_global_prefix(){
+        public Lpu237Tags get_global_prefix(){
             synchronized (m_locker){
                 return m_tag_global_prefix;
             }
         }
-        public Tags get_global_postfix(){
+        public Lpu237Tags get_global_postfix(){
             synchronized (m_locker){
                 return m_tag_global_postfix;
             }
         }
-        public Tags get_private_prefix( int n_track ){
-            Tags tag = null;
+        public Lpu237Tags get_private_prefix(int n_track ){
+            Lpu237Tags tag = null;
 
             synchronized (m_locker){
                 do{
-                    if( n_track < 0 || n_track >(Lpu237Info.NUMBER_ISO_TRACK-1))
+                    if( n_track < 0 || n_track >(Lpu237Const.NUMBER_ISO_TRACK-1))
                         continue;
                     tag = m_tag_private_prefix[n_track];
                 }while(false);
             }
             return tag;
         }
-        public Tags get_private_postfix( int n_track ){
-            Tags tag = null;
+        public Lpu237Tags get_private_postfix(int n_track ){
+            Lpu237Tags tag = null;
 
             synchronized (m_locker){
                 do{
-                    if( n_track < 0 || n_track >(Lpu237Info.NUMBER_ISO_TRACK-1))
+                    if( n_track < 0 || n_track >(Lpu237Const.NUMBER_ISO_TRACK-1))
                         continue;
                     tag = m_tag_private_postfix[n_track];
                 }while(false);
             }
             return tag;
         }
-        public Tags get_ibutton_tag_prefix(){
+        public Lpu237Tags get_ibutton_tag_prefix(){
             synchronized (m_locker){
                 return m_tag_ibutton_tag_prefix;
             }
         }
-        public Tags get_ibutton_tag_postfix(){
+        public Lpu237Tags get_ibutton_tag_postfix(){
             synchronized (m_locker){
                 return m_tag_ibutton_tag_postfix;
             }
         }
-        public Tags get_ibutton_remove(){
+        public Lpu237Tags get_ibutton_remove(){
             synchronized (m_locker){
                 return m_tag_ibutton_remove;
             }
         }
-        public Tags get_ibutton_remove_tag_prefix(){
+        public Lpu237Tags get_ibutton_remove_tag_prefix(){
             synchronized (m_locker){
                 return m_tag_ibutton_remove_tag_prefix;
             }
         }
-        public Tags get_ibutton_remove_tag_postfix(){
+        public Lpu237Tags get_ibutton_remove_tag_postfix(){
             synchronized (m_locker){
                 return m_tag_ibutton_remove_tag_postfix;
             }
         }
 
-        public Tags get_uart_prefix(){
+        public Lpu237Tags get_uart_prefix(){
             synchronized (m_locker){
                 return m_tag_uart_prefix;
             }
         }
-        public Tags get_uart_postfix(){
+        public Lpu237Tags get_uart_postfix(){
             synchronized (m_locker){
                 return m_tag_uart_postfix;
             }

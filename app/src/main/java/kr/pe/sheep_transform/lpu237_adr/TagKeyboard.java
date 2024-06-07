@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Tags;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.KeyboardConst;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.Tools;
 /**
  * Keyboard surfaces
  * <br>
@@ -33,7 +36,7 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
     private KeyboardView m_KeyboardView;
     /** A link to the activity that hosts the {@link #m_KeyboardView}. */
     private Activity m_HostActivity;
-    private TextView[][] m_views_pre_post = new TextView[2][Lpu237.Tags.NUMBER_TAG];
+    private TextView[][] m_views_pre_post = new TextView[2][Lpu237Tags.NUMBER_TAG];
     private int m_n_view_id = -1;
     private Keyboard[][][] m_keyboards;
     private int m_n_cur_keylayout_id = R.xml.kb_en_abc_lower;
@@ -428,7 +431,7 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
                 continue;
             }
 
-            for( i=0; i<Lpu237.Tags.NUMBER_TAG; i++ ){
+            for(i=0; i< Lpu237Tags.NUMBER_TAG; i++ ){
                 m_views_pre_post[PrefixIndex][i] = null;
             }//end for
 
@@ -442,7 +445,7 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
                 }//end for
             }
             //
-            for( i=0; i<Lpu237.Tags.NUMBER_TAG; i++ ){
+            for(i=0; i< Lpu237Tags.NUMBER_TAG; i++ ){
                 m_views_pre_post[PostfixIndex][i] = null;
             }//end for
 
@@ -466,8 +469,8 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
 
             if( m_HostActivity == null )
                 continue;
-            TextView[] views_pre = new TextView[Lpu237.Tags.NUMBER_TAG];
-            TextView[] views_post = new TextView[Lpu237.Tags.NUMBER_TAG];
+            TextView[] views_pre = new TextView[Lpu237Tags.NUMBER_TAG];
+            TextView[] views_post = new TextView[Lpu237Tags.NUMBER_TAG];
             if( n_id_views_pre != null ){
                 n_view = n_id_views_pre.length;
                 if( n_id_views_pre.length > views_pre.length )
@@ -487,7 +490,7 @@ public class TagKeyboard implements KeyboardView.OnKeyboardActionListener{
                 }//end for
             }
 
-            m_views_pre_post = new TextView[2][Lpu237.Tags.NUMBER_TAG];
+            m_views_pre_post = new TextView[2][Lpu237Tags.NUMBER_TAG];
             registerTagTextView( views_pre, views_post);
         }while(false);
     }

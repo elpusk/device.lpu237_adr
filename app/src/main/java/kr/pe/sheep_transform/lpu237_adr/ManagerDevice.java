@@ -3,7 +3,6 @@ package kr.pe.sheep_transform.lpu237_adr;
 import android.Manifest;
 import android.app.Application;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,8 +13,6 @@ import androidx.core.app.ActivityCompat;//android.support.v4.app.ActivityCompat;
 import androidx.core.content.ContextCompat;//android.support.v4.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 import android.hardware.usb.*;
 
@@ -30,7 +27,19 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class ManagerDevice implements Runnable
+import kr.pe.sheep_transform.lpu237_adr.lib.hidboot.HidBootLoader;
+import kr.pe.sheep_transform.lpu237_adr.lib.hidboot.HidBootLoaderInfo;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Direction;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Const;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Tags;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.Rom;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.RomErrorCodeFirmwareIndex;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.RomResult;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.FwVersion;
+import kr.pe.sheep_transform.lpu237_adr.lib.util.KeyboardConst;
+
+public class ManagerDevice implements Runnable
 {
 
     private static class Singleton {
@@ -623,7 +632,7 @@ class ManagerDevice implements Runnable
             UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             if( device == null )
                 continue;
-            if( device.getVendorId() != Lpu237Info.USB_VID )
+            if( device.getVendorId() != Lpu237Const.USB_VID )
                 continue;
             //
             b_result = true;
@@ -636,10 +645,10 @@ class ManagerDevice implements Runnable
             UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             if( device == null )
                 continue;
-            if( device.getVendorId() != Lpu237Info.USB_VID )
+            if( device.getVendorId() != Lpu237Const.USB_VID )
                 continue;
 
-            if( device.getProductId() == Lpu237Info.USB_PID ) {
+            if( device.getProductId() == Lpu237Const.USB_PID ) {
                 if (!push_requst(TypeRequest.Request_update_list, context)) {
                     //Toast.makeText(m_application, "_callback_usb_attached : error", Toast.LENGTH_SHORT).show();
                     Tools.showOkDialogForErrorTerminate(m_update_activity,"FU14","ERROR",m_update_activity.getResources().getString(R.string.msg_dialog_error_reboot));
@@ -693,7 +702,7 @@ class ManagerDevice implements Runnable
                 ActivityCompat.requestPermissions(
                         act,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        RequestCode.LOADFROM_EXTERNAL_STORAGE
+                        IntentRequestCode.LOADFROM_EXTERNAL_STORAGE
                 );
             } else {
                 m_debug_device.select_firmware();
@@ -719,14 +728,7 @@ class ManagerDevice implements Runnable
                 }
                 else if( m_startup_activiy != null ) {
                     available_context = m_startup_activiy;
-                    if(DebugDefine.WhenNoDeviceFileSelect) {
-                        m_debug_device = new PageDevice(m_startup_activiy);
-                        m_debug_device.ini();
-                        _test_file_select(m_startup_activiy);//for debugg
-                    }
-                    else {
-                        Tools.showOkDialogForErrorTerminate(available_context, "FN01", "ERROR", available_context.getResources().getString(R.string.msg_dialog_no_device_terminate));
-                    }
+                    Tools.showOkDialogForErrorTerminate(available_context, "FN01", "ERROR", available_context.getResources().getString(R.string.msg_dialog_no_device_terminate));
                 }
                 else
                     available_context = context;
@@ -899,7 +901,7 @@ class ManagerDevice implements Runnable
             UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             Boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
             if (granted){
-                HidBootLoader bootloader = new HidBootLoader(m_usbManager, device);
+                HidBootLoader bootloader = new HidBootLoader(m_usbManager, device,new HidBootCallbackImpl());
 
                 _add_to_list(bootloader);
                 select_bootloader(0);
@@ -938,7 +940,7 @@ class ManagerDevice implements Runnable
             if (granted){
                 clear_list_lpu237();
 
-                HidBootLoader bootloader = new HidBootLoader(m_usbManager, device);
+                HidBootLoader bootloader = new HidBootLoader(m_usbManager, device,new HidBootCallbackImpl());
                 _add_to_list(bootloader);
                 select_bootloader(0);
 
@@ -1604,8 +1606,8 @@ class ManagerDevice implements Runnable
         return n_data;
     }
 
-    public Lpu237.Tags lpu237_get_global_prefix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_global_prefix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1618,8 +1620,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_global_postfix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_global_postfix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1632,8 +1634,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_private_prefix( int n_track ){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_private_prefix(int n_track ){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1646,8 +1648,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_private_postfix( int n_track ){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_private_postfix(int n_track ){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1660,8 +1662,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_ibutton_tag_prefix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_tag_prefix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1675,8 +1677,8 @@ class ManagerDevice implements Runnable
         return tag;
     }
 
-    public Lpu237.Tags lpu237_get_ibutton_tag_postfix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_tag_postfix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1690,8 +1692,8 @@ class ManagerDevice implements Runnable
         return tag;
     }
 
-    public Lpu237.Tags lpu237_get_ibutton_remove(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_remove(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1705,8 +1707,8 @@ class ManagerDevice implements Runnable
         return tag;
     }
 
-    public Lpu237.Tags lpu237_get_ibutton_remove_tag_prefix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_remove_tag_prefix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1719,8 +1721,8 @@ class ManagerDevice implements Runnable
         }
         return tag;
     }
-    public Lpu237.Tags lpu237_get_ibutton_remove_tag_postfix(){
-        Lpu237.Tags tag = null;
+    public Lpu237Tags lpu237_get_ibutton_remove_tag_postfix(){
+        Lpu237Tags tag = null;
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1810,7 +1812,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_global_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_global_prefix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1822,7 +1824,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_global_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_global_postfix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1834,7 +1836,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_private_prefix( int n_track,Lpu237.Tags tag){
+    public void lpu237_set_private_prefix(int n_track, Lpu237Tags tag){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1846,7 +1848,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_private_postfix( int n_track,Lpu237.Tags tag ){
+    public void lpu237_set_private_postfix(int n_track, Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1858,7 +1860,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_tag_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_tag_prefix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1870,7 +1872,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_tag_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_tag_postfix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1882,7 +1884,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_remove( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_remove( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1894,7 +1896,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_remove_tag_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_remove_tag_prefix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1906,7 +1908,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_ibutton_remove_tag_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_ibutton_remove_tag_postfix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1919,7 +1921,7 @@ class ManagerDevice implements Runnable
         }
     }
 
-    public void lpu237_set_uart_prefix( Lpu237.Tags tag ){
+    public void lpu237_set_uart_prefix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -1931,7 +1933,7 @@ class ManagerDevice implements Runnable
             } while (false);
         }
     }
-    public void lpu237_set_uart_postfix( Lpu237.Tags tag ){
+    public void lpu237_set_uart_postfix( Lpu237Tags tag ){
         synchronized (m_lock_device_list) {
             do {
                 if (m_n_cur_lpu237 < 0)
@@ -2042,8 +2044,8 @@ class ManagerDevice implements Runnable
                     continue;
                 //
                 int n_track = 0;
-                Lpu237.Tags [] tags_pre = new Lpu237.Tags[3];
-                Lpu237.Tags [] tags_post = new Lpu237.Tags[3];
+                Lpu237Tags[] tags_pre = new Lpu237Tags[3];
+                Lpu237Tags[] tags_post = new Lpu237Tags[3];
 
                 for( n_track = 0; n_track<3; n_track++ ){
                     tags_pre[n_track] = m_list_devices.get(m_n_cur_lpu237).get_private_prefix(n_track);
@@ -2104,12 +2106,12 @@ class ManagerDevice implements Runnable
                     continue;
                 //
                 int n_track = 0;
-                Lpu237.Tags [] tags_pre = new Lpu237.Tags[3];
-                Lpu237.Tags [] tags_post = new Lpu237.Tags[3];
+                Lpu237Tags[] tags_pre = new Lpu237Tags[3];
+                Lpu237Tags[] tags_post = new Lpu237Tags[3];
 
                 for( n_track = 0; n_track<3; n_track++ ){
-                    tags_pre[n_track] = new Lpu237.Tags();
-                    tags_post[n_track] = new Lpu237.Tags();
+                    tags_pre[n_track] = new Lpu237Tags();
+                    tags_post[n_track] = new Lpu237Tags();
                 }//end for
 
                 n_track = 0;
@@ -2663,7 +2665,7 @@ class ManagerDevice implements Runnable
             for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
                 UsbDevice device = entry.getValue();
 
-                if( (device.getVendorId() == Lpu237Info.USB_VID) && (device.getProductId() == Lpu237Info.USB_PID )) {
+                if( (device.getVendorId() == Lpu237Const.USB_VID) && (device.getProductId() == Lpu237Const.USB_PID )) {
                     if( m_system_mode.is_start_up_bootloader() ){
                         if( m_usbManager.hasPermission(device)) {
                             _add_to_list(new Lpu237(m_usbManager, device));//add device

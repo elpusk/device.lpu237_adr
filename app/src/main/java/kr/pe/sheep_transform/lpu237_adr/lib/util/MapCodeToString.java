@@ -1,6 +1,8 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.util;
 
 import java.util.HashMap;
+
+import kr.pe.sheep_transform.lpu237_adr.lib.util.KeyboardConst;
 
 public interface MapCodeToString {
     HashMap<Byte, String> CvtUnshiftCodeToString= new HashMap<Byte, String>() {

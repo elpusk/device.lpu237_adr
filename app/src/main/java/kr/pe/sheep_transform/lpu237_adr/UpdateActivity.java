@@ -11,15 +11,15 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;//android.support.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Button;
-import android.widget.Toast;
 
 import java.io.File;
+
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.Rom;
+import kr.pe.sheep_transform.lpu237_adr.lib.rom.RomResult;
 
 public class UpdateActivity extends AppCompatActivity implements FileDialog.FileSelectedListener {
 
@@ -126,7 +126,7 @@ public class UpdateActivity extends AppCompatActivity implements FileDialog.File
 
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
+        if (resultCode == RESULT_OK && requestCode == IntentRequestCode.OPEN_ROM_FILE) {
             Uri uri = data.getData();
             m_fw_file = Tools.fileFromContentUri(this,uri);
             if(m_fw_file != null) {

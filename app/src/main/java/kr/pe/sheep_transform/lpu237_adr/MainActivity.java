@@ -8,7 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.SystemClock;
+
 import androidx.annotation.NonNull;//import android.support.annotation.NonNull;
 import androidx.annotation.Nullable;//import android.support.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
@@ -20,13 +20,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Button;
 import android.widget.Toast;
-import android.widget.ListView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,6 +31,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import kr.pe.sheep_transform.lpu237_adr.databinding.ActivityMainBinding;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237DeviceType;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Const;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Tags;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Tools;
 
 public class MainActivity extends AppCompatActivity {
     private boolean m_b_need_finish_this_activity = false;
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private Button m_button_info;
     private Button m_button_common;
     private Button m_button_global;
-    private Button[] m_button_private = new Button[Lpu237Info.NUMBER_ISO_TRACK];
+    private Button[] m_button_private = new Button[Lpu237Const.NUMBER_ISO_TRACK];
     private Button m_button_ibutton_tag;
     private Button m_button_ibutton_remove;
     private Button m_button_ibutton_remove_tag;
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private PageDevice m_page_device = null;
     private PageCommon m_page_common = null;
     private PageGlobal m_page_global = null;
-    private PageTrack[] m_pages_track = new PageTrack[Lpu237Info.NUMBER_ISO_TRACK];
+    private PageTrack[] m_pages_track = new PageTrack[Lpu237Const.NUMBER_ISO_TRACK];
     private PageiButtonTag m_page_ibutton_tag = null;
     private PageiButtonRemove m_page_ibutton_remove = null;
     private PageiButtonTag m_page_ibutton_remove_tag = null;
@@ -155,12 +156,12 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);//add code ....
         do{
             switch (requestCode) {
-                case RequestCode.LOADFROM_EXTERNAL_STORAGE:
+                case IntentRequestCode.LOADFROM_EXTERNAL_STORAGE:
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                         b_permitted = true;
                     }
                     break;
-                case RequestCode.OPEN_ROM_FILE:
+                case IntentRequestCode.OPEN_ROM_FILE:
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                         b_permitted = true;
                     }
@@ -187,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
+        if (resultCode == RESULT_OK && requestCode == IntentRequestCode.OPEN_ROM_FILE) {
             Uri uri = data.getData();
 
             if( m_page_device != null ){
@@ -516,7 +517,7 @@ public class MainActivity extends AppCompatActivity {
             m_page_device = new PageDevice(this);
             m_page_common = new PageCommon(this, m_n_dev_index);
             m_page_global = new PageGlobal(this,m_n_dev_index);
-            for( int i = 0; i<Lpu237Info.NUMBER_ISO_TRACK; i++ )
+            for(int i = 0; i< Lpu237Const.NUMBER_ISO_TRACK; i++ )
                 m_pages_track[i] = new PageTrack(this,m_n_dev_index,i);
             //
             m_page_ibutton_tag = new PageiButtonTag(this,m_n_dev_index);
@@ -752,8 +753,8 @@ public class MainActivity extends AppCompatActivity {
             frameLayout.addView(m_view_pages[n_page]);
 
             boolean b_tag_page = false;
-            Lpu237.Tags tag_pre = null;
-            Lpu237.Tags tag_post = null;
+            Lpu237Tags tag_pre = null;
+            Lpu237Tags tag_post = null;
             long startTime = 0, endTime = 0, duration = 0;
 
             switch(n_page){
@@ -816,7 +817,7 @@ public class MainActivity extends AppCompatActivity {
                 //
                 ArrayList<String> array_item = new ArrayList<>();
                 String s_key = "";
-                for( j = 0; j<Lpu237.Tags.NUMBER_IBUTTON_REMOVE_TAG; j++ ){
+                for(j = 0; j< Lpu237Tags.NUMBER_IBUTTON_REMOVE_TAG; j++ ){
                     s_key = m_cur_tag_page.get_key(i,j);
                     if(!s_key.isEmpty()){
                         array_item.add(s_key);
@@ -867,7 +868,7 @@ public class MainActivity extends AppCompatActivity {
                 m_cur_tag_page.set_prefix_tag(tag_pre);
                 m_cur_tag_page.set_postfix_tag(tag_post);
 
-                TextView[][] viewItem = new TextView[2][Lpu237.Tags.NUMBER_TAG];
+                TextView[][] viewItem = new TextView[2][Lpu237Tags.NUMBER_TAG];
                 int i = 0, j= 0;
                 viewItem[i][j++] = (TextView)findViewById(R.id.id_textview_pretag0);
                 viewItem[i][j++] = (TextView)findViewById(R.id.id_textview_pretag1);
@@ -888,7 +889,7 @@ public class MainActivity extends AppCompatActivity {
                 //
                 String s_key = "";
                 for( i = 0; i<2; i++ ){
-                    for( j = 0; j<Lpu237.Tags.NUMBER_TAG; j++ ){
+                    for(j = 0; j< Lpu237Tags.NUMBER_TAG; j++ ){
                         s_key = m_cur_tag_page.get_key(i,j);
                         viewItem[i][j].setText(s_key);
                     }//end for

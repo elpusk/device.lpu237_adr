@@ -1,22 +1,25 @@
 package kr.pe.sheep_transform.lpu237_adr;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import androidx.appcompat.app.AppCompatActivity;//android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.SeekBar;
 
 import kr.pe.sheep_transform.lpu237_adr.databinding.ActivityMainBinding;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237DeviceType;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Direction;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Interface;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237LanguageIndex;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237Tools;
+import kr.pe.sheep_transform.lpu237_adr.lib.lpu237.Lpu237iButtonType;
 
 
 public class PageCommon {

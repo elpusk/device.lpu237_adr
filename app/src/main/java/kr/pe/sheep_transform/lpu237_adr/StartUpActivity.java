@@ -221,7 +221,7 @@ public class StartUpActivity extends AppCompatActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);//add code ....
         do{//for debugging code.
             switch (requestCode) {
-                case RequestCode.LOADFROM_EXTERNAL_STORAGE:
+                case IntentRequestCode.LOADFROM_EXTERNAL_STORAGE:
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                         b_permitted = true;
                     }
@@ -229,12 +229,6 @@ public class StartUpActivity extends AppCompatActivity
             }//end switch
 
             if( b_permitted ){
-                if(DebugDefine.WhenNoDeviceFileSelect) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        // 현재 API 레벨이 29 (안드로이드 10) 이상인 경우 실행할 코드
-                        Tools.selectFirmwareGreaterThenEqualApi29(this);
-                    }
-                }
                 continue;
             }
 
@@ -244,7 +238,7 @@ public class StartUpActivity extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == RequestCode.OPEN_ROM_FILE) {
+        if (resultCode == RESULT_OK && requestCode == IntentRequestCode.OPEN_ROM_FILE) {
             Uri uri = data.getData();
             /*
             File file = Tools.fileFromContentUri(this,uri);

@@ -1,4 +1,6 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.lpu237;
+
+import kr.pe.sheep_transform.lpu237_adr.lib.util.FwVersion;
 
 public class Lpu237Tools {
     static public boolean is_support_hid_boot(String s_sys_name,String s_sys_version){

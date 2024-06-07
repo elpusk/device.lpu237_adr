@@ -1,4 +1,4 @@
-package kr.pe.sheep_transform.lpu237_adr;
+package kr.pe.sheep_transform.lpu237_adr.lib.util;
 
 /**
  * this class manages writing & erasing sector oder
@@ -22,7 +22,7 @@ public class SectorOrder {
      * increase the current index
      * @return the increased index.
      */
-    boolean increased_index(){
+    public boolean increased_index(){
         boolean b_result = false;
         do {
             if (m_n_will_be_operated_index < 0)
