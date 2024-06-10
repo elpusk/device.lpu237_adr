@@ -2143,7 +2143,7 @@ public class ManagerDevice implements Runnable
                     continue;
                 if( m_list_devices == null )
                     continue;
-                b_result = m_list_devices.get(m_n_cur_lpu237).open();
+                b_result = m_list_devices.get(m_n_cur_lpu237).HidOpen();
             }while(false);
         }
 
@@ -2157,7 +2157,7 @@ public class ManagerDevice implements Runnable
                     continue;
                 if( m_list_devices == null )
                     continue;
-                b_result = m_list_devices.get(m_n_cur_lpu237).close();
+                b_result = m_list_devices.get(m_n_cur_lpu237).HidClose();
             }while(false);
         }
 
@@ -2362,7 +2362,7 @@ public class ManagerDevice implements Runnable
                     continue;
                 if( m_list_bootloader == null )
                     continue;
-                b_result = m_list_bootloader.get(m_n_cur_boorloader).open();
+                b_result = m_list_bootloader.get(m_n_cur_boorloader).HidOpen();
             }while(false);
         }
 
@@ -2376,7 +2376,7 @@ public class ManagerDevice implements Runnable
                     continue;
                 if( m_list_bootloader == null )
                     continue;
-                b_result = m_list_bootloader.get(m_n_cur_boorloader).close();
+                b_result = m_list_bootloader.get(m_n_cur_boorloader).HidClose();
             }while(false);
         }
 

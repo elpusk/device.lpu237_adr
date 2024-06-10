@@ -8,8 +8,10 @@ import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import kr.pe.sheep_transform.lpu237_adr.ManagerDevice;
 import kr.pe.sheep_transform.lpu237_adr.lib.hid.HidDevice;
@@ -199,14 +201,15 @@ public class Lpu237 extends HidDevice
 
         return n_inf;
     }
+
     public boolean is_changed(){
         return !m_set_changed.isEmpty();
     }
-    private boolean _is_changed( int n_change ) {
+    protected boolean _is_changed( int n_change ) {
         boolean b_changed = m_set_changed.contains(n_change);
         return b_changed;
     }
-    private void _set_change( int n_change ){
+    protected void _set_change( int n_change ){
         if( !m_set_changed.contains(n_change) )
             m_set_changed.add(n_change);
     }
@@ -388,6 +391,9 @@ public class Lpu237 extends HidDevice
 
     public String getUid(){
         byte[] s_id = get_uid();
+        if(s_id == null){
+            return "";
+        }
         return Tools.byteArrayToHex(s_id);
 
     }
@@ -832,7 +838,7 @@ public class Lpu237 extends HidDevice
 
     ////////////////////////////////
 
-    private Lpu237()
+    protected Lpu237()
     {
         super();
     }
@@ -841,7 +847,7 @@ public class Lpu237 extends HidDevice
         super(usbManager,usbDevice);
     }
 
-    private boolean _df_io( byte c_cmd, byte c_sub, byte[] s_data, InPacket packet ){
+    protected boolean _df_io( byte c_cmd, byte c_sub, byte[] s_data, InPacket packet ){
         boolean b_result = false;
 
         do{
@@ -874,7 +880,7 @@ public class Lpu237 extends HidDevice
                     n_tx = (s_tx.length - n_offset);
                 }
                 System.arraycopy(s_tx, n_offset, s_out_packet, 0, n_tx);
-                n_out_packet = write(s_out_packet);
+                n_out_packet = HidWrite(s_out_packet);
                 if( n_out_packet <= 0 ){
                     b_error = true;
                     break;
@@ -890,7 +896,7 @@ public class Lpu237 extends HidDevice
             byte[] s_in_report = new byte[Lpu237Const.SIZE_REPORT_IN];
             s_in_report[0] = 0;
 
-            n_in_report = read(s_in_report);
+            n_in_report = HidRead(s_in_report);
             if( n_in_report <= 0 ) {
                 continue;
             }
@@ -913,7 +919,7 @@ public class Lpu237 extends HidDevice
                 if( n_offset >= s_rx.length )
                     continue;
                 //
-                n_in_report = read(s_in_report);
+                n_in_report = HidRead(s_in_report);
                 if( n_in_report <= 0 ) {
                     b_error = true;
                     continue;
@@ -942,7 +948,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean _df_get( int n_offset, int n_size,InPacket packet) {
+    protected boolean _df_get( int n_offset, int n_size,InPacket packet) {
         boolean b_result = false;
 
         do{
@@ -959,7 +965,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean _df_set( int n_offset, int n_size, byte[] s_data, InPacket packet){
+    protected boolean _df_set( int n_offset, int n_size, byte[] s_data, InPacket packet){
         boolean b_result = false;
 
         do{
@@ -982,7 +988,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean _df_set_keymap_table(){
+    protected boolean _df_set_keymap_table(){
         boolean b_result = false;
 
         do{
@@ -1221,7 +1227,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_blanks(){
+    protected boolean df_get_blanks(){
         boolean b_result = false;
 
         do{
@@ -1355,7 +1361,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_enable_tracK( int n_track )
+    protected boolean df_get_enable_tracK( int n_track )
     {
         boolean b_result = false;
 
@@ -1429,7 +1435,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_interface()
+    protected boolean df_get_interface()
     {
         boolean b_result = false;
 
@@ -1449,7 +1455,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_language_index()
+    protected boolean df_get_language_index()
     {
         boolean b_result = false;
 
@@ -1469,7 +1475,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_buzzer_frequency()
+    protected boolean df_get_buzzer_frequency()
     {
         boolean b_result = false;
 
@@ -1489,7 +1495,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_boot_run_time()
+    protected boolean df_get_boot_run_time()
     {
         boolean b_result = false;
 
@@ -1509,7 +1515,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_global_prefix()
+    protected boolean df_get_global_prefix()
     {
         boolean b_result = false;
 
@@ -1531,7 +1537,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_global_postfix()
+    protected boolean df_get_global_postfix()
     {
         boolean b_result = false;
 
@@ -1553,7 +1559,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_private_prefix( int n_track )
+    protected boolean df_get_private_prefix( int n_track )
     {
         boolean b_result = false;
 
@@ -1591,7 +1597,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_private_postfix( int n_track )
+    protected boolean df_get_private_postfix( int n_track )
     {
         boolean b_result = false;
 
@@ -1629,7 +1635,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_ibutton_tag_prefix()
+    protected boolean df_get_ibutton_tag_prefix()
     {
         boolean b_result = false;
 
@@ -1651,7 +1657,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_ibutton_tag_postfix()
+    protected boolean df_get_ibutton_tag_postfix()
     {
         boolean b_result = false;
 
@@ -1673,7 +1679,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_ibutton_remove()
+    protected boolean df_get_ibutton_remove()
     {
         boolean b_result = false;
 
@@ -1695,7 +1701,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_ibutton_remove_tag_prefix()
+    protected boolean df_get_ibutton_remove_tag_prefix()
     {
         boolean b_result = false;
 
@@ -1717,7 +1723,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_ibutton_remove_tag_postfix()
+    protected boolean df_get_ibutton_remove_tag_postfix()
     {
         boolean b_result = false;
 
@@ -1739,7 +1745,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_uart_prefix()
+    protected boolean df_get_uart_prefix()
     {
         boolean b_result = false;
 
@@ -1762,7 +1768,7 @@ public class Lpu237 extends HidDevice
 
     }
 
-    private boolean df_get_uart_postfix()
+    protected boolean df_get_uart_postfix()
     {
         boolean b_result = false;
 
@@ -1784,7 +1790,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_global_send_condition()
+    protected boolean df_get_global_send_condition()
     {
         boolean b_result = false;
 
@@ -1803,7 +1809,7 @@ public class Lpu237 extends HidDevice
 
         return b_result;
     }
-    private boolean df_get_reading_direction()
+    protected boolean df_get_reading_direction()
     {
         boolean b_result = false;
         int n_track = 0;
@@ -1825,7 +1831,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_get_track_order()
+    protected boolean df_get_track_order()
     {
         boolean b_result = false;
 
@@ -1984,7 +1990,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_blanks(){
+    protected boolean df_set_blanks(){
         boolean b_result = false;
 
         do{
@@ -2079,7 +2085,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_enable_tracK( int n_track ){
+    protected boolean df_set_enable_tracK( int n_track ){
         boolean b_result = false;
 
         do{
@@ -2117,7 +2123,7 @@ public class Lpu237 extends HidDevice
 
         return b_result;
     }
-    private boolean df_set_interface(){
+    protected boolean df_set_interface(){
         boolean b_result = false;
 
         do{
@@ -2141,7 +2147,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_language_index(){
+    protected boolean df_set_language_index(){
         boolean b_result = false;
 
         do{
@@ -2178,7 +2184,7 @@ public class Lpu237 extends HidDevice
 
     }
 
-    private boolean df_set_buzzer_frequency(){
+    protected boolean df_set_buzzer_frequency(){
         boolean b_result = false;
 
         do{
@@ -2214,7 +2220,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_global_prefix(){
+    protected boolean df_set_global_prefix(){
         boolean b_result = false;
 
         do{
@@ -2238,7 +2244,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_global_postfix(){
+    protected boolean df_set_global_postfix(){
         boolean b_result = false;
 
         do{
@@ -2262,7 +2268,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_private_prefix(int n_track){
+    protected boolean df_set_private_prefix(int n_track){
          boolean b_result = false;
 
          do{
@@ -2300,7 +2306,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_private_postfix(int n_track){
+    protected boolean df_set_private_postfix(int n_track){
         boolean b_result = false;
 
         do{
@@ -2339,7 +2345,7 @@ public class Lpu237 extends HidDevice
 
     }
 
-    private boolean df_set_ibutton_tag_prefix(){
+    protected boolean df_set_ibutton_tag_prefix(){
         boolean b_result = false;
 
         do{
@@ -2363,7 +2369,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_ibutton_tag_postfix(){
+    protected boolean df_set_ibutton_tag_postfix(){
         boolean b_result = false;
 
         do{
@@ -2387,7 +2393,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_ibutton_remove(){
+    protected boolean df_set_ibutton_remove(){
         boolean b_result = false;
 
         do{
@@ -2411,7 +2417,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_ibutton_remove_tag_prefix(){
+    protected boolean df_set_ibutton_remove_tag_prefix(){
         boolean b_result = false;
 
         do{
@@ -2435,7 +2441,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_ibutton_remove_tag_postfix(){
+    protected boolean df_set_ibutton_remove_tag_postfix(){
         boolean b_result = false;
 
         do{
@@ -2458,7 +2464,7 @@ public class Lpu237 extends HidDevice
 
         return b_result;
     }
-    private boolean df_set_uart_prefix(){
+    protected boolean df_set_uart_prefix(){
         boolean b_result = false;
 
         do{
@@ -2482,7 +2488,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_uart_postfix(){
+    protected boolean df_set_uart_postfix(){
         boolean b_result = false;
 
         do{
@@ -2507,7 +2513,7 @@ public class Lpu237 extends HidDevice
 
     }
 
-    private boolean df_set_global_send_condition(){
+    protected boolean df_set_global_send_condition(){
         boolean b_result = false;
 
         do{
@@ -2532,7 +2538,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_reading_direction(){
+    protected boolean df_set_reading_direction(){
         boolean b_result = true;
 
         do{
@@ -2569,7 +2575,7 @@ public class Lpu237 extends HidDevice
         return b_result;
     }
 
-    private boolean df_set_track_order(){
+    protected boolean df_set_track_order(){
         boolean b_result = false;
 
         do{
@@ -2657,7 +2663,7 @@ public class Lpu237 extends HidDevice
     }
 
     //////////////////////////////
-    static class InPacket{
+    static protected class InPacket{
         public int m_n_language_index = 0;//default is english language index.
         public byte c_prefix=0;
         public byte c_result=0;
@@ -3152,6 +3158,48 @@ public class Lpu237 extends HidDevice
             }//end for
         }
 
+        public void set_changable_item_to_default(){
+            synchronized (m_locker){
+                int i = 0;
+                for(i=0;i<3;i++){
+                    m_track_order[i] = src.m_track_order[i];
+                    m_enable_track[i] = src.m_enable_track[i];
+                }//end for
+                //
+                m_n_interface = src.m_n_interface;
+                m_n_language_index = src.m_n_language_index;
+                m_n_buzzer_frequency = src.m_n_buzzer_frequency;
+
+                src.m_tag_global_prefix.copy_to(this.m_tag_global_prefix);
+                src.m_tag_global_postfix.copy_to(this.m_tag_global_postfix);
+
+                for( i = 0; i<3; i++ ){
+                    src.m_tag_private_prefix[i].copy_to(this.m_tag_private_prefix[i]);
+                    src.m_tag_private_postfix[i].copy_to(this.m_tag_private_postfix[i]);
+                }
+
+                src.m_tag_ibutton_tag_prefix.copy_to(this.m_tag_ibutton_tag_prefix);
+                src.m_tag_ibutton_tag_postfix.copy_to(this.m_tag_ibutton_tag_postfix);
+
+                src.m_tag_ibutton_remove.copy_to(this.m_tag_ibutton_remove);
+
+                src.m_tag_ibutton_remove_tag_prefix.copy_to(this.m_tag_ibutton_remove_tag_prefix);
+                src.m_tag_ibutton_remove_tag_postfix.copy_to(this.m_tag_ibutton_remove_tag_postfix);
+
+                src.m_tag_uart_prefix.copy_to(this.m_tag_uart_prefix);
+                src.m_tag_uart_postfix.copy_to(this.m_tag_uart_postfix);
+
+                m_is_all_no_false = src.m_is_all_no_false;
+                m_n_ibutton_type = src.m_n_ibutton_type;
+
+                m_n_mmd1100_reset_interval = src.m_n_mmd1100_reset_interval;
+                m_n_ibutton_start = src.m_n_ibutton_start;
+                m_n_ibutton_end = src.m_n_ibutton_end;
+
+                m_is_any_good_indicate_success = src.m_is_any_good_indicate_success;
+                m_c_reading_direction = src.m_c_reading_direction;
+            }
+        }
         public void copy_all_parameter_to_( Parameters dst ){
             synchronized (m_locker) {
                 do{
@@ -3799,5 +3847,5 @@ public class Lpu237 extends HidDevice
     }
 
     //
-    private Parameters m_parameters = new Parameters();
+    protected Parameters m_parameters = new Parameters();
 }

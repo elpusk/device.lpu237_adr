@@ -7,6 +7,8 @@ public interface Lpu237Const {
     int SIZE_REPORT_IN = 220;
     int SIZE_REPORT_OUT = 64;
     int SIZE_REQ_HEAD = 3;
+    int SIZE_IBUTTON_DATA = 8;
+    byte[] IBUTTON_TAG_DATA = new byte[]{'t','h','i','s','_','i','s','_','i','b','u','t','t','o','n','_','d','a','t','a'};
 
     int NUMBER_ISO_TRACK = 3;
     int OFFSET_IN_BLANK_OF_IBUTTON_TYPE = 2;

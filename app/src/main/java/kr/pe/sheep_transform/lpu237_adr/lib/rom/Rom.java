@@ -49,7 +49,7 @@ public class Rom {
     private final static int mask_condition_gt = 4;
     private final static int mask_condition_lt = 8;
     //
-    static class Firmware{
+    static public class Firmware{
         public static final int size_info = 175;//firmware information size
         private int m_n_size = 0;//firmware size
         private int m_n_offset = -1;//starting offset.
@@ -229,7 +229,11 @@ public class Rom {
     private Header m_header = null;
     private Firmware m_firmware = null;
     private String m_s_error_message = "";
+    private boolean m_b_valied_format = false;
 
+    public boolean is_loaded_rom_header(){
+        return m_b_valied_format;
+    }
     public int load_rom_header(File rom_file ){
         int n_result = RomResult.result_error;
         do{
@@ -298,6 +302,13 @@ public class Rom {
             }
         }while(false);
         set_error_message(n_result);
+
+        if(n_result == RomResult.result_success){
+            m_b_valied_format = true;
+        }
+        else{
+            m_b_valied_format = false;
+        }
         return n_result;
     }
 

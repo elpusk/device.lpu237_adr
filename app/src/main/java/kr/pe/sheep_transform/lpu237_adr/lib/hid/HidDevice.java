@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 
 
 public abstract class HidDevice{
+    protected boolean m_b_is_open = false;
     protected UsbManager m_usbManager;
     protected UsbDevice m_usbDevice;
     protected UsbInterface m_usbInterface;
@@ -37,11 +38,13 @@ public abstract class HidDevice{
         m_locker = new Object();
         m_buffer_in = ByteBuffer.allocate(get_in_report_size());
         m_buffer_out = ByteBuffer.allocate(get_out_report_size());
+        m_b_is_open = false;
     }
 
     public HidDevice(UsbManager usbManager, UsbDevice usbDevice){
         this();
         //
+        m_b_is_open = false;
         m_usbManager = usbManager;
         m_usbDevice = usbDevice;
         m_usbInterface = m_usbDevice.getInterface(get_interface_number());
@@ -58,7 +61,10 @@ public abstract class HidDevice{
         m_usbRequestOut = new UsbRequest();
     }
 
-    public boolean open()
+    public boolean is_open(){
+        return m_b_is_open;
+    }
+    public boolean HidOpen()
     {
         boolean b_result = false;
 
@@ -83,14 +89,14 @@ public abstract class HidDevice{
                 m_buffer_out.clear();
                 m_buffer_in.clear();
             }
-            b_result = true;
+            m_b_is_open = b_result = true;
         }while(false);
         if( !b_result )
             Log.i("HidDevice","error : open");
         return b_result;
     }
 
-    public boolean close()
+    public boolean HidClose()
     {
         boolean b_result = false;
 
@@ -104,6 +110,7 @@ public abstract class HidDevice{
                 m_usbRequestIn.close();
                 m_usbRequestOut.close();
                 m_usbDeviceConnection.close();
+                m_b_is_open = false;
             }
 
             b_result = true;
@@ -114,7 +121,7 @@ public abstract class HidDevice{
         return b_result;
     }
 
-    protected int write( byte[] s_write )
+    protected int HidWrite(byte[] s_write )
     {
         int n_tx = 0;
 
@@ -145,7 +152,7 @@ public abstract class HidDevice{
         return n_tx;
     }
 
-    protected int read( byte[] s_read )
+    protected int HidRead(byte[] s_read )
     {
         int n_rx = 0;
 
@@ -175,5 +182,43 @@ public abstract class HidDevice{
             }
         }while(false);
         return n_rx;
+    }
+
+    /**
+     * read data from hid in endpoint.
+     * @return byte[], null - error, else the received data.
+     */
+    protected byte[] HidRead()
+    {
+        byte[] s_read = null;
+
+        do{
+            synchronized (m_locker){
+                m_buffer_in.rewind();
+                m_buffer_in.clear();
+
+                if(!m_usbRequestIn.queue(m_buffer_in, m_buffer_in.capacity())){
+                    Log.e("read", "Failed to queue the USB request.");
+                    continue;
+                }
+
+                UsbRequest r = m_usbDeviceConnection.requestWait();
+                if( r == m_usbRequestIn ){
+                    //Log.i("read","ok.\n");
+                    int n_rx = m_buffer_in.position();
+                    m_buffer_in.position(0);
+                    if(n_rx<=0) {
+                        continue;
+                    }
+                    s_read = new byte[n_rx];
+                    m_buffer_in.get(s_read, 0, s_read.length);
+                }
+                else{
+                    Log.i("read","error.\n");
+                }
+            }
+        }while(false);
+
+        return s_read;
     }
 }

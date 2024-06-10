@@ -598,7 +598,7 @@ public class HidBootLoader extends HidDevice {
         boolean b_close = false;
 
         do{
-            if( !this.open() )
+            if( !this.HidOpen() )
                 continue;
             b_close = true;
 
@@ -614,7 +614,7 @@ public class HidBootLoader extends HidDevice {
 
             for( int i =0 ; i< n_loop; i++ ){
                 System.arraycopy(s_tx,n_offset,s_packet,0,s_packet.length);
-                n_tx = this.write(s_packet);
+                n_tx = this.HidWrite(s_packet);
                 if( n_tx != s_packet.length ) {
                     b_result = false;
                     break;
@@ -623,7 +623,7 @@ public class HidBootLoader extends HidDevice {
 
         }while(false);
         if( b_close ){
-            this.close();
+            this.HidClose();
         }
 
         return b_result;
@@ -634,7 +634,7 @@ public class HidBootLoader extends HidDevice {
         int n_retry = 5;
 
         do {
-            n_rx = read(in_p.get_raw_packet());
+            n_rx = HidRead(in_p.get_raw_packet());
             if( n_rx == 0 )
                 continue;
             if( n_rx != get_in_report_size() ){
@@ -681,7 +681,7 @@ public class HidBootLoader extends HidDevice {
             int n_remainder = SIZE_SECTOR;
             int n_offset_fw_data = (m_order_write.get_relative_currnet_sector_number_from_min_sector())*SIZE_SECTOR;
 
-            if( !this.open() ){
+            if( !this.HidOpen() ){
                 continue;
             }
             b_close = true;
@@ -738,7 +738,7 @@ public class HidBootLoader extends HidDevice {
 
                 w_chain++;
 
-                n_tx = this.write(out_p.get_raw_packet());
+                n_tx = this.HidWrite(out_p.get_raw_packet());
                 if(m_cb!=null){
                     boolean b_tx = true;
                     if( n_tx != get_out_report_size() ){
@@ -810,7 +810,7 @@ public class HidBootLoader extends HidDevice {
 
                 w_chain++;
                 //send data.
-                n_tx = this.write(out_p.get_raw_packet());
+                n_tx = this.HidWrite(out_p.get_raw_packet());
                 if(m_cb!=null){
                     boolean b_tx = true;
                     if( n_tx != get_out_report_size() ){
@@ -851,7 +851,7 @@ public class HidBootLoader extends HidDevice {
         }while (false);
 
         if( b_close ){
-            this.close();
+            this.HidClose();
         }
         return b_result;
     }
@@ -868,12 +868,12 @@ public class HidBootLoader extends HidDevice {
             int n_tx = 0;
             int n_rx = 0;
 
-            if( !this.open() )
+            if( !this.HidOpen() )
                 continue;
 
             b_close = true;
 
-            n_tx = this.write(out_p.get_raw_packet());
+            n_tx = this.HidWrite(out_p.get_raw_packet());
             if( n_tx != get_out_report_size() ){
                 continue;
             }
@@ -903,7 +903,7 @@ public class HidBootLoader extends HidDevice {
         }while(false);
 
         if( b_close ){
-            this.close();
+            this.HidClose();
         }
         return b_result;
     }
@@ -944,12 +944,12 @@ public class HidBootLoader extends HidDevice {
             int n_tx = 0;
             int n_rx = 0;
 
-            if( !this.open() )
+            if( !this.HidOpen() )
                 continue;
 
             b_close = true;
 
-            n_tx = this.write(out_p.get_raw_packet());
+            n_tx = this.HidWrite(out_p.get_raw_packet());
             if( n_tx != get_out_report_size() ){
                 continue;
             }
@@ -968,7 +968,7 @@ public class HidBootLoader extends HidDevice {
         }while(false);
 
         if( b_close ){
-            this.close();
+            this.HidClose();
         }
         return b_result;
     }

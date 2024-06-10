@@ -1,5 +1,7 @@
 package kr.pe.sheep_transform.lpu237_adr.lib.lpu237;
 
+import java.util.Arrays;
+
 import kr.pe.sheep_transform.lpu237_adr.lib.util.FwVersion;
 
 public class Lpu237Tools {
@@ -841,6 +843,33 @@ public class Lpu237Tools {
         return Lpu237Tools._is_found_name_in_array(n,s_sys_name);
     }
 
+    /**
+     *
+     * @param s_rsp received data from lpu237 response by HidRead()
+     * @return true : response is i-button response
+     */
+    static public boolean is_hid_reponse_ibutton(byte[] s_rsp){
+        boolean b_result = false;
+
+        do{
+            if(s_rsp == null){
+                continue;
+            }
+            //
+            if (s_rsp.length < Lpu237Const.SIZE_IBUTTON_DATA + Lpu237Const.IBUTTON_TAG_DATA.length){
+                continue;
+            }
+
+            byte[] ibuttontag = Arrays.copyOfRange(
+                    s_rsp,
+                    Lpu237Const.SIZE_IBUTTON_DATA,
+                    Lpu237Const.SIZE_IBUTTON_DATA+Lpu237Const.IBUTTON_TAG_DATA.length-1
+            );
+            b_result = Arrays.equals(ibuttontag,Lpu237Const.IBUTTON_TAG_DATA);
+
+        }while(false);
+        return b_result;
+    }
     static private boolean _is_found_name_in_array(String[] n,String s_name){
         boolean b_found = false;
         if(n==null){
