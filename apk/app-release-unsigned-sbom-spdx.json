@@ -1,0 +1,1042 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "comment": "This SPDX document has been converted from CycloneDX format.",
+    "created": "2026-07-14T08:57:00Z",
+    "creators": [
+      "Tool: cyclonedx-cli",
+      "Tool: restore_deps.py"
+    ]
+  },
+  "name": "kr.pe.sheep_transform.lpu237_adr-3.2.0",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "http://spdx.org/spdxdocs/kr.pe.sheep_transform.lpu237_adr-3.2.0-93d89af2-5b55-415d-b42e-2e863ff13da6",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-pkg-maven-android.support.design-material-1.0.0-beta01-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/android.support.design/material@1.0.0-beta01?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "material",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0-beta01"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.activity-activity-ktx-1.9.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.activity/activity-ktx@1.9.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "activity-ktx",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.9.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.activity-activity-1.9.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.activity/activity@1.9.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "activity",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.9.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.annotation-annotation-experimental-1.4.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.annotation/annotation-experimental@1.4.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "annotation-experimental",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.4.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.appcompat-appcompat-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.appcompat/appcompat@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "appcompat",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.arch.core-core-runtime-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.arch.core/core-runtime@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "core-runtime",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.asynclayoutinflater-asynclayoutinflater-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.asynclayoutinflater/asynclayoutinflater@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "asynclayoutinflater",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.cardview-cardview-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.cardview/cardview@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "cardview",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.coordinatorlayout-coordinatorlayout-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.coordinatorlayout/coordinatorlayout@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "coordinatorlayout",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.core-core-ktx-1.13.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.core/core-ktx@1.13.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "core-ktx",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.13.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.core-core-1.13.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.core/core@1.13.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "core",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.13.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.cursoradapter-cursoradapter-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.cursoradapter/cursoradapter@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "cursoradapter",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.customview-customview-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.customview/customview@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "customview",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.databinding-baseAdapters-8.4.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.databinding/baseAdapters@8.4.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "baseAdapters",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "8.4.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.databinding-library-8.4.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.databinding/library@8.4.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "library",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "8.4.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.databinding-viewbinding-8.4.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.databinding/viewbinding@8.4.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "viewbinding",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "8.4.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.documentfile-documentfile-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.documentfile/documentfile@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "documentfile",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.drawerlayout-drawerlayout-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.drawerlayout/drawerlayout@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "drawerlayout",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.fragment-fragment-ktx-1.3.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.fragment/fragment-ktx@1.3.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "fragment-ktx",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.3.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.fragment-fragment-1.3.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.fragment/fragment@1.3.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "fragment",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.3.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.interpolator-interpolator-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.interpolator/interpolator@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "interpolator",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.legacy-legacy-support-core-ui-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.legacy/legacy-support-core-ui@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "legacy-support-core-ui",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.legacy-legacy-support-core-utils-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.legacy/legacy-support-core-utils@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "legacy-support-core-utils",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-livedata-core-ktx-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-livedata-core-ktx@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "lifecycle-livedata-core-ktx",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-livedata-core-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-livedata-core@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "lifecycle-livedata-core",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-livedata-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-livedata@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "lifecycle-livedata",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-runtime-ktx-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-runtime-ktx@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "lifecycle-runtime-ktx",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-runtime-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-runtime@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "lifecycle-runtime",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-viewmodel-ktx-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-viewmodel-ktx@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "lifecycle-viewmodel-ktx",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-viewmodel-savedstate-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-viewmodel-savedstate@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "lifecycle-viewmodel-savedstate",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-viewmodel-dynamic-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.lifecycle/lifecycle-viewmodel@dynamic?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "lifecycle-viewmodel",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "dynamic"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.loader-loader-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.loader/loader@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "loader",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.localbroadcastmanager-localbroadcastmanager-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.localbroadcastmanager/localbroadcastmanager@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "localbroadcastmanager",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.print-print-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.print/print@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "print",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.profileinstaller-profileinstaller-1.3.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.profileinstaller/profileinstaller@1.3.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "profileinstaller",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.3.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.recyclerview-recyclerview-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.recyclerview/recyclerview@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "recyclerview",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.savedstate-savedstate-ktx-1.2.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.savedstate/savedstate-ktx@1.2.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "savedstate-ktx",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.2.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.savedstate-savedstate-1.2.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.savedstate/savedstate@1.2.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "savedstate",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.2.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.slidingpanelayout-slidingpanelayout-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.slidingpanelayout/slidingpanelayout@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "slidingpanelayout",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.startup-startup-runtime-1.1.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.startup/startup-runtime@1.1.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "startup-runtime",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.1.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.swiperefreshlayout-swiperefreshlayout-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.swiperefreshlayout/swiperefreshlayout@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "swiperefreshlayout",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.tracing-tracing-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.tracing/tracing@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "tracing",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.transition-transition-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.transition/transition@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "transition",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.vectordrawable-vectordrawable-animated-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.vectordrawable/vectordrawable-animated@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "vectordrawable-animated",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.vectordrawable-vectordrawable-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.vectordrawable/vectordrawable@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "vectordrawable",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.versionedparcelable-versionedparcelable-1.1.1-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.versionedparcelable/versionedparcelable@1.1.1?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "versionedparcelable",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.1.1"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-androidx.viewpager-viewpager-1.0.0-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/androidx.viewpager/viewpager@1.0.0?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "viewpager",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-com.google.android.material-material-1.0.0-rc01-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.google.android.material/material@1.0.0-rc01?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "material",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.0.0-rc01"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-org.jetbrains.kotlinx-kotlinx-coroutines-android-1.6.4-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlinx/kotlinx-coroutines-android@1.6.4?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "kotlinx-coroutines-android",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.6.4"
+    },
+    {
+      "SPDXID": "SPDXRef-pkg-maven-org.jetbrains.kotlinx-kotlinx-coroutines-core-1.6.4-type-jar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/org.jetbrains.kotlinx/kotlinx-coroutines-core@1.6.4?type=jar",
+          "referenceType": "purl"
+        }
+      ],
+      "name": "kotlinx-coroutines-core",
+      "primaryPackagePurpose": "LIBRARY",
+      "versionInfo": "1.6.4"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "name": "kr.pe.sheep_transform.lpu237_adr",
+      "versionInfo": "3.2.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "primaryPackagePurpose": "APPLICATION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:android/kr.pe.sheep_transform.lpu237_adr@3.2.0"
+        }
+      ]
+    }
+  ],
+  "documentDescribes": [
+    "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr"
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-android.support.design-material-1.0.0-beta01-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.activity-activity-ktx-1.9.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.activity-activity-1.9.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.annotation-annotation-experimental-1.4.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.appcompat-appcompat-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.arch.core-core-runtime-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.asynclayoutinflater-asynclayoutinflater-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.cardview-cardview-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.coordinatorlayout-coordinatorlayout-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.core-core-ktx-1.13.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.core-core-1.13.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.cursoradapter-cursoradapter-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.customview-customview-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.databinding-baseAdapters-8.4.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.databinding-library-8.4.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.databinding-viewbinding-8.4.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.documentfile-documentfile-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.drawerlayout-drawerlayout-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.fragment-fragment-ktx-1.3.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.fragment-fragment-1.3.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.interpolator-interpolator-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.legacy-legacy-support-core-ui-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.legacy-legacy-support-core-utils-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-livedata-core-ktx-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-livedata-core-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-livedata-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-runtime-ktx-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-runtime-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-viewmodel-ktx-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-viewmodel-savedstate-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.lifecycle-lifecycle-viewmodel-dynamic-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.loader-loader-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.localbroadcastmanager-localbroadcastmanager-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.print-print-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.profileinstaller-profileinstaller-1.3.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.recyclerview-recyclerview-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.savedstate-savedstate-ktx-1.2.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.savedstate-savedstate-1.2.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.slidingpanelayout-slidingpanelayout-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.startup-startup-runtime-1.1.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.swiperefreshlayout-swiperefreshlayout-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.tracing-tracing-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.transition-transition-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.vectordrawable-vectordrawable-animated-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.vectordrawable-vectordrawable-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.versionedparcelable-versionedparcelable-1.1.1-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-androidx.viewpager-viewpager-1.0.0-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-com.google.android.material-material-1.0.0-rc01-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-org.jetbrains.kotlinx-kotlinx-coroutines-android-1.6.4-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-kr-pe-sheep-transform-lpu237-adr",
+      "relatedSpdxElement": "SPDXRef-pkg-maven-org.jetbrains.kotlinx-kotlinx-coroutines-core-1.6.4-type-jar",
+      "relationshipType": "DEPENDS_ON"
+    }
+  ]
+}
