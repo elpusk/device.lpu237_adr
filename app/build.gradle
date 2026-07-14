@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.cyclonedx.bom'
+apply plugin: 'org.spdx.sbom'
 
 /**
 16. 버전 7.0/ 7.1: Android Nougat
@@ -43,6 +45,43 @@ android {
         abortOnError false
     }
 
+}
+
+// ---------- CycloneDX 설정 ----------
+// ---------- CycloneDX 설정 ----------
+tasks.cyclonedxDirectBom {
+    includeConfigs = ["releaseRuntimeClasspath"]
+    skipConfigs = [".*[Tt]est.*"]   // 정규식 지원: release 관련 test configuration 전부 제외
+    projectType = "application"
+    schemaVersion = "VERSION_16"
+    includeLicenseText = true
+
+    // destination/outputName/outputFormat 대신 이렇게 직접 파일 경로 지정
+    jsonOutput = file("$buildDir/reports/sbom/app-release-unsigned-sbom-cyclonedx.json")
+}
+
+// ---------- SPDX 설정 ----------
+spdxSbom {
+    targets {
+        create("release") {
+            configurations.set(["releaseRuntimeClasspath"])
+            outputFile.set(layout.buildDirectory.file("reports/sbom/app-release-unsigned-sbom-spdx.json"))
+            document {
+                name.set("${project.name}-release")
+                namespace.set("https://example.com/spdx/${project.name}-${android.defaultConfig.versionName}")
+            }
+        }
+    }
+}
+
+// ---------- release 빌드에 자동 연결 ----------
+afterEvaluate {
+    tasks.named("assembleRelease") {
+        finalizedBy("cyclonedxDirectBom", "spdxSbomForRelease")
+    }
+    tasks.matching { it.name == "bundleRelease" }.configureEach {
+        finalizedBy("cyclonedxDirectBom", "spdxSbomForRelease")
+    }
 }
 
 dependencies {
